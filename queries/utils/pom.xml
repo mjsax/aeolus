@@ -10,8 +10,23 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>debs</artifactId>
-  <name>debsgrandchallenge</name>
+  <artifactId>utils</artifactId>
+  <name>utils</name>
   <packaging>jar</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>testUtils</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>de.hub.cs.dbis.aeolus</groupId>
+    	<artifactId>monitoring</artifactId>
+    	<version>1.0-SNAPSHOT</version>
+    	<scope>test</scope>
+    </dependency>
+  </dependencies>
 
 </project>

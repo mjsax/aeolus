@@ -11,7 +11,5 @@
   </parent>
 
   <artifactId>optimization</artifactId>
-  <name>optimization</name>
-  <packaging>jar</packaging>
 
 </project>

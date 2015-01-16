@@ -11,12 +11,12 @@
   </parent>
 
   <artifactId>queries</artifactId>
-  <name>queries</name>
   <packaging>pom</packaging>
 
   <modules>
-    <module>linearroadbenchmark</module>
-    <module>debsgrandchallenge</module>
+    <module>lrb</module>
+    <module>debs</module>
+    <module>utils</module>
   </modules>
 
 </project>

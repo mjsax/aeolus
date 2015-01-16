@@ -11,7 +11,5 @@
   </parent>
 
   <artifactId>lrb</artifactId>
-  <name>linearroadbenchmark</name>
-  <packaging>jar</packaging>
 
 </project>
