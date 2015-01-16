@@ -50,6 +50,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 
@@ -66,7 +67,7 @@ public class TimestampOrderCheckerTest {
 	private static final Map<String, Object> boltConfig = new HashMap<String, Object>();
 	
 	private static TimestampOrderChecker checkerFake;
-	private static ForwardBolt forwarder = new ForwardBolt(null);
+	private static ForwardBolt forwarder = new ForwardBolt(new Fields("dummy"));
 	private static IRichBolt boltMockStatic;
 	
 	private final static long seed = System.currentTimeMillis();
@@ -138,7 +139,7 @@ public class TimestampOrderCheckerTest {
 		verify(this.loggerMock, atMost(2)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
-		Assert.assertTrue(collector.output.size() == 5);
+		Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == 5);
 		Assert.assertTrue(collector.acked.size() == 5);
 		Assert.assertTrue(collector.failed.size() == 0);
 	}
@@ -174,7 +175,7 @@ public class TimestampOrderCheckerTest {
 		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
-		Assert.assertTrue(collector.output.size() == 4);
+		Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == 4);
 		Assert.assertTrue(collector.acked.size() == 4);
 		Assert.assertTrue(collector.failed.size() == 0);
 	}
