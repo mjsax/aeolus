@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package de.hub.cs.dbis.aeolus.testUtils;
+package de.hub.cs.dbis.aeolus.queries.utils;
 
 import java.util.Map;
 

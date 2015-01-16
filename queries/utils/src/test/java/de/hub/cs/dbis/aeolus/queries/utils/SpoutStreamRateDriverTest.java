@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package de.hub.cs.dbis.aeolus.testUtils;
+package de.hub.cs.dbis.aeolus.queries.utils;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import de.hub.cs.dbis.aeolus.queries.utils.SpoutStreamRateDriver;
+import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
