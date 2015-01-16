@@ -55,6 +55,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
+import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.monitoring.TimestampOrderChecker;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
@@ -307,7 +308,8 @@ public class TimestampMergerTest {
 			}
 		}
 		
-		Assert.assertEquals(result.subList(0, result.size() - stillBuffered), collector.output);
+		Assert.assertEquals(result.subList(0, result.size() - stillBuffered),
+			collector.output.get(Utils.DEFAULT_STREAM_ID));
 		Assert.assertTrue(collector.acked.size() == numberOfTuples - stillBuffered);
 		Assert.assertTrue(collector.failed.size() == 0);
 		
