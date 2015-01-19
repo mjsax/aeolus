@@ -67,7 +67,9 @@ public class DispatcherBolt extends BaseRichBolt {
 			LOG.info("Set timer: "+timer);
 		}
 		String tmp = line.substring(0,1);
-		if(!tmp.matches("^[0-4]")) return;
+		if(!tmp.matches("^[0-4]")) {
+                    return;
+                }
 		
 		try {
 			
