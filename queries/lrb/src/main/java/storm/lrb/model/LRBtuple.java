@@ -2,6 +2,8 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import storm.lrb.tools.StopWatch;
 
@@ -10,12 +12,13 @@ import storm.lrb.tools.StopWatch;
  *
  */
 public class LRBtuple  implements Serializable{
-	public final static int TYPE_POSITION = 0;
+	public final static int TYPE_POSITION_REPORT = 0;
 	public final static int TYPE_ACCOUNT_BALANCE = 2;
 	public final static int TYPE_DAILY_EXPEDITURE = 3;
 	public final static int TYPE_TRAVEL_TIME_REQUEST = 4;
 	
 	private static final long serialVersionUID = 1L;
+	private final static Logger LOGGER = LoggerFactory.getLogger(LRBtuple.class);
 
 	/**
 	 * tuple type 0=Position report 2=Account balance requests 3=daily
@@ -171,6 +174,56 @@ public class LRBtuple  implements Serializable{
 		stormTimer = systemtimer;
 		
 		created = stormTimer.getElapsedTime();
+	}
+	
+	/**
+	 * Creates a tuple of the remainder of a LRB input line after the type 
+	 * part of the tuple string has been removed
+	 * @param type
+	 * @param tupleTail 
+	 * @param time 
+	 */
+	public LRBtuple(int type, String tupleTail, StopWatch time) {
+		this.type = type;
+		
+		timer = new StopWatch(0);
+
+		String[] result = tupleTail.split(",");
+		if (result.length < 14) {
+			throw new IllegalArgumentException(
+					"Tuple ["+tupleTail+"] does not match required format");
+		}
+
+		timer= time;
+		
+		vid = Integer.valueOf(result[1]);
+		spd = Integer.valueOf(result[2]);
+		xway = Integer.valueOf(result[3]);
+		lane = Integer.valueOf(result[4]);
+		dir = Integer.valueOf(result[5]);
+		seg = Integer.valueOf(result[6]);
+		pos = Integer.valueOf(result[7]);
+
+		qid = Integer.valueOf(result[8]);
+		sinit = Integer.valueOf(result[9]);
+		send = Integer.valueOf(result[10]);
+		dow = Integer.valueOf(result[11]);
+		tod = Integer.valueOf(result[12]);
+		day = Integer.valueOf(result[13]);
+	}
+	
+	public LRBtuple(int type, String tupleTail) {
+		this(type, tupleTail, retrieveTimeFromTuple(tupleTail));
+	}
+	
+	private static StopWatch retrieveTimeFromTuple(String tuple) {
+		String[] tupleSplit = tuple.split(",");
+		if (tupleSplit.length < 1) {
+			LOGGER.debug(String.format("tuple line '%s' doesn't contain a valid time value", tuple));
+		}
+		String timeString = tupleSplit[0];
+		long time0 = Long.parseLong(timeString);
+		return new StopWatch(time0);
 	}
 
 	public Integer getType() {

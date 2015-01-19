@@ -67,15 +67,15 @@ public class DispatcherBolt extends BaseRichBolt {
 			timer = (StopWatch) tuple.getValue(1);
 			LOG.info("Set timer: "+timer);
 		}
-		String tmp = line.substring(0,1);
-		if(!tmp.matches("^[0-4]")) {
+		String typeString = line.substring(0,1);
+		if(!typeString.matches("^[0-4]")) {
                     return;
                 }
 		
 		try {
-			
-			switch (Integer.parseInt(tmp)) {
-			case LRBtuple.TYPE_POSITION:
+			int type = Integer.parseInt(typeString);
+			switch (type) {
+			case LRBtuple.TYPE_POSITION_REPORT:
 				PosReport pos = new PosReport(line, timer);
 				
 				_collector.emit( "PosReports",tuple,

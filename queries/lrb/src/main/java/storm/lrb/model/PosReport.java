@@ -17,8 +17,14 @@ public class PosReport extends LRBtuple implements Serializable {
 		super();
 	}
 
+	/**
+	 * Creates a PosReport from a the trailing part of a LRB input line 
+	 * after the type has been removed
+	 * @param tupel
+	 * @param time 
+	 */
 	public PosReport(String tupel, StopWatch time) {
-		super(tupel, time);
+		super(LRBtuple.TYPE_POSITION_REPORT, tupel, time);
 
 	}
 
