@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>batching</artifactId>
-  
+
   <dependencies>
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
@@ -20,5 +20,5 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  
+
 </project>
