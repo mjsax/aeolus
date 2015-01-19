@@ -1,0 +1,176 @@
+package storm.lrb.model;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class AccidentDetector implements Serializable{
+
+	
+
+	private static final long serialVersionUID = 1L;
+	 private static final int STOPPEDCARS_FOR_ACCIDENT = 2;
+	 private static final int REPORTS_FOR_STOPPEDCAR = 4;
+	 private static final long MAX_TIME_BETWEENREPORTS = 35;
+	
+	 private ConcurrentHashMap<Integer, MutableInt> stoppedVehicles = new ConcurrentHashMap<Integer, MutableInt>();
+	 //contains the time of the last report of a given stopped car
+	 private ConcurrentHashMap<Integer, Long> stopTimes = new ConcurrentHashMap<Integer, Long>();
+
+	 private HashSet<Integer> accidentCars = new HashSet<Integer>();
+	
+	 long lastreporttime = 0;
+	 boolean accidentarea = false;
+	
+	
+	 public AccidentDetector() {
+		 super();
+	 }
+
+
+	 //TODO evtl ovehead weil voll oft gecheckt wird...
+	/**
+	 * increments the stoppedpositioncnt of the car
+	 * 
+	 * @param vid the cars vid
+	 * @param now the tie of the positon report
+	 * @return true if the car stopcnt >= 4
+	 */
+	public boolean countStoppedVehicle(Integer vid, long now) {
+
+		MutableInt count = stoppedVehicles.get(vid);
+		if (count == null){
+			count = new MutableInt();
+			stoppedVehicles.put(vid,count);
+			stopTimes.put(vid, now);
+		}else{
+			//check whether stop reports are consecutive otherwise reset count!
+			long prevtime = stopTimes.get(vid);
+			if((now - prevtime)<=MAX_TIME_BETWEENREPORTS) count.increment();
+			else count.reset();
+			stopTimes.put(vid, now);
+		}
+		lastreporttime = now;
+		return (count.get()>=REPORTS_FOR_STOPPEDCAR);
+
+	}
+
+	
+	//check for an accident and clean set in the meantime
+	
+	@Override
+	public String toString() {
+		return "StoppedCars \n[stoppedVehicles=" + stoppedVehicles
+				+ ",\n stopTimes=" + stopTimes + ", accidentCars=" + accidentCars
+				+ ",\n lastreporttime=" + lastreporttime + ", accidentalert="
+				+ accidentarea + "]";
+	}
+
+
+	/**
+	 * Check for an accident by counting all which have more then 4 consecutive
+	 * stop report 
+	 * @return the cars involved in an accident if accident exists null otherwise
+	 */
+	public HashSet<Integer> checkForAccident() {
+	
+		//System.out.println(this.toString());
+		
+		int size = removeOldStoppedCars();
+		
+		//System.out.println("After remove OldCars "+this.toString());
+		
+		//return if there arent enough cars to be an accident
+		if(size<STOPPEDCARS_FOR_ACCIDENT){
+			accidentarea = false;
+			return null;
+		}
+		
+		//go through every stopped vehicle and add every vehicle with more than 4 stopreports to the accidentcar hmap
+		for (Map.Entry<Integer, MutableInt> entry : stoppedVehicles.entrySet()){
+		    if(entry.getValue().get() >=REPORTS_FOR_STOPPEDCAR)
+		    	accidentCars.add(entry.getKey());
+		}
+		
+		if(accidentCars.size() >=STOPPEDCARS_FOR_ACCIDENT){
+			accidentarea = true;
+			return accidentCars;
+		}
+		else{
+			accidentarea = false;
+			//TODO hier ist evtl das problem, dass es gecleart wird während gleichzeitig woanders raufgesehen wird
+			accidentCars.clear();
+		}
+		
+		return null;
+		
+	}
+	
+	/**
+	 * Check if stop car report are older than a minute
+	 * stop report 
+	 * @return true if no stopped cars are in that area else false
+	 */
+	public boolean areaCleared() {
+	
+		System.out.println(this.toString());
+		
+		int size = removeOldStoppedCars();
+		
+		if(size==0) return true;
+		
+		return false;
+		
+	}
+
+
+
+	//TODO vorher checken lassen?
+	public final boolean isAccidentarea() {
+		return accidentarea;
+	}
+
+
+	/**
+	 * if a reported stop is older than twice the normal report time remove the car
+	 * (to free memory)
+	 * @return the current count of all stopped cars
+	 */
+	protected synchronized int removeOldStoppedCars() {
+		
+		
+		for (Iterator<Entry<Integer, Long>> it = stopTimes.entrySet().iterator(); it.hasNext();){
+		
+			Map.Entry<Integer, Long> entry = (Map.Entry<Integer, Long>) it.next();
+			
+			if((lastreporttime - entry.getValue()) >=2*MAX_TIME_BETWEENREPORTS){
+		    	accidentCars.remove(entry.getKey());
+		    	stoppedVehicles.remove(entry.getKey());
+		    	it.remove();
+		    }
+		    	
+		}
+		
+		return stoppedVehicles.size();
+	}
+
+
+	/**
+	 * remove a stopped car and check 
+	 * @param vid
+	 * @return
+	 */
+	public boolean removeVehicleAndCheck(Integer vid) {
+		// TODO Auto-generated method stub
+		stoppedVehicles.remove(vid);
+		
+		return (checkForAccident()==null);
+	}
+
+
+	
+}

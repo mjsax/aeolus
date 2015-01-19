@@ -1,0 +1,90 @@
+package storm.lrb.model;
+
+import java.io.Serializable;
+import java.text.DecimalFormat;
+
+import org.apache.commons.collections.map.MultiKeyMap;
+
+
+
+public class VehicleHistory  implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Integer vid;
+	private Double tollToday = 0.0;
+	private Integer tollTime = 0;
+	
+	private AccBalRequest accBalReq;
+
+	private int day = 70;
+	private Integer xWay;
+	
+	/**
+	 * keeps tollhistory as DAy,XWAY,Tolls
+	 */
+	private MultiKeyMap tollHistory = new MultiKeyMap();
+	
+	public VehicleHistory() {
+	}
+	public void setVid(int vid){
+		this.vid = vid;
+	}
+	//TODO load history of car if initialized oder besser  noch überlegen ob hier überhaupt notwendig
+	//eher eine abfrage methode und persist methode noch rein
+	public VehicleHistory(AccBalRequest accBalReq) {
+		this.accBalReq = accBalReq;
+		this.vid = accBalReq.getVid();
+		this.xWay = accBalReq.getXway();
+	}
+
+	public void assessToll(Double calculatedToll, int time){
+		//TODO checken vorher ob alles korrekt initialisiert
+		tollToday += calculatedToll;
+		tollTime = time;
+		
+		if(tollHistory.containsKey(day,xWay)){
+			int toll = (Integer) tollHistory.get(day, xWay);
+			calculatedToll += toll;
+		}
+		tollHistory.put(day,xWay, calculatedToll);
+	}
+
+
+	public Double getTollToday() {
+		return tollToday;
+	}
+
+
+	public void setToll(Long nov) {
+		//speichern der vorhergehenden maut
+		
+		
+	}
+
+
+
+	public MultiKeyMap getTollHistory() {
+		return tollHistory;
+	}
+
+
+	public void setTollHistory(MultiKeyMap tollHistory) {
+		this.tollHistory = tollHistory;
+	}
+
+
+	
+	
+	public String getAccBalNotification() {
+		DecimalFormat df = new DecimalFormat("0");
+		
+		String notification = "2,"+ accBalReq.getTime() +","+accBalReq.getEmitTime()/1000+","+ accBalReq.getQid() + ","+ tollToday + "###"+accBalReq.toString()+"###";
+		return notification;
+	}
+
+
+	
+}
