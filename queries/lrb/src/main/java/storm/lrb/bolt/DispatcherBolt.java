@@ -22,8 +22,8 @@ import storm.lrb.tools.StopWatch;
 
 /**
  * 
- * This Bolt reduces the workload of the spout by taking over Tuple generation
- * and disptching to the appropiate stream
+ * This Bolt reduces the workload of the spout by taking over {@link Tuple} generation
+ * and dispatching to the appropiate stream
  * 
  */
 public class DispatcherBolt extends BaseRichBolt {
@@ -100,7 +100,7 @@ public class DispatcherBolt extends BaseRichBolt {
 				break;
 			default:
 				//System.out.println("Ignore tuple");
-				LOG.debug("Tupel does not match required LRB format" + line);
+				LOG.debug("Tuple does not match required LRB format" + line);
 				
 			}
 			
