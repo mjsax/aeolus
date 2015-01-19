@@ -26,13 +26,13 @@ package storm.lrb.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.HashMap;
 import java.util.Map;
+import storm.lrb.bolt.SegmentIdentifier;
 
 
 // Helper class that computes statistics associated with one segment, over one
@@ -44,7 +44,7 @@ class MinuteStatistics {
 				+ ", speedAverage=" + speedAverage + "]";
 	}
 
-private Map    vehicleSpeeds = new HashMap();
+private final Map    vehicleSpeeds = new HashMap();
   private double speedAverage; // rolling average for vehicles in this segment
 
   
@@ -52,7 +52,7 @@ private Map    vehicleSpeeds = new HashMap();
     double cumulativeSpeed = speedAverage * vehicleSpeeds.size();
     if (vehicleSpeeds.containsKey(vehicleId)) {
       int prevVehicleSpeed = ((Integer)
-                              vehicleSpeeds.get(vehicleId)).intValue(); 
+	      vehicleSpeeds.get(vehicleId)); 
       cumulativeSpeed -= prevVehicleSpeed;
       cumulativeSpeed += (prevVehicleSpeed+vehicleSpeed)/2.0;
     } else {
@@ -89,9 +89,9 @@ public class SegmentStatistics implements Serializable {
 
   // We need to keep statistics for each segment. For this, we use a Map where
   // the key is a segment. The value is a list keeping time-based statistics.
-  private ConcurrentMap<String, List<MinuteStatistics>> segmentsMinutes = new ConcurrentHashMap();
+  private final ConcurrentMap<SegmentIdentifier, List<MinuteStatistics>> segmentsMinutes = new ConcurrentHashMap();
 
-  private List minutesListGetAndInit(String segment, 
+  private List minutesListGetAndInit(SegmentIdentifier segment, 
                                      ConcurrentMap segmentMinutes) {
 
     List minutes = (List) segmentsMinutes.get(segment);
@@ -111,13 +111,12 @@ public class SegmentStatistics implements Serializable {
 	  return segmentsMinutes.size();
   }
   
-  @SuppressWarnings("rawtypes")
- public Set<String> getXsdList(){
+ public Set<SegmentIdentifier> getXsdList(){
 	  return segmentsMinutes.keySet();
 	  
   }
   
-  public void addVehicleSpeed(int minute, String xsd, 
+  public void addVehicleSpeed(int minute, SegmentIdentifier xsd, 
                                  int vid, int speed) {
 
 	  //System.out.println("segmentstats: "+minute + "xsd: "+xsd+" spd: "+speed);
@@ -145,7 +144,7 @@ public class SegmentStatistics implements Serializable {
     minuteStatistics.addVehicleSpeed(vid, speed);
   }
 
-  private MinuteStatistics findMinuteStatistics(int minute, String xsd) { 
+  private MinuteStatistics findMinuteStatistics(int minute, SegmentIdentifier xsd) { 
     List minutes = minutesListGetAndInit(xsd, segmentsMinutes);
 
     MinuteStatistics minuteStatistics;
@@ -160,12 +159,12 @@ public class SegmentStatistics implements Serializable {
     return minuteStatistics;
   }
 
-  public int vehicleCount(int minute, String xsd) {
+  public int vehicleCount(int minute, SegmentIdentifier xsd) {
     MinuteStatistics minuteStatistics = findMinuteStatistics(minute, xsd);
     return minuteStatistics.vehicleCount();
   }
 
-  public double speedAverage(int minute, String xsd) {
+  public double speedAverage(int minute, SegmentIdentifier xsd) {
     MinuteStatistics minuteStatistics = findMinuteStatistics(minute, xsd);
     return minuteStatistics.speedAverage();
   }

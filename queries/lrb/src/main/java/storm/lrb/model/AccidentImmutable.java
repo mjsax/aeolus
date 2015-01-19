@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
+import storm.lrb.bolt.SegmentIdentifier;
 
 /**
  * Immutable version of the Accident object for serialization.
@@ -39,7 +40,7 @@ public class AccidentImmutable implements Serializable {
 	private int lastUpdateTime;
 	private int position;
 	private boolean over = false;
-	private HashSet<String> involvedSegs = new HashSet<String>();
+	private HashSet<SegmentIdentifier> involvedSegs = new HashSet<SegmentIdentifier>();
 	private HashSet<Integer> involvedCars = new HashSet<Integer>();
 	private int maxPos;
 	private int minPos;

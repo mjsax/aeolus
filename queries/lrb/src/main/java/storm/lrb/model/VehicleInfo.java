@@ -26,6 +26,7 @@ import java.io.Serializable;
 
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.log4j.Logger;
+import storm.lrb.bolt.SegmentIdentifier;
 
 /**
  * Object representing a vehicle
@@ -40,7 +41,7 @@ public class VehicleInfo  implements Serializable {
 	private Integer vid;
 	private int calculatedToll = 0;
 	
-	private int day = 70;
+	private final int day = 70; //@TODO: check against specification and document
 
 	
 	private PosReport posreport;
@@ -49,7 +50,7 @@ public class VehicleInfo  implements Serializable {
 	 * TODO load toll history of vehicle 
 	 * keeps toll history as DAy,XWAY,Tolls
 	 */
-	private MultiKeyMap tollHistory = new MultiKeyMap();
+	private final MultiKeyMap tollHistory = new MultiKeyMap();
 	
 	/**
 	 * Time of positionreport which was last processed
@@ -69,7 +70,7 @@ public class VehicleInfo  implements Serializable {
 	public VehicleInfo(PosReport pos) {
 		
 		posreport = pos;	
-		vid = pos.getVid();
+		vid = pos.getVehicleIdentifier();
 		
 		
 	}
@@ -95,8 +96,8 @@ public class VehicleInfo  implements Serializable {
 	
 
 
-	public String getXsd() {
-		return posreport.getXsd();
+	public SegmentIdentifier getSegmentIdentifier() {
+		return posreport.getSegmentIdentifier();
 	}
 
 
@@ -106,7 +107,7 @@ public class VehicleInfo  implements Serializable {
 
 
 	public Integer getXway() {
-		return posreport.getXway();
+		return posreport.getSegmentIdentifier().getxWay();
 	}
 
 
@@ -158,7 +159,7 @@ public class VehicleInfo  implements Serializable {
 		return "VehicleInfo [vid=" + vid + ", calculatedToll=" + calculatedToll
 				+ ", xway=" + getXway() + ", day="
 				+ day + ", time=" + getLastReportTime() + ", tollHistory=" + tollHistory
-				+ ", segDir=" + getXsd()+ "]";
+				+ ", segDir=" + getSegmentIdentifier()+ "]";
 	}
 
 	

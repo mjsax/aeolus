@@ -60,15 +60,15 @@ public class VehicleAccount  implements Serializable {
 	
 
 	public VehicleAccount(int calculatedToll, PosReport pos) {
-		this.vid = pos.getVid();
-		this.xWay = pos.getXway();
+		this.vid = pos.getVehicleIdentifier();
+		this.xWay = pos.getSegmentIdentifier().getxWay();
 		
 		assessToll(calculatedToll, pos.getEmitTime());
 	}
 
 	public VehicleAccount(AccBalRequest bal) {
-		this.vid = bal.getVid();
-		this.xWay = bal.getXway();
+		this.vid = bal.getVehicleIdentifier();
+		this.xWay = bal.getSegmentIdentifier().getxWay();
 	}
 
 
@@ -91,7 +91,7 @@ public class VehicleAccount  implements Serializable {
 		// widerspricht sich bei der Reihenfolge der Werte des Outputtuples.
 		
 		String notification = "2," + accBalReq.getTime() + ","
-				+ accBalReq.getEmitTime() + "," + accBalReq.getQid() + ","
+				+ accBalReq.getEmitTime() + "," + accBalReq.getQueryIdentifier() + ","
 				+ tollTime / 1000 +","+ tollToday + "***"
 				+ accBalReq.getTime() + "," + accBalReq.getProcessingTime()
 				+ "###" + this.toString() + "###";

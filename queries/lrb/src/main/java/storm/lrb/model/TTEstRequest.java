@@ -44,8 +44,8 @@ public class TTEstRequest extends LRBtuple implements Serializable {
 
 	@Override
 	public String toString() {
-		return "TTimeReq [time=" + getTime() + ", vid=" + getVid()+ ", xway=" + getXway()
-				+ ", qid=" + getQid() + ", sInit=" + getSinit()
+		return "TTimeReq [time=" + getTime() + ", vid=" + getVehicleIdentifier()+ ", xway=" + getSegmentIdentifier().getxWay()
+				+ ", qid=" + getQueryIdentifier() + ", sInit=" + getSinit()
 				+ ", sEnd=" + getSend() + ", dow=" + getDow() + ", tod=" + getTod() + "]";
 	}
 

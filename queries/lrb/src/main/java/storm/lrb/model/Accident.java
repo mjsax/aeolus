@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
+import storm.lrb.bolt.SegmentIdentifier;
+import storm.lrb.tools.Constants;
 
 public class Accident implements Serializable {
 	
@@ -40,8 +42,8 @@ public class Accident implements Serializable {
 	private volatile int lastUpdateTime = Integer.MAX_VALUE - 1;
 	private int position = -1;
 	private boolean over = false;
-	private HashSet<String> involvedSegs = new HashSet<String>();
-	private HashSet<Integer> involvedCars = new HashSet<Integer>();
+	private final HashSet<SegmentIdentifier> involvedSegs = new HashSet<SegmentIdentifier>();
+	private final HashSet<Integer> involvedCars = new HashSet<Integer>();
 	//private int maxPos = -1;
 	//private int minPos = -1;
 	
@@ -53,11 +55,10 @@ public class Accident implements Serializable {
 	public Accident(PosReport report) {
 		startTime = report.getTime();
 		startMinute = Time.getMinute(startTime);
-		position = report.getPos();
+		position = report.getPosition();
 		lastUpdateTime = report.getTime();
-		assignSegments(report.getXway(), report.getPos(), report.getDir());
+		assignSegments(report.getSegmentIdentifier().getxWay(), report.getPosition(), report.getSegmentIdentifier().getDirection());
 	}
-
 	
 	/**
 	 * assigns segments to accidents according to LRB req.
@@ -66,27 +67,29 @@ public class Accident implements Serializable {
 	 * @param pos of accident
 	 * @param dir of accident
 	 */
-	protected void assignSegments(int xway, int pos, int dir) {
+	private void assignSegments(int xway, int pos, int dir) {
 	
-		int segment = pos/5280;
+		int segment = pos/Constants.MAX_NUMBER_OF_POSITIONS; 
 		
 		if(dir==0){
 			//maxPos = pos; minPos = (segment-4)*5280;
 		for (int i = segment;0 < i && i > segment - 5 ; i--) {
-			String string = xway+"-"+i+"-"+dir;
-			involvedSegs.add(string);
+			SegmentIdentifier segmentTriple = 
+				new SegmentIdentifier(xway, i, dir);
+			involvedSegs.add(segmentTriple);
 		}}else{
 			//minPos = pos; maxPos = (segment+5)*5280-1;
 			for (int i = segment; i < segment+5 && i < 100 ; i++) {
-				String string = xway+"-"+i+"-"+dir;
-				involvedSegs.add(string);
+				SegmentIdentifier segmentTriple = new 
+				SegmentIdentifier(xway, i, dir);
+				involvedSegs.add(segmentTriple);
 			}
 		}
 		
 		LOG.debug("ACC:: assigned segments to accident: "+ involvedSegs.toString());
 	}
 	
-	public HashSet<String> getInvolvedSegs(){
+	public HashSet<SegmentIdentifier> getInvolvedSegs(){
 		return involvedSegs;
 	}
 
@@ -116,7 +119,7 @@ public class Accident implements Serializable {
 	 */
 	public void updateAccident(PosReport report) {
 		//add car id to involved cars if not there yet
-		this.involvedCars.add(report.getVid());
+		this.involvedCars.add(report.getVehicleIdentifier());
 		this.lastUpdateTime = report.getTime();
 		
 	}

@@ -45,8 +45,8 @@ public class DaiExpRequest extends LRBtuple implements Serializable{
 
 	@Override
 	public String toString() {
-		return "ExpenditureReq [time=" + getTime() + ", vid=" + getVid() + ", xway=" + getXway()
-				+ ", qid=" + getQid() + ", day=" + getDay() + "]";
+		return "ExpenditureReq [time=" + getTime() + ", vid=" + getVehicleIdentifier() + ", xway=" + getSegmentIdentifier().getxWay()
+				+ ", qid=" + getQueryIdentifier() + ", day=" + getDay() + "]";
 	}
 
 }
