@@ -10,20 +10,25 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>batching</artifactId>
+  <artifactId>aeolus-storm-connector</artifactId>
+  <packaging>clojure</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.theoryinpractise</groupId>
+        <artifactId>clojure-maven-plugin</artifactId>
+        <version>1.3.20</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
     <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>aeolus-storm-connector</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>testUtils</artifactId>
-      <version>1.0-SNAPSHOT</version>
-      <scope>test</scope>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>1.6.0</version>
     </dependency>
   </dependencies>
 
