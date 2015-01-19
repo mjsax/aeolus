@@ -99,8 +99,9 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 
 		try {
 			if ((line = in.readLine()) != null) {
-				if (line.startsWith("#"))	return;
-	
+				if (line.startsWith("#")) {
+                                    return;
+                                }	
 				if(firstrun){
 					int offset = Integer.parseInt(line.substring(2, line.indexOf(",", 2)));
 					LOG.info("Simulation starts with offset "+offset);
