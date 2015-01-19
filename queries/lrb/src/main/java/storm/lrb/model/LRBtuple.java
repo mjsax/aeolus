@@ -10,7 +10,10 @@ import storm.lrb.tools.StopWatch;
  *
  */
 public class LRBtuple  implements Serializable{
-
+	public final static int TYPE_POSITION = 0;
+	public final static int TYPE_ACCOUNT_BALANCE = 2;
+	public final static int TYPE_DAILY_EXPEDITURE = 3;
+	public final static int TYPE_TRAVEL_TIME_REQUEST = 4;
 	
 	private static final long serialVersionUID = 1L;
 

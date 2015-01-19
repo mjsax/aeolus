@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import storm.lrb.model.AccBalRequest;
 import storm.lrb.model.DaiExpRequest;
+import storm.lrb.model.LRBtuple;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.TTEstRequest;
 import storm.lrb.tools.StopWatch;
@@ -74,7 +75,7 @@ public class DispatcherBolt extends BaseRichBolt {
 		try {
 			
 			switch (Integer.parseInt(tmp)) {
-			case 0:
+			case LRBtuple.TYPE_POSITION:
 				PosReport pos = new PosReport(line, timer);
 				
 				_collector.emit( "PosReports",tuple,
@@ -83,17 +84,17 @@ public class DispatcherBolt extends BaseRichBolt {
 					//	new Values(pos.getXway(),pos.getDir(), pos.getXD(), pos.getXsd(),pos.getVid(),  pos));
 				
 				break;
-			case 2:
+			case LRBtuple.TYPE_ACCOUNT_BALANCE:
 				AccBalRequest acc = new AccBalRequest(line, timer);
 				_collector.emit("AccBalRequests", tuple, new Values(acc.getVid(),acc));
 				//_collector.emit("AccBalRequests", new Values(acc.getVid(),acc));
 				break;
-			case 3:
+			case LRBtuple.TYPE_DAILY_EXPEDITURE:
 				DaiExpRequest exp = new DaiExpRequest(line, timer);
 				_collector.emit("DaiExpRequests",tuple,new Values(exp.getVid(),  exp));
 				//_collector.emit("DaiExpRequests",new Values(exp.getVid(),  exp));
 				break;
-			case 4:
+			case LRBtuple.TYPE_TRAVEL_TIME_REQUEST:
 				TTEstRequest est = new TTEstRequest(line, timer);
 				_collector.emit("TTEstRequests", tuple, new Values(est.getVid(),est));
 				break;
