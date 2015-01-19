@@ -66,8 +66,11 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 				
 				if (cnt.getElapsedTimeSecs() > 2)	Utils.sleep(5000);
 
-				if (goon == true) 	goon = false;
-				else				break;
+				if (goon == true) {
+                                    goon = false;
+                                } else {
+                                    break;
+                                }
 				
 				clientSocket = new Socket(InetAddress.getByName(_host), _port);
 				LOG.info("Connection to " + _host + ":" + _port
