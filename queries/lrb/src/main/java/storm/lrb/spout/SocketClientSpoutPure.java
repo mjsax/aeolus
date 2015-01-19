@@ -25,7 +25,7 @@ import storm.lrb.tools.StopWatch;
 /**
  * This Spout connects to the given host and socket, reads tuples line by line
  * and emits it to the default stream. This spout is used to make reading from socket faster
- * by defering LRBtuple creation to the dispatcherbolt which can be parallelized
+ * by defering LRBtuple creation to the {@link DispatcherBolt} which can be parallelized
  * 
  */
 @SuppressWarnings("serial")
