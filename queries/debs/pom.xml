@@ -14,15 +14,15 @@
 
   <dependencies>
     <dependency>
+    	<groupId>de.hub.cs.dbis.aeolus</groupId>
+    	<artifactId>utils</artifactId>
+    	<version>1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
         <groupId>de.hub.cs.dbis.aeolus</groupId>
         <artifactId>testUtils</artifactId>
         <version>1.0-SNAPSHOT</version>
         <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>de.hub.cs.dbis.aeolus</groupId>
-    	<artifactId>utils</artifactId>
-    	<version>1.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
