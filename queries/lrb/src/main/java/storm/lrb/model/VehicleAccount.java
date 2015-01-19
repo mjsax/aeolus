@@ -2,8 +2,6 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 
-
-
 /**
  * Object that keeps account information for a vehicle.
  */
