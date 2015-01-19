@@ -2,7 +2,6 @@ package storm.lrb.tools;
 
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * Helper class contains useful methods.
