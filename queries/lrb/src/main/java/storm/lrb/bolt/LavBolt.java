@@ -10,23 +10,29 @@ import backtype.storm.tuple.Values;
 
 import org.apache.log4j.Logger;
 
-import storm.lrb.tools.Helper;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.tuple.MutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * 
  * 
- * this bolt computes the lav of the preceeding minute and
- * holds the total cnt of cars.
+ * this bolt computes the last average vehicle speed (LAV) of the preceeding minute and
+ * holds the total count of cars.
  */
 public class LavBolt extends BaseRichBolt {
-
+	
+	public final static int LAV_XWAY_POS = 0;
+	public final static int LAV_DIR_POS = 1;
+	public final static int LAV_SEG_POS = 2;
+	public final static int LAV_CAR_COUNT_POS = 3;
+	public final static int LAV_SPEED_AVG_POS = 4;
+	public final static int LAV_MINUTE_POS = 5;
+	
 	private static final long serialVersionUID = 5537727428628598519L;
 	private static final Logger LOG = Logger.getLogger(LavBolt.class);
 	protected static final int TOTAL_MINS = 200;
@@ -34,12 +40,12 @@ public class LavBolt extends BaseRichBolt {
 	 * map xsd to list of avg speeds for every segment and minute
 	 * (TODO: change to hold only last five minutes)
 	 */
-	protected ConcurrentHashMap<String, List<Double>> listOfavgs;
+	protected ConcurrentHashMap<Triple<Integer,Integer,Integer>, List<Double>> listOfavgs;
 
 	/**
 	 * 
 	 */
-	protected ConcurrentHashMap<String, List<Integer>> listOfVehicleCounts;
+	protected ConcurrentHashMap<Triple<Integer,Integer,Integer>, List<Integer>> listOfVehicleCounts;
 	
 
 	protected Integer lastEmitMinute = 0;
@@ -55,8 +61,8 @@ public class LavBolt extends BaseRichBolt {
 	public LavBolt(int xway) {
 		processed_xway=xway;
 	
-		this.listOfavgs = new ConcurrentHashMap<String, List<Double>>();
-		this.listOfVehicleCounts = new ConcurrentHashMap<String, List<Integer>>();
+		this.listOfavgs = new ConcurrentHashMap<Triple<Integer,Integer,Integer>, List<Double>>();
+		this.listOfVehicleCounts = new ConcurrentHashMap<Triple<Integer,Integer,Integer>, List<Integer>>();
 	
 	}
 
@@ -70,31 +76,34 @@ public class LavBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple tuple) {
 
-		int minuteOfTuple = tuple.getIntegerByField("minute");
-		String xsd = tuple.getStringByField("xsd");
-		int carcnt = tuple.getIntegerByField("carcnt");
-		double avgs = tuple.getDoubleByField("avgs");
+		int minuteOfTuple = tuple.getInteger(LAV_MINUTE_POS);
+		int xway = tuple.getInteger(LAV_XWAY_POS);
+		int seg = tuple.getInteger(LAV_SEG_POS);
+		int dir = tuple.getInteger(LAV_DIR_POS);
+		int carcnt = tuple.getInteger(LAV_CAR_COUNT_POS);
+		double avgs = tuple.getDouble(LAV_SPEED_AVG_POS);
 
-		List<Double> latestAvgSpeeds = listOfavgs.get(xsd);
-		List<Integer> latestCarCnt = listOfVehicleCounts.get(xsd);
+		Triple<Integer,Integer,Integer> segmentKey = new MutableTriple<Integer, Integer, Integer>(xway, seg, dir);
+		List<Double> latestAvgSpeeds = listOfavgs.get(segmentKey);
+		List<Integer> latestCarCnt = listOfVehicleCounts.get(segmentKey);
 	
 	
 		if (latestAvgSpeeds == null) {
 			//initialize the list for the full time so we can use the indices to keep track of time/speed
 			latestAvgSpeeds =  new ArrayList(Collections.nCopies(TOTAL_MINS, 0.0));//new ArrayList<Double>();
-			listOfavgs.put(xsd, latestAvgSpeeds);
+			listOfavgs.put(segmentKey, latestAvgSpeeds);
 		}
 
 		latestAvgSpeeds.add(minuteOfTuple,avgs);
 		
 		if(latestCarCnt==null){
 			latestCarCnt = new ArrayList(Collections.nCopies(TOTAL_MINS, 0));
-			listOfVehicleCounts.put(xsd, latestCarCnt);
+			listOfVehicleCounts.put(segmentKey, latestCarCnt);
 		
 		}
 	
 		latestCarCnt.add(minuteOfTuple, carcnt);
-		emitLav(xsd, latestCarCnt, latestAvgSpeeds, minuteOfTuple);
+		emitLav(segmentKey, latestCarCnt, latestAvgSpeeds, minuteOfTuple);
 		
 		collector.ack(tuple);
 
@@ -120,21 +129,22 @@ public class LavBolt extends BaseRichBolt {
 	
 	}
 	
-
-	private void emitLav(String xsd,  List<Integer> vehicleCounts, List<Double> speedValues,
+	private void emitLav(Triple<Integer,Integer,Integer> xsd,  List<Integer> vehicleCounts, List<Double> speedValues,
 			int minute) {
 		
 		double speedAverage = calcLav(speedValues, minute);
 		int segmentCarCount = vehicleCounts.get(minute);
 			
-		collector.emit(new Values(Helper.getXwayFromXSD(xsd), Helper
-				.getDirFromXSD(xsd), Helper.getXDfromXSD(xsd), xsd,
+		collector.emit(new Values(
+			xsd.getLeft(),
+			xsd.getMiddle(),
+			xsd.getRight(),
 				segmentCarCount, speedAverage, minute+1));
 	}
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("xway", "dir", "xd", "xsd", "nov", "lav","minute"));
+		declarer.declare(new Fields("xway", "dir", "seg", "nov", "lav","minute"));
 	}
 
 }

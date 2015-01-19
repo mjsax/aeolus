@@ -16,18 +16,21 @@ import storm.lrb.model.AccidentImmutable;
 import storm.lrb.model.StoppedVehicle;
 import storm.lrb.model.PosReport;
 
-import storm.lrb.tools.Helper;
 import storm.lrb.tools.TupleHelpers;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This bolt registers every stopped vehicle. If an accident was detected it
- * emits accident information for further processing
+ * emits accident information for further processing.
+ * 
+ * Each AccidentDetectionBolt is responsible to check one assigned xway.
+ * 
+ * The accident detection is based on 
  * 
  */
 public class AccidentDetectionBolt extends BaseRichBolt {
@@ -54,7 +57,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	 */
 	private ConcurrentHashMap<Integer, Integer> allAccidentCars;
 
-	private int processed_xway;
+	private final int processed_xway;
 
 	private OutputCollector collector;
 
@@ -69,8 +72,8 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	
 		this.stoppedCarsPerPosition = new ConcurrentHashMap<Integer, HashSet<Integer>>();
 		this.allAccidentPositions = new ConcurrentHashMap<Integer, Accident>();
-		this.allAccidentCars = new ConcurrentHashMap<Integer, Integer>();
-		this.stoppedCars = new ConcurrentHashMap<Integer, StoppedVehicle>();
+		this.allAccidentCars = new ConcurrentHashMap<Integer,Integer>();
+		this.stoppedCars = new ConcurrentHashMap<Integer,StoppedVehicle>();
 		
 	}
 
@@ -85,11 +88,11 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 
 		PosReport report = (PosReport) tuple.getValueByField("PosReport");
 
-		if (report != null && report.getSpd() == 0) {
+		if (report != null && report.getCurrentSpeed() == 0) {
 			
 			recordStoppedCar(report);
 			
-		} else if (report != null && allAccidentCars.containsKey(report.getVid())) {
+		} else if (report != null && allAccidentCars.containsKey(report.getVehicleIdentifier())) {
 			// stopped car is moving again so check if you can clear accident
 			LOG.debug("ACCDECT: car is moving again"+report);
 			checkIfAccidentIsOver(report);
@@ -102,13 +105,13 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 
 	private void checkIfAccidentIsOver(PosReport report) {
 		//remove car from accidentcars
-		int accposition = allAccidentCars.remove(report.getVid());
+		int accposition = allAccidentCars.remove(report.getVehicleIdentifier());
 		
 		HashSet<Integer> cntstoppedCars = stoppedCarsPerPosition.get(accposition);
 		
-		cntstoppedCars.remove(report.getVid());
+		cntstoppedCars.remove(report.getVehicleIdentifier());
 		
-		if (cntstoppedCars != null && cntstoppedCars.size() == 1) {
+		if (cntstoppedCars.size() == 1) {
 			//only one accident car -> accident is over 
 			Accident accidentinfo = allAccidentPositions.get(accposition);
 			accidentinfo.setOver(report.getTime());
@@ -119,7 +122,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			allAccidentPositions.remove(accposition);
 		}
 
-		if (cntstoppedCars != null && cntstoppedCars.size() == 0) {
+		if (cntstoppedCars.isEmpty()) {
 			//no stopped car left, remove position from stop watch list
 			stoppedCarsPerPosition.remove(accposition);
 		}
@@ -127,18 +130,18 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 
 	private void recordStoppedCar(PosReport report) {
 
-		StoppedVehicle stopVehicle = stoppedCars.get(report.getVid());
+		StoppedVehicle stopVehicle = stoppedCars.get(report.getVehicleIdentifier());
 
-		int cnt = 0;
+		int cnt;
 		if (stopVehicle == null) {
 			stopVehicle = new StoppedVehicle(report);
 			cnt = 1;
-			stoppedCars.put(report.getVid(), stopVehicle);			
+			stoppedCars.put(report.getVehicleIdentifier(), stopVehicle);			
 		} else
 			cnt = stopVehicle.recordStop(report);
 
 		if (cnt >= 4) {// 4 consecutive stops => accident car 
-			allAccidentCars.put(report.getVid(), report.getPos());
+			allAccidentCars.put(report.getVehicleIdentifier(), report.getPosition());
 			//add or update accident
 			updateAccident(report, stopVehicle);
 
@@ -175,41 +178,43 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	//emit all current accidents
 	private void emitCurrentAccidents() {
 
-		if (allAccidentPositions.size() == 0)
+		if (allAccidentPositions.isEmpty()){
 			return;
+		}
 
 		for (Map.Entry<Integer, Accident> e : allAccidentPositions.entrySet()) {
 
 			Accident accident = e.getValue();
-			// emit accidents (for every affected segment)
-			HashSet<String> segmensts = accident.getInvolvedSegs();
-			for (Iterator<String> iterator = segmensts.iterator(); iterator.hasNext();) {
-				String xsd = iterator.next();
-				AccidentImmutable acc = new AccidentImmutable(accident);
-				collector.emit(new Values(processed_xway,Helper.getDirFromXSD(xsd), Helper.getXDfromXSD(xsd), xsd, acc));
-			}
+			emitAccident(accident);
 		}
 
+	}
+	
+	private void emitAccident(Accident accident) {
+		// emit accidents (for every affected segment)
+		Set<SegmentIdentifier> segmensts = accident.getInvolvedSegs();
+		for (SegmentIdentifier xsd : segmensts) {
+			AccidentImmutable acc = new AccidentImmutable(accident);
+			collector.emit(new Values(processed_xway, 
+				xsd.getxWay(), //xway
+				xsd.getSegment(), //segment
+				xsd.getDirection(), //dir
+				acc));
+		}
 	}
 
 	//emit newly detected accident
 	private void emitCurrentAccident(Integer position) {
+		LOG.debug("emmitting new or over accident on position: "+ position);
 
-		if (allAccidentPositions.size() == 0)
+		if (allAccidentPositions.isEmpty()) {
 			return;
-		Accident accident = allAccidentPositions.get(position);
-		if (accident == null)
-			return;
-		System.out.println("ACCIDENTBOLT: emmitting new or over accident on position: "+ position);
-
-		// emit accidents (for every affected segment)
-		HashSet<String> segmensts = accident.getInvolvedSegs();
-		for (Iterator<String> iterator = segmensts.iterator(); iterator.hasNext();) {
-			String xsd = iterator.next();
-			AccidentImmutable acc = new AccidentImmutable(accident);
-			collector.emit(new Values(processed_xway,Helper.getDirFromXSD(xsd), Helper.getXDfromXSD(xsd), xsd, acc));
 		}
-
+		Accident accident = allAccidentPositions.get(position);
+		if (accident == null) {
+			return;
+		}
+		emitAccident(accident);
 	}
 
 
@@ -219,6 +224,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 		declarer.declare(new Fields("xway","dir","xd", "xsd", "accidentInfo"));
 	}
 
+	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		Map<String, Object> conf = new HashMap<String, Object>();
 		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60);

@@ -39,7 +39,7 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 	private StopWatch timer=null;
 	private int offset = 0;
 	private volatile boolean firstrun = true;
-	private int processed_xway;
+	private final int processed_xway;
 
 	public DispatcherSplitBolt(int xways) {
 		this.timer = new StopWatch();
@@ -81,24 +81,25 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 			case 0:
 				PosReport pos = new PosReport(line, timer);
 				
-				String output_stream = "PosReports_"+pos.getXway().toString();
-				if(tupleCnt<=10)System.out.println("Created: "+pos);
-				_collector.emit(output_stream,tuple,
-						new Values(pos.getXway(),pos.getDir(), pos.getXD(), pos.getXsd(),pos.getVid(),  pos));
+				String output_stream = "PosReports_"+pos.getSegmentIdentifier().toString();
+				if(tupleCnt<=10) {
+					LOG.debug(String.format("Created: %s", pos));
+				}
+				_collector.emit(output_stream,tuple,pos);
 				tupleCnt++;
 				break;
 			case 2:
 				AccBalRequest acc = new AccBalRequest(line, timer);
 				_collector.emit("AccBalRequests", tuple, 
-						new Values(acc.getVid(),acc));
+						new Values(acc.getVehicleIdentifier(),acc));
 				break;
 			case 3:
 				DaiExpRequest exp = new DaiExpRequest(line, timer);
-				_collector.emit("DaiExpRequests", tuple,new Values(exp.getVid(),  exp));
+				_collector.emit("DaiExpRequests", tuple,new Values(exp.getVehicleIdentifier(),  exp));
 				break;
 			case 4:
 				TTEstRequest est = new TTEstRequest(line, timer);
-				_collector.emit("TTEstRequests", tuple, new Values(est.getVid(),est));
+				_collector.emit("TTEstRequests", tuple, new Values(est.getVehicleIdentifier(),est));
 				break;
 			default:
 				LOG.debug("Tupel does not match required LRB format" + line);

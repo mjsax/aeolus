@@ -5,11 +5,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import storm.lrb.model.AccBalRequest;
 import storm.lrb.model.DaiExpRequest;
-import storm.lrb.model.PosReport;
-import storm.lrb.model.TTEstRequest;
-import storm.lrb.tools.CSVReader;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -17,6 +13,10 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import storm.lrb.model.LRBtuple;
+import storm.lrb.tools.Constants;
 
 /**
  * Stub for daily expenditure queries. TODO either use external distributed
@@ -28,9 +28,9 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 1L;
 	OutputCollector _collector;
 
-	private String histFile;
+	private final String histFile;
 	
-	private HashMap<Integer, HashMap<String, Integer>> tollAccounts = new HashMap<Integer, HashMap<String, Integer>>();;
+	private final HashMap<Integer, HashMap<Pair<Integer,Integer>, Integer>> tollAccounts = new HashMap<Integer, HashMap<Pair<Integer,Integer>, Integer>>();;
 	private static final Logger LOG = Logger
 			.getLogger(DailyExpenditureBolt.class);
 
@@ -60,18 +60,33 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 			
 			DaiExpRequest exp = (DaiExpRequest) tuple.getValueByField("DaiExpRequests");
 			String out = "";
-			if(tollAccounts.containsKey(exp.getVid())){
-				System.out.println("ExpenditureRequest: found vid");
-				String key = exp.getXway().toString() + "-"+ exp.getDay().toString();
+			int vehicleIdentifier = exp.getVehicleIdentifier();
+			Values values;
+			if(tollAccounts.containsKey(vehicleIdentifier)){
+				LOG.debug(String.format("ExpenditureRequest: found vehicle identifier %d", vehicleIdentifier));
+				Pair<Integer,Integer> key = new MutablePair<Integer,Integer>(exp.getSegmentIdentifier().getxWay(), exp.getDay());
 				
-				int toll = tollAccounts.get(exp.getVid()).get(key);
+				int toll = tollAccounts.get(exp.getVehicleIdentifier()).get(key);
 				
-				out = "3,"+exp.getTime()+","+exp.getEmitTime()+","+exp.getQid()+","+toll;
+				out = "3,"+exp.getTime()+","+exp.getEmitTime()+","+exp.getQueryIdentifier()+","+toll;
 				
-			}else
-				out = "3,"+exp.getTime()+","+exp.getEmitTime()+","+exp.getQid()+","+"20";
-			//_collector.emit(tuple, new Values(out));
-			_collector.emit(new Values(out));
+				
+				values = new Values(
+				LRBtuple.TYPE_DAILY_EXPEDITURE, 
+				exp.getTime(), 
+				exp.getEmitTime(), 
+				exp.getQueryIdentifier(), 
+				toll);
+			}else {
+				values = new Values(
+				LRBtuple.TYPE_DAILY_EXPEDITURE, 
+				exp.getTime(), 
+				exp.getEmitTime(), 
+				exp.getQueryIdentifier(), 
+				Constants.INITIAL_TOLL);
+				
+			}
+			_collector.emit(values);
 		}
 		_collector.ack(tuple);
 	}

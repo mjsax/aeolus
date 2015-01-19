@@ -6,8 +6,10 @@ import storm.lrb.tools.StopWatch;
 import sun.font.CreatedFontTracker;
 
 /**
- * object to represent position reports
- *
+ * object to represent position reports. Every vehicle emits a position report 
+ * every 
+ * 
+ * LAV = latest average velocity (
  */
 public class PosReport extends LRBtuple implements Serializable {
 
@@ -27,24 +29,14 @@ public class PosReport extends LRBtuple implements Serializable {
 		super(LRBtuple.TYPE_POSITION_REPORT, tupel, time);
 
 	}
-
-	public String getXsd() {
-		return getXway() + "-" + getSeg() + "-" + getDir();
-	}
-
 	
 	@Override
 	public String toString() {
-		return "PosReport on " + getXsd() + " [time=" + getTime() + ", vid="
-				+ getVid() + ", spd=" + getSpd() + ", lane=" + getLane() + ", dir=" + getDir()
-				+ ", pos=" + getPos() + "(Created: "+this.getCreated()+" Duration: "
+		return "PosReport on " + " [time=" + getTime() + ", vid="
+				+ getVehicleIdentifier() + ", spd=" + getCurrentSpeed() + ", lane=" + getLane() + ", dir=" + getSegmentIdentifier().getDirection()
+				+ ", pos=" + getPosition() + "(Created: "+this.getCreated()+" Duration: "
 				+ getProcessingTime() + " ms, StormTimer: "
 				+ getStormTimer().getElapsedTimeSecs() + "s)]";
-	}
-
-	public String getXD() {
-		return getXway() + "-" + getDir();
-		
 	}
 
 	public boolean isOnExitLane() {

@@ -22,7 +22,7 @@ public class AccBalRequest extends LRBtuple{
 	
 	@Override
 	public String toString() {
-		return "BalanceReq [time=" + getTime() + ", vid=" + getVid() + ", qid=" + getQid()+ "]";
+		return "BalanceReq [time=" + getTime() + ", vid=" + getVehicleIdentifier() + ", qid=" + getQueryIdentifier()+ "]";
 	}
 
 }

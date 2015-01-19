@@ -8,7 +8,6 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import backtype.storm.utils.Utils;
 
 import org.apache.log4j.Logger;
 
@@ -19,21 +18,15 @@ import storm.lrb.model.VehicleInfo;
 import storm.lrb.model.PosReport;
 import storm.lrb.tools.StopWatch;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
  * This bolt calculates the actual toll for each vehicle depending on the
- * congestiotn and accident status of the segment the vehicle is driving on.
- * can process streams containing position reports, accident information and novLavs.
- * 
+ * congestion and accident status of the segment the vehicle is driving on. It
+ * can process streams containing position reports, accident information and 
+ * novLavs. 
  */
 public class TollNotificationBolt extends BaseRichBolt {
 
@@ -49,19 +42,19 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * preceeding minute in a segment
 	 * segment -> NovLav
 	 */
-	private ConcurrentHashMap<String, NovLav> allNovLavs;
+	private final ConcurrentHashMap<SegmentIdentifier, NovLav> allNovLavs;
 
 	/**
 	 * holds vehicle information of all vehicles driving
 	 * (vid -> vehicleinfo)
 	 */
-	private ConcurrentHashMap<Integer, VehicleInfo> allVehicles;
+	private final ConcurrentHashMap<Integer, VehicleInfo> allVehicles;
 
 	/**
 	 * holds all current accidents
 	 * (xsd -> Accidentinformation)
 	 */
-	private ConcurrentHashMap<String, AccidentImmutable> allAccidents;
+	private final ConcurrentHashMap<SegmentIdentifier, AccidentImmutable> allAccidents;
 	
 	//protected BlockingQueue<Tuple> waitingList;
 	
@@ -77,7 +70,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	
 	boolean printed = false;
 
-	private int processed_xway;
+	private final int processed_xway;
 
 	String tollAssessment;
 	String tollNotification;
@@ -85,9 +78,9 @@ public class TollNotificationBolt extends BaseRichBolt {
 	String tmpname; 
 
 	public TollNotificationBolt(StopWatch timer, int xway) {
-		allNovLavs = new ConcurrentHashMap<String, NovLav>();
+		allNovLavs = new ConcurrentHashMap<SegmentIdentifier, NovLav>();
 		allVehicles = new ConcurrentHashMap<Integer, VehicleInfo>();
-		allAccidents = new ConcurrentHashMap<String, AccidentImmutable>();
+		allAccidents = new ConcurrentHashMap<SegmentIdentifier, AccidentImmutable>();
 		//currentNovLavMinutes = new ConcurrentHashMap<String, Integer>();
 		//waitingList = new LinkedBlockingQueue<Tuple>();
 		this.timer = timer;
@@ -137,21 +130,29 @@ public class TollNotificationBolt extends BaseRichBolt {
 	}
 
 	private void updateNovLavs(Tuple tuple) {
-		
+		int xWay = tuple.getInteger(0); //@TODO:
+		int seg = tuple.getInteger(1);
+		int dir = tuple.getInteger(2);
+		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(xWay, seg, dir);
 		int min = tuple.getIntegerByField("minute");
 
 		NovLav novlav = new NovLav(tuple.getIntegerByField("nov"),
-										tuple.getDoubleByField("lav"),
-											tuple.getIntegerByField("minute"));
+			tuple.getDoubleByField("lav"),
+			tuple.getIntegerByField("minute"));
 		
-		allNovLavs.put(tuple.getStringByField("xsd"), novlav);
+		allNovLavs.put(segmentIdentifier, novlav);
 		//currentNovLavMinutes.put(tuple.getStringByField("xsd"), min);
 		if(LOG.isDebugEnabled())
 			LOG.debug("TOLLN:updated novlavs for " +tuple.getStringByField("xsd")+" "+novlav);
 	}
 
 	private void updateAccidents(Tuple tuple) {
-		String xsd = tuple.getStringByField("xsd");
+		int xway = tuple.getInteger(0); //@TODO: unify model with dependency between each bolt
+		int seg = tuple.getInteger(1);
+		int dir = tuple.getInteger(2);
+		SegmentIdentifier xsd = new SegmentIdentifier(xway, seg, dir);
+		
+		
 		AccidentImmutable info = (AccidentImmutable) tuple.getValueByField("accidentInfo");
 		if(LOG.isDebugEnabled())
 			LOG.debug("TOLLN: recieved accident info: " + info);
@@ -176,23 +177,27 @@ public class TollNotificationBolt extends BaseRichBolt {
 	void calcTollAndEmit(Tuple tuple){
 		
 		PosReport pos = (PosReport) tuple.getValueByField("PosReport");
+		SegmentIdentifier segmentTriple = new SegmentIdentifier(
+					pos.getSegmentIdentifier().getxWay(), 
+			pos.getSegmentIdentifier().getSegment(), 
+			pos.getSegmentIdentifier().getDirection());
 		
 		if (assessTollAndCheckIfTollNotificationRequired(pos)) {
 			
-			int toll = calcToll(pos.getXsd(), Time.getMinute(pos.getTime()));
+			int toll = calcToll(segmentTriple, Time.getMinute(pos.getTime()));
 			double lav = 0.0;
 			int nov = 0;
-			if (allNovLavs.containsKey(pos.getXsd())){
-				lav = allNovLavs.get(pos.getXsd()).getLav();
-				nov =  allNovLavs.get(pos.getXsd()).getNov();
+			if (allNovLavs.containsKey(segmentTriple)){
+				lav = allNovLavs.get(segmentTriple).getLav();
+				nov =  allNovLavs.get(segmentTriple).getNov();
 			}
 			
-			String notification = allVehicles.get(pos.getVid()).getTollNotification(lav, toll, nov);
+			String notification = allVehicles.get(pos.getVehicleIdentifier()).getTollNotification(lav, toll, nov);
 			if(LOG.isDebugEnabled() && toll>0)
-				LOG.debug("TOLLN: actually calculated toll (="+ toll+") for vid=" + pos.getVid() + " at "+ pos.getTime()+" sec");
+				LOG.debug("TOLLN: actually calculated toll (="+ toll+") for vid=" + pos.getVehicleIdentifier() + " at "+ pos.getTime()+" sec");
 			
 			if(notification.isEmpty()){
-				LOG.info("TOLLN: duplicate toll:" + allVehicles.get(pos.getVid()).toString());
+				LOG.info("TOLLN: duplicate toll:" + allVehicles.get(pos.getVehicleIdentifier()).toString());
 				
 			}else
 				collector.emit(tollNotification, new Values(notification));
@@ -213,7 +218,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * @param minute
 	 * @return toll amount to charge the vehicle with
 	 */
-	 protected int calcToll(String position, int minute) {
+	 protected int calcToll(SegmentIdentifier position, int minute) {
 	    	int toll = DRIVE_EASY;
 	    	int nov = 0;
 	    	if (allNovLavs.containsKey(position)) {
@@ -245,19 +250,19 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * @return true if tollnotification is required
 	 */
 	protected boolean assessTollAndCheckIfTollNotificationRequired(PosReport posReport) {
-    	boolean segmentChanged = false;
-    	if (!allVehicles.containsKey(posReport.getVid())) {
+    	boolean segmentChanged;
+    	if (!allVehicles.containsKey(posReport.getVehicleIdentifier())) {
     		segmentChanged = true;
-    		allVehicles.put(posReport.getVid(), new VehicleInfo(posReport));
+    		allVehicles.put(posReport.getVehicleIdentifier(), new VehicleInfo(posReport));
     	} else {
-    		VehicleInfo vehicle = allVehicles.get(posReport.getVid());
-    		String oldPosition = vehicle.getXsd();
-    		String newPosition = posReport.getXsd();
+    		VehicleInfo vehicle = allVehicles.get(posReport.getVehicleIdentifier());
+    		SegmentIdentifier oldPosition = vehicle.getSegmentIdentifier();
+    		SegmentIdentifier newPosition = posReport.getSegmentIdentifier();
     		segmentChanged = !oldPosition.equals(newPosition);
     		if(LOG.isDebugEnabled())
     			LOG.debug("TOLLN: assess toll:" + vehicle);
     		//assess previous toll by emitting toll info to be processed by accountbaancebolt
-    		collector.emit(tollAssessment, new Values(posReport.getVid(), vehicle.getXway(),vehicle.getToll(), posReport));
+    		collector.emit(tollAssessment, new Values(posReport.getVehicleIdentifier(), vehicle.getXway(),vehicle.getToll(), posReport));
 
     		vehicle.updateInfo(posReport);
     	}
@@ -273,7 +278,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * @param minute
 	 * @return
 	 */
-	protected boolean tollConditionSatisfied(String segment, int minute) {
+	protected boolean tollConditionSatisfied(SegmentIdentifier segment, int minute) {
 		double segmentSpeed = 0;
 		int carsOnSegment = 0;
 		if (allNovLavs.containsKey(segment) && allNovLavs.get(segment).getMinute()==minute) {

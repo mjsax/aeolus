@@ -14,7 +14,7 @@ public class StoppedVehicle implements Serializable {
 			.getLogger(StoppedVehicle.class);
 	
 	private static final long serialVersionUID = 1L;
-	private int vid;
+	private final int vid;
 	private int cnt = 0;
 	private int time;
 	private PosReport firstReport;
@@ -30,10 +30,10 @@ public class StoppedVehicle implements Serializable {
 	}
 	
 	public StoppedVehicle(PosReport report) {
-		this.vid = report.getVid();
+		this.vid = report.getVehicleIdentifier();
 		this.time = report.getTime();
 		this.firstReport = report;	
-		this.position = report.getPos();
+		this.position = report.getPosition();
 	}
 
 	public int getPosition(){
@@ -53,7 +53,7 @@ public class StoppedVehicle implements Serializable {
 			firstReport = curReport;
 			this.time = curReport.getTime();
 			this.firstReport = curReport;	
-			this.position = curReport.getPos();
+			this.position = curReport.getPosition();
 		}
 		else
 			cnt++;
@@ -76,8 +76,9 @@ public class StoppedVehicle implements Serializable {
 			return true;
 		}
 		else{
-			return (pos.getXway().equals(firstReport.getXway()) && pos.getDir().equals(firstReport.getDir()))
-				&& pos.getPos().equals(firstReport.getPos()) && pos.getTime() <= ((30*cnt)+firstReport.getTime());
+			return (pos.getSegmentIdentifier().getxWay() == firstReport.getSegmentIdentifier().getxWay() 
+				&& pos.getSegmentIdentifier().getDirection() == firstReport.getSegmentIdentifier().getDirection())
+				&& pos.getPosition().equals(firstReport.getPosition()) && pos.getTime() <= ((30*cnt)+firstReport.getTime());
 		}
 	}
 

@@ -36,14 +36,14 @@ public class AvgsBolt extends BaseRichBolt {
 	 * contains the time of the last reports of each segment
 	 * (xsd, timeinsec)
 	 */
-	protected ConcurrentHashMap<String, Integer> timeOfLastReportsMap;
+	protected ConcurrentHashMap<SegmentIdentifier, Integer> timeOfLastReportsMap;
 	/**
 	 * contains all avgs of each vehicle driving in the given segment
 	 * for the current minute. gets resetted every minute 
 	 * (xsd -> Map(minute ->avgsvehiclespeeds))
 	 * 
 	 */
-	protected ConcurrentHashMap<String, AvgVehicleSpeeds> avgSpeedsMap; // xsd
+	protected ConcurrentHashMap<SegmentIdentifier, AvgVehicleSpeeds> avgSpeedsMap; // xsd
 																		// =>
 																		// List<avg
 																		// vehicles
@@ -54,8 +54,8 @@ public class AvgsBolt extends BaseRichBolt {
 	private int processed_xway = -1;
 
 	public AvgsBolt(int xway) {
-		timeOfLastReportsMap = new ConcurrentHashMap<String, Integer>();
-		avgSpeedsMap = new ConcurrentHashMap<String, AvgVehicleSpeeds>();
+		timeOfLastReportsMap = new ConcurrentHashMap<SegmentIdentifier, Integer>();
+		avgSpeedsMap = new ConcurrentHashMap<SegmentIdentifier, AvgVehicleSpeeds>();
 		processed_xway = xway;
 	}
 
@@ -72,7 +72,9 @@ public class AvgsBolt extends BaseRichBolt {
 
 		PosReport pos = (PosReport) tuple.getValueByField("PosReport");
 
-		String xsd = pos.getXsd();
+		
+		SegmentIdentifier accidentIdentifier = new SegmentIdentifier(
+			pos.getSegmentIdentifier().getxWay(), pos.getSegmentIdentifier().getSegment(), pos.getSegmentIdentifier().getDirection());
 
 		int curminute = Time.getMinute(pos.getTime());
 
@@ -87,21 +89,21 @@ public class AvgsBolt extends BaseRichBolt {
 		}
 		//}
 
-		Integer timeOfLastReports = timeOfLastReportsMap.get(xsd);
+		Integer timeOfLastReports = timeOfLastReportsMap.get(accidentIdentifier);
 		if (timeOfLastReports == null) {
 			timeOfLastReports = curminute;
-			timeOfLastReportsMap.put(xsd, timeOfLastReports);
+			timeOfLastReportsMap.put(accidentIdentifier, timeOfLastReports);
 		}
 
-		AvgVehicleSpeeds lastSpeeds = avgSpeedsMap.get(xsd);
+		AvgVehicleSpeeds lastSpeeds = avgSpeedsMap.get(accidentIdentifier);
 		// synchronized(lastSpeeds){
 		if (lastSpeeds == null) {
 			lastSpeeds = new AvgVehicleSpeeds();
-			avgSpeedsMap.put(xsd, lastSpeeds);
+			avgSpeedsMap.put(accidentIdentifier, lastSpeeds);
 		}
 
-		timeOfLastReportsMap.put(xsd, curminute);
-		lastSpeeds.addVehicleSpeed(pos.getVid(), pos.getSpd());
+		timeOfLastReportsMap.put(accidentIdentifier, curminute);
+		lastSpeeds.addVehicleSpeed(pos.getVehicleIdentifier(), pos.getCurrentSpeed());
 		// }
 
 		collector.ack(tuple);
@@ -109,9 +111,9 @@ public class AvgsBolt extends BaseRichBolt {
 
 	private void emitAllAndRemove(int minute) {
 
-		Set<String> segmentList = avgSpeedsMap.keySet();
+		Set<SegmentIdentifier> segmentList = avgSpeedsMap.keySet();
 
-		for (String xsd : segmentList) {
+		for (SegmentIdentifier xsd : segmentList) {
 			AvgVehicleSpeeds lastSpeeds = avgSpeedsMap.get(xsd);
 			if (lastSpeeds != null) {
 				collector.emit(new Values(processed_xway, xsd, lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
@@ -122,7 +124,7 @@ public class AvgsBolt extends BaseRichBolt {
 
 	}
 
-	private void emitAndRemove(String xsd, int minute) {
+	private void emitAndRemove(SegmentIdentifier xsd, int minute) {
 
 		AvgVehicleSpeeds lastSpeeds = avgSpeedsMap.get(xsd);
 		if (lastSpeeds != null) {

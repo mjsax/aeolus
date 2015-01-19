@@ -2,6 +2,7 @@ package storm.lrb.tools;
 
 import java.util.Iterator;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * Helper class contains useful methods.
@@ -17,19 +18,12 @@ public class Helper {
 			return "";
 	}
 
-	public static String getDirFromXSD(String xsd) {
-		String[] tmp = xsd.split("-");
-		if (tmp.length == 3)
-			return tmp[1];
-		else
-			return "";
+	public static Integer getDirFromXSD(Triple<Integer,Integer,Integer> xsd) {
+		return xsd.getRight();
 	}
 
-	public static String getXwayFromXSD(String xsd) {
-		String[] tmp = xsd.split("-");
-		if (tmp.length == 3)
-			return tmp[0];
-		return "";
+	public static Integer getXwayFromXSD(Triple<Integer,Integer,Integer> xsd) {
+		return xsd.getLeft();
 	}
 
 	public static String readable(List<String> fields) {

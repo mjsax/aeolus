@@ -79,24 +79,24 @@ public class DispatcherBolt extends BaseRichBolt {
 				PosReport pos = new PosReport(line, timer);
 				
 				_collector.emit( "PosReports",tuple,
-						new Values(pos.getXway(),pos.getDir(), pos.getXD(), pos.getXsd(),pos.getVid(),  pos));
+						pos);
 				//_collector.emit( "PosReports",
 					//	new Values(pos.getXway(),pos.getDir(), pos.getXD(), pos.getXsd(),pos.getVid(),  pos));
 				
 				break;
 			case LRBtuple.TYPE_ACCOUNT_BALANCE:
 				AccBalRequest acc = new AccBalRequest(line, timer);
-				_collector.emit("AccBalRequests", tuple, new Values(acc.getVid(),acc));
+				_collector.emit("AccBalRequests", tuple, acc);
 				//_collector.emit("AccBalRequests", new Values(acc.getVid(),acc));
 				break;
 			case LRBtuple.TYPE_DAILY_EXPEDITURE:
 				DaiExpRequest exp = new DaiExpRequest(line, timer);
-				_collector.emit("DaiExpRequests",tuple,new Values(exp.getVid(),  exp));
+				_collector.emit("DaiExpRequests",tuple,exp);
 				//_collector.emit("DaiExpRequests",new Values(exp.getVid(),  exp));
 				break;
 			case LRBtuple.TYPE_TRAVEL_TIME_REQUEST:
 				TTEstRequest est = new TTEstRequest(line, timer);
-				_collector.emit("TTEstRequests", tuple, new Values(est.getVid(),est));
+				_collector.emit("TTEstRequests", tuple, est);
 				break;
 			default:
 				//System.out.println("Ignore tuple");

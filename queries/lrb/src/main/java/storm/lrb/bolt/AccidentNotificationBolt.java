@@ -1,7 +1,5 @@
 package storm.lrb.bolt;
 
-import backtype.storm.Config;
-import backtype.storm.generated.GlobalStreamId;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -12,7 +10,6 @@ import backtype.storm.tuple.Values;
 
 import org.apache.log4j.Logger;
 
-import storm.lrb.model.Accident;
 import storm.lrb.model.AccidentImmutable;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.Time;
@@ -20,6 +17,8 @@ import storm.lrb.tools.StopWatch;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.commons.lang3.tuple.MutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * 
@@ -30,7 +29,18 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  */
 public class AccidentNotificationBolt extends BaseRichBolt {
-
+	/*
+	define constants for field access in the storm tuples in execute
+	*/
+	private final static int ACCIDENT_TYPE_POS = 0;
+	private final static int ACCIDENT_TIME_POS = 1;
+	private final static int ACCIDENT_VID = 2;
+	private final static int ACCIDENT_SPEED_POS = 3;
+	private final static int ACCIDENT_XWAY_POS = 4;
+	private final static int ACCIDENT_SEGMENT_POS = 5;
+	private final static int ACCIDENT_LANE_POS = 6;
+	private final static int ACCIDENT_DIR_POS = 7;
+	
 	private static final long serialVersionUID = 5537727428628598519L;
 	private static final Logger LOG = Logger
 			.getLogger(AccidentNotificationBolt.class);
@@ -38,14 +48,14 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	/**
 	 *  contains all accidents;
 	 */
-	private ConcurrentHashMap<String, AccidentImmutable> allAccidents;
+	private final ConcurrentHashMap<SegmentIdentifier, AccidentImmutable> allAccidents;
 	
 	// 
 	//(because the lrb only emits accidentalerts if a vehicle crosses a new segment)
 	/**
 	 * contains all vehicle id's and xsd of last posistion report
 	 */
-	private ConcurrentHashMap<Integer, String> allCars;
+	private final ConcurrentHashMap<Integer, SegmentIdentifier> allCars;
 	
 
 	private OutputCollector collector;
@@ -56,8 +66,8 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	
 
 	public AccidentNotificationBolt() {
-		allAccidents = new ConcurrentHashMap<String,AccidentImmutable>();
-		allCars = new ConcurrentHashMap<Integer,String>();
+		allAccidents = new ConcurrentHashMap<SegmentIdentifier, AccidentImmutable>();
+		allCars = new ConcurrentHashMap<Integer, SegmentIdentifier>();
 		
 		//allAccidents = new HashMap<String, AccidentInfo>();
 		//timer = new StopWatch();
@@ -79,12 +89,13 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 			
 			PosReport pos = (PosReport) tuple.getValueByField("PosReport");
 			//LOG.debug("AccidentNotification: check: "+pos.getVidAsString()+" on # "+pos.getXsd());
-			String prevXsd = allCars.put(pos.getVid(), pos.getXsd());
+			SegmentIdentifier eventKey = new SegmentIdentifier(pos.getSegmentIdentifier().getxWay(), pos.getSegmentIdentifier().getSegment(), pos.getSegmentIdentifier().getDirection());
+			SegmentIdentifier prevXsd = allCars.put(pos.getVehicleIdentifier(), eventKey);
 			
-			AccidentImmutable accident = allAccidents.get(pos.getXsd());
+			AccidentImmutable accident = allAccidents.get(eventKey);
 			
 			if(accident!=null)
-				sendAccidentAllert(pos,prevXsd, accident);
+				sendAccidentAllert(pos,eventKey, accident);
 				
 		} else if (tuple.contains("accidentInfo")) {
 			
@@ -97,16 +108,20 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	}
 
 	private void updateAccidents(Tuple tuple) {
-		String xsd = tuple.getStringByField("xsd");
+		PosReport pos = (PosReport) tuple.getValueByField("PosReport");
+		SegmentIdentifier accidentIdentifier = new SegmentIdentifier(
+			pos.getSegmentIdentifier().getxWay(), 
+			pos.getSegmentIdentifier().getSegment(), 
+			pos.getSegmentIdentifier().getDirection());
 		AccidentImmutable info = (AccidentImmutable) tuple.getValueByField("accidentInfo");
 		LOG.debug("ACCNOT: recieved accident info");
 		
 		if(info.isOver()){
-			allAccidents.remove(xsd);
+			allAccidents.remove(accidentIdentifier);
 			LOG.debug("ACCNOT: removed accident: "+ info);
 		}
 		else{
-			AccidentImmutable prev = allAccidents.put(xsd, info);
+			AccidentImmutable prev = allAccidents.put(accidentIdentifier, info);
 			if (prev != null)
 				LOG.debug("ACCNOT accident (prev: "+prev+")");
 			else {
@@ -115,11 +130,11 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 		}
 	}
 
-	private void sendAccidentAllert(PosReport pos, String prevXsd, AccidentImmutable accident) {
+	private void sendAccidentAllert(PosReport pos, SegmentIdentifier prevXsd, AccidentImmutable accident) {
 		//AccidentInfo info = allAccidents.get(accseg);
 		
 		//only emit notification if vehicle is not involved in accident and accident is still active
-		if(accident.getInvolvedCars().contains(pos.getVid())){
+		if(accident.getInvolvedCars().contains(pos.getVehicleIdentifier())){
 			LOG.debug("no notification, becasue vid is accident vehicle");
 				return ;
 		}
@@ -129,7 +144,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 			return ;
 		}
 		//only emit notification if vehicle crosses new segment and lane is not exit lane
-		if(prevXsd!=pos.getXsd() && pos.getLane()!=4){
+		if(!prevXsd.equals(prevXsd) && pos.getLane()!=4){
 			String notification = accident.getAccNotification(pos);
 			if(!notification.isEmpty()){
 				collector.emit(new Values(notification));

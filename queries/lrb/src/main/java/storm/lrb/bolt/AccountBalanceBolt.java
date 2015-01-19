@@ -74,11 +74,11 @@ public class AccountBalanceBolt extends BaseRichBolt {
 
 	private void getBalanceAndSend(Tuple tuple) {
 		AccBalRequest bal = (AccBalRequest) tuple.getValueByField("AccBalRequests");
-		VehicleAccount account = allVehicles.get(bal.getVid());
+		VehicleAccount account = allVehicles.get(bal.getVehicleIdentifier());
 	
 		if(account==null){
 			LOG.debug("No account information available yet: at:"+bal.getTime()+" for request" + bal);
-			String notification = "2," + bal.getTime()+","+bal.getEmitTime()+","+ bal.getQid() + ","+ 0 + ","+  0 + "###"+bal.toString()+"###";
+			String notification = "2," + bal.getTime()+","+bal.getEmitTime()+","+ bal.getQueryIdentifier() + ","+ 0 + ","+  0 + "###"+bal.toString()+"###";
 			//_collector.emit(tuple, new Values(notification));
 			_collector.emit(new Values(notification));
 		}
