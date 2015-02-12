@@ -3,8 +3,6 @@ package de.hub.cs.dbis.aeolus.queries.utils;
 /*
  * #%L
  * utils
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
@@ -47,12 +45,12 @@ import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
  * @author Matthias J. Sax
  */
 @RunWith(PowerMockRunner.class)
-public class SpoutStreamRateDriverTest {
+public class SpoutFixedStreamRateDriverTest {
 	
 	@Test
 	public void testForwardCalls() {
 		IRichSpout worker = mock(IRichSpout.class);
-		SpoutStreamRateDriver driver = new SpoutStreamRateDriver(worker, 10);
+		SpoutFixedStreamRateDriver driver = new SpoutFixedStreamRateDriver(worker, 10);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -92,7 +90,7 @@ public class SpoutStreamRateDriverTest {
 	
 	@Test
 	public void testNextTuple() {
-		SpoutStreamRateDriver driver = new SpoutStreamRateDriver(new IncSpout(), 10);
+		SpoutFixedStreamRateDriver driver = new SpoutFixedStreamRateDriver(new IncSpout(), 10);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -108,4 +106,5 @@ public class SpoutStreamRateDriverTest {
 		
 		Assert.assertEquals(1900, (stop - start) / 1000 / 1000, -1);
 	}
+	
 }

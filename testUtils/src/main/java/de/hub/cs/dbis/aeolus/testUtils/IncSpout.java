@@ -3,8 +3,6 @@ package de.hub.cs.dbis.aeolus.testUtils;
 /*
  * #%L
  * testUtils
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
@@ -25,6 +23,7 @@ package de.hub.cs.dbis.aeolus.testUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ import backtype.storm.utils.Utils;
 
 /**
  * {@link IncSpout} emit tuples with increasing values to one or multiple output streams. The output schema has a single
- * integer attribute with name {@code id}. The first emitted tuple as value {@code 1}.
+ * {@link Long} attribute with name {@code id}. The first emitted tuple has value {@code 0}.
  * 
  * @author Matthias J. Sax
  */
@@ -52,31 +51,83 @@ public class IncSpout implements IRichSpout {
 	private static final long serialVersionUID = -2903431146131196173L;
 	private final Logger logger = LoggerFactory.getLogger(IncSpout.class);
 	
+	private final Random r;
+	
 	private final String[] outputStreams;
 	private SpoutOutputCollector collector;
-	private int currentValue = 0;
+	private long currentValue = 0;
+	private final double duplicatesProbability;
+	private final int stepSize;
 	
 	
 	
 	/**
-	 * Instantiates a new {@link IncSpout} that emits to the default output stream.
+	 * Instantiates a new {@link IncSpout} that emits unique values with step size one to the default output stream.
 	 */
 	public IncSpout() {
-		this(new String[] {Utils.DEFAULT_STREAM_ID});
+		this(new String[] {Utils.DEFAULT_STREAM_ID}, 0.0, 1, System.currentTimeMillis());
 	}
 	
 	/**
-	 * Instantiates a new {@link IncSpout} that emits to the given output streams.
+	 * Instantiates a new {@link IncSpout} that emits to the default output stream.
+	 * 
+	 * @param probability
+	 *            The probability that duplicates occur.
+	 * @param stepSize
+	 *            * The step size for increasing values;
+	 */
+	public IncSpout(double probability, int stepSize) {
+		this(new String[] {Utils.DEFAULT_STREAM_ID}, probability, stepSize, System.currentTimeMillis());
+	}
+	
+	/**
+	 * Instantiates a new {@link IncSpout} that emits unique values to the given output streams.
 	 * 
 	 * @param outputStreamIds
 	 *            The IDs of the output stream to use.
 	 */
 	public IncSpout(String[] outputStreamIds) {
+		this(outputStreamIds, 0, 1, System.currentTimeMillis());
+	}
+	
+	/**
+	 * Instantiates a new {@link IncSpout} that emits to the given output streams with given duplicates probability.
+	 * 
+	 * @param outputStreamIds
+	 *            The IDs of the output stream to use.
+	 * @param probability
+	 *            The probability that duplicates occur.
+	 * @param stepSize
+	 *            The step size for increasing values;
+	 */
+	public IncSpout(String[] outputStreamIds, double probability, int stepSize) {
+		this(outputStreamIds, probability, stepSize, System.currentTimeMillis());
+	}
+	
+	/**
+	 * Instantiates a new {@link IncSpout} that emits to the given output streams with given duplicates probability.
+	 * 
+	 * @param outputStreamIds
+	 *            The IDs of the output stream to use.
+	 * @param probability
+	 *            The probability that duplicates occur.
+	 * @param stepSize
+	 *            The step size for increasing values;
+	 * @param seed
+	 *            Initial seed for randomly generating duplicates.
+	 */
+	public IncSpout(String[] outputStreamIds, double probability, int stepSize, long seed) {
 		assert (outputStreamIds != null);
 		assert (outputStreamIds.length > 0);
+		assert (stepSize > 0);
 		
 		this.outputStreams = Arrays.copyOf(outputStreamIds, outputStreamIds.length);
+		this.duplicatesProbability = probability;
+		this.stepSize = stepSize;
+		this.r = new Random(seed);
 	}
+	
+	
 	
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
@@ -100,12 +151,16 @@ public class IncSpout implements IRichSpout {
 	
 	@Override
 	public void nextTuple() {
-		Values tuple = new Values(new Integer(++this.currentValue));
+		Values tuple = new Values(new Long(this.currentValue));
 		
 		for(String stream : this.outputStreams) {
 			List<Integer> receiverIds = this.collector.emit(stream, tuple);
 			this.logger.trace("emitted tuple {} to output stream {} to receiver tasks with IDs {}", tuple, stream,
 				receiverIds);
+		}
+		
+		if(this.r.nextDouble() >= this.duplicatesProbability) {
+			this.currentValue += this.stepSize;
 		}
 	}
 	

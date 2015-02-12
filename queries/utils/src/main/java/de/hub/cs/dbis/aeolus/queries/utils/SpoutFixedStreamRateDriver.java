@@ -3,8 +3,6 @@ package de.hub.cs.dbis.aeolus.queries.utils;
 /*
  * #%L
  * utils
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
@@ -22,6 +20,7 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * #L%
  */
 
+
 import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -34,29 +33,41 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 
 
 /**
- * {@link SpoutStreamRateDriver} wraps a working spout (with high output rate) and assures a stable (lower) output data
- * rate. In order to simulate that the working spout is working, busy wait strategy is used.
+ * {@link SpoutFixedStreamRateDriver} wraps a working spout (with high output rate) and assures a stable (lower) output
+ * data rate. In order to simulate that the working spout is working, busy wait strategy is used.
  * 
  * @author Matthias J. Sax
  */
-public class SpoutStreamRateDriver implements IRichSpout {
+public class SpoutFixedStreamRateDriver implements IRichSpout {
 	private static final long serialVersionUID = 5846769281188227304L;
 	
+	/**
+	 * The original spout that produces output tuples.
+	 */
 	private IRichSpout wrappedSpout;
-	private final long delay; // in ns
+	/**
+	 * The delay between two consecutive emits in nano seconds (ie, the inverse of the intended output rate).
+	 */
+	private final long delay;
+	/**
+	 * The system timestamp when the next tuple will be emitted.
+	 */
 	private long nextTS;
 	
 	
 	
 	/**
-	 * Instantiates a new {@link SpoutStreamRateDriver} for the given spout and output rate.
+	 * Instantiates a new {@link SpoutFixedStreamRateDriver} for the given spout and output rate.
 	 * 
 	 * @param spout
 	 *            The working spout.
 	 * @param outputRate
 	 *            The output rate in tuples per second.
 	 */
-	public SpoutStreamRateDriver(IRichSpout spout, double outputRate) {
+	public SpoutFixedStreamRateDriver(IRichSpout spout, double outputRate) {
+		assert (spout != null);
+		assert (outputRate > 0);
+		
 		this.wrappedSpout = spout;
 		this.delay = (long)((1000 * 1000 * 1000) / outputRate);
 	}
@@ -74,6 +85,7 @@ public class SpoutStreamRateDriver implements IRichSpout {
 	@Override
 	public void activate() {
 		this.wrappedSpout.activate();
+		// we can emit the first tuple right away
 		this.nextTS = System.nanoTime();
 	}
 	

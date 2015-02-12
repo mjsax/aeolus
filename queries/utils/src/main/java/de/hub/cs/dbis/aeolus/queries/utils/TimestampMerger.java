@@ -44,6 +44,7 @@ import backtype.storm.tuple.Tuple;
  * {@link TimestampMerger} merges all incoming streams (all physical substreams from all tasks) over all logical
  * producers in ascending timestamp order. The timestamp attribute must be at the same index in all incoming streams, or
  * must have the same attribute name. Input tuples must be in ascending timestamp order within each incoming substream.
+ * The timestamp attribute is expected to be of type {@link Long}.
  * 
  * @author Matthias J. Sax
  */
@@ -53,7 +54,7 @@ public class TimestampMerger implements IRichBolt {
 	
 	
 	/**
-	 * The bolt to be wrapped.
+	 * The original bolt that consumers a stream of input tuples that are ordered by their timestamp attribute.
 	 */
 	private final IRichBolt wrappedBolt;
 	/**
@@ -76,7 +77,7 @@ public class TimestampMerger implements IRichBolt {
 	
 	
 	/**
-	 * Creates a new TimestampOrderChecker wrapper that wraps the given bolt instance.
+	 * Instantiates a new {@link TimestampMerger} that wrapped the given bolt.
 	 * 
 	 * @param wrappedBolt
 	 *            The bolt to be wrapped.
@@ -84,6 +85,9 @@ public class TimestampMerger implements IRichBolt {
 	 *            The index of the timestamp attribute.
 	 */
 	public TimestampMerger(IRichBolt wrappedBolt, int tsIndex) {
+		assert (wrappedBolt != null);
+		assert (tsIndex >= 0);
+		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = tsIndex;
 		this.tsAttributeName = null;
@@ -98,22 +102,21 @@ public class TimestampMerger implements IRichBolt {
 	 *            The name of the timestamp attribute.
 	 */
 	public TimestampMerger(IRichBolt wrappedBolt, String tsAttributeName) {
+		assert (wrappedBolt != null);
+		assert (tsAttributeName != null);
+		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = -1;
 		this.tsAttributeName = tsAttributeName;
 	}
+	
+	
 	
 	@Override
 	public void cleanup() {
 		this.wrappedBolt.cleanup();
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param Next
-	 *            tuple to be processed.
-	 */
 	@Override
 	public void execute(Tuple tuple) {
 		// if tuple has a ts-value that is equal to the latest ts-value, we can immediately forward the tuple
@@ -162,7 +165,8 @@ public class TimestampMerger implements IRichBolt {
 						this.wrappedBolt.execute(t);
 					} else {
 						// if the timestamp is not equal the minimum timestamp, we are done
-						// all remaining tuples will have a larger timestamp than minimum timestamp, too
+						// the current and all other remaining tuples will have a larger timestamp than minimum
+						// timestamp
 						break;
 					}
 				}
@@ -185,7 +189,7 @@ public class TimestampMerger implements IRichBolt {
 		// correctly
 		// for each logical input stream, we need to get all tasks
 		for(Entry<GlobalStreamId, Grouping> inputStream : arg1.getThisSources().entrySet()) {
-			// get ID of Bolt that write to the input stream
+			// get ID of bolt that write to the input stream
 			String producer = inputStream.getKey().get_componentId();
 			
 			// get all tasks ID of the producer bolt and add an entry to the buffer for each task
@@ -194,7 +198,6 @@ public class TimestampMerger implements IRichBolt {
 			}
 		}
 		
-		// prepare original7wrapped bolt...
 		this.wrappedBolt.prepare(arg0, arg1, arg2);
 	}
 	

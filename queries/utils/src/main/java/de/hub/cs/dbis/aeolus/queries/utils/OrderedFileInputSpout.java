@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -108,9 +109,13 @@ public abstract class OrderedFileInputSpout extends OrderedInputSpout {
 				this.logger.error("Input file <{}> not found:", this.prefix);
 			}
 		}
-		conf.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
 		
-		super.open(conf, context, collector);
+		// need to create new HashMap because given one does not implement .put(...) method
+		@SuppressWarnings("rawtypes")
+		HashMap newConfig = new HashMap(conf);
+		newConfig.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
+		
+		super.open(newConfig, context, collector);
 	}
 	
 	@Override
