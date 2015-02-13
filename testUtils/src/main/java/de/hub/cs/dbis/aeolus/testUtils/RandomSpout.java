@@ -87,9 +87,9 @@ public class RandomSpout implements IRichSpout {
 		this(1, maxValue, outputStreams, System.currentTimeMillis());
 	}
 	
-/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes attributes to the
-	 * default output stream.
+	/**
+	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes} attributes to the default
+	 * output stream.
 	 * 
 	 * @param numberOfAttributes
 	 *            The number of attributes of the output tuples.
@@ -104,8 +104,8 @@ public class RandomSpout implements IRichSpout {
 	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes} attributes to the given
 	 * output streams.
 	 * 
-	 * @param maxValue
-	 *            The maximum value of the generated numbers (inclusive).
+	 * @param numberOfAttributes
+	 *            The number of attributes of the output tuples.
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
 	 * @param outputStreams
@@ -119,8 +119,8 @@ public class RandomSpout implements IRichSpout {
 	 * Instantiates a new {@link RandomSpout} with initial {@code seed} that emits tuple with {@code numberOfAttributes}
 	 * attributes to the given output streams.
 	 * 
-	 * @param maxValue
-	 *            The maximum value of the generated numbers (inclusive).
+	 * @param numberOfAttributes
+	 *            The number of attributes of the output tuples.
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
 	 * @param outputStreams

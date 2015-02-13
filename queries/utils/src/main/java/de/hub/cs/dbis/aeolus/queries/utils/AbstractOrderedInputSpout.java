@@ -41,18 +41,18 @@ import backtype.storm.tuple.Values;
 
 
 /**
- * {@link OrderedInputSpout} reads input tuples (as {@link String}) from multiple sources (called <em>partitions</em>)
- * and pushes raw data into the topology.<br />
+ * {@link AbstractOrderedInputSpout} reads input tuples (of type {@code T}) from multiple sources (called
+ * <em>partitions</em>) and pushes raw data into the topology.<br />
  * <br />
- * Each retrieved string from each partitions must contain a single tuple and input data must be sorted in ascending
- * timestamp order. For each successfully processed input string, a single output tuple is emitted.<br />
+ * Input data must be sorted in ascending timestamp order from each partition. For each successfully processed input
+ * tuple, a single output tuple is emitted.<br />
  * <br />
- * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:}{@link String}{@code >}<br />
+ * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:T>}<br />
  * Attribute {@code ts} contains the extracted timestamp value of the processed input line and {@code rawTuple} contains
- * the <em>complete</em> input line.<br />
+ * the <em>complete</em> input tuple.<br />
  * <br />
- * {@link OrderedInputSpout} is parallelizable. If multiple input files are assigned to a single task,
- * {@link OrderedInputSpout} ensures that tuples are emitted in ascending timestamp order. In case of timestamp
+ * {@link AbstractOrderedInputSpout} is parallelizable. If multiple input files are assigned to a single task,
+ * {@link AbstractOrderedInputSpout} ensures that tuples are emitted in ascending timestamp order. In case of timestamp
  * duplicates, no ordering guarantee for all tuples having the same timestamp is given.
  * 
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
@@ -60,10 +60,10 @@ import backtype.storm.tuple.Values;
  * @author Leonardo Querzoni (Sapienza Università di Roma, Roma, Italy)
  * @author Matthias J. Sax
  */
-public abstract class OrderedInputSpout implements IRichSpout {
+public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private static final long serialVersionUID = 6224448887936832190L;
 	
-	private final Logger logger = LoggerFactory.getLogger(OrderedInputSpout.class);
+	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
 	/**
 	 * Can be used to specify an number of input partitions that are available (default value is one). The configuration
 	 * value is expected to be of type {@link Integer}.
@@ -76,7 +76,7 @@ public abstract class OrderedInputSpout implements IRichSpout {
 	/**
 	 * Buffer that holds the latest read line per input file.
 	 */
-	private String lines[];
+	private T lines[];
 	/**
 	 * Buffer that holds the timestamp of the latest read line per input file.
 	 */
@@ -91,9 +91,10 @@ public abstract class OrderedInputSpout implements IRichSpout {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Initializing includes the access to each partition. Hence, {@link #readNextLine(int)} is called for each
-	 * partition. Furthermore, {@link #parseTimestamp(String)} is called.
+	 * Initializing includes the access to each partition. Hence, {@link #readNextTuple(int)} is called for each
+	 * partition once (triggering a call to {@link #extractTimestamp(Object)} each time).
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
 		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
@@ -103,7 +104,7 @@ public abstract class OrderedInputSpout implements IRichSpout {
 		
 		this.collector = collector;
 		
-		this.lines = new String[this.numberOfPartitons];
+		this.lines = (T[])new Object[this.numberOfPartitons];
 		this.timestamp = new long[this.numberOfPartitons];
 		// read first line of each input partition
 		for(int i = 0; i < this.numberOfPartitons; i++) {
@@ -138,7 +139,7 @@ public abstract class OrderedInputSpout implements IRichSpout {
 	
 	private void processNextLine(int index) {
 		while(true) {
-			this.lines[index] = this.readNextLine(index);
+			this.lines[index] = this.readNextTuple(index);
 			if(this.lines[index] == null) {
 				this.logger.error("Could not read from partition {}.", new Integer(index));
 				return; // break loop
@@ -146,7 +147,7 @@ public abstract class OrderedInputSpout implements IRichSpout {
 			
 			try {
 				if(this.lines[index] != null) {
-					this.timestamp[index] = this.parseTimestamp(this.lines[index]);
+					this.timestamp[index] = this.extractTimestamp(this.lines[index]);
 				}
 				
 				return; // no error occurred; break loop
@@ -158,25 +159,28 @@ public abstract class OrderedInputSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Reads the next input line for the specified input partition.
+	 * Reads the next input tuple for the specified input partition. If no input data is available for the requested
+	 * partition, {@code null} is returned.
 	 * 
 	 * @param index
-	 *            The index of the input partition the next line must be read from.
+	 *            The index of the input partition the next tuple must be read from.
+	 * 
+	 * @return The next tuple from the input if input is not empty -- {@code null} otherwise.
 	 */
-	protected abstract String readNextLine(int index);
+	protected abstract T readNextTuple(int index);
 	
 	/**
-	 * Extracts the tuple's timestamp from the tuple's string representation.
+	 * Extracts the timestamp from the given tuple.
 	 * 
-	 * @param line
-	 *            The string representing a tuple.
+	 * @param tuple
+	 *            The tuple to be processed.
 	 * 
 	 * @return The tuple's timestamp.
 	 * 
 	 * @throws ParseException
 	 *             if the timestamp could not be extracted
 	 */
-	protected abstract long parseTimestamp(String line) throws ParseException;
+	protected abstract long extractTimestamp(T tuple) throws ParseException;
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

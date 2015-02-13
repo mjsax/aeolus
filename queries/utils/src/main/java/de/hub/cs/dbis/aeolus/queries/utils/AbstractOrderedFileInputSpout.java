@@ -45,10 +45,11 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * {@link OrderedFileInputSpout} is an {@link OrderedInputSpout} that reads input tuples from multiple files. Each file
- * is an <em>input partition</em> in {@link OrderedInputSpout} terminology .The default file is {@code input}. Use
- * {@link #INPUT_FILE_NAME} and {@link #FILE_SUFFIXES} to specify different file name(s) in the topology configuration
- * (see {@link backtype.storm.Config}).
+ * {@link AbstractOrderedFileInputSpout} is an {@link AbstractOrderedInputSpout} that reads input tuples line by line
+ * from multiple files (ie, each line must contain exactly one tuple). Each file is an <em>input partition</em> in
+ * {@link AbstractOrderedInputSpout} terminology. The default file is {@code input}. Use {@link #INPUT_FILE_NAME} and
+ * {@link #INPUT_FILE_SUFFIXES} to specify different file name(s) in the topology configuration (see
+ * {@link backtype.storm.Config}).
  * 
  * 
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
@@ -56,10 +57,10 @@ import backtype.storm.tuple.Fields;
  * @author Leonardo Querzoni (Sapienza Università di Roma, Roma, Italy)
  * @author Matthias J. Sax
  */
-public abstract class OrderedFileInputSpout extends OrderedInputSpout {
+public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInputSpout<String> {
 	private static final long serialVersionUID = -4690963122364704481L;
 	
-	private final Logger logger = LoggerFactory.getLogger(OrderedFileInputSpout.class);
+	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
 	/**
 	 * Can be used to specify an input file name (or prefix together with {@link #INPUT_FILE_SUFFIXES}). The
 	 * configuration value is expected to be of type {@link String}.
@@ -119,7 +120,7 @@ public abstract class OrderedFileInputSpout extends OrderedInputSpout {
 	}
 	
 	@Override
-	protected String readNextLine(int index) {
+	protected String readNextTuple(int index) {
 		try {
 			return this.inputFiles.get(index).readLine();
 		} catch(IOException e) {

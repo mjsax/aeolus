@@ -116,8 +116,8 @@ public class TimestampOrderChecker implements IRichBolt {
 	 * Checks if the provided tuple has a larger timestamp than the previous tuple. If not, a log message in generated.
 	 * In any case, the wrapped bolt's execute method is called with the given input tuple.
 	 * 
-	 * @param Next
-	 *            tuple to be processed.
+	 * @param tuple
+	 *            tuple to be processed
 	 */
 	@SuppressWarnings("boxing")
 	@Override

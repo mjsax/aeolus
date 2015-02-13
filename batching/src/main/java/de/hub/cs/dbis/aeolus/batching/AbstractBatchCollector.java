@@ -41,18 +41,18 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link BatchCollector} buffers emitted tuples in batches and emits full batches. It is used by
+ * {@link AbstractBatchCollector} buffers emitted tuples in batches and emits full batches. It is used by
  * {@link SpoutBatchCollector} and {@link BoltBatchCollector}.
  * 
- * {@link BatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as jar-file. This
+ * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as jar-file. This
  * jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
  * 
  * 
  * @author Matthias J. Sax
  */
 // TODO: what about batches of different sizes (for different output streams? or for different consumers?)
-abstract class BatchCollector {
-	protected final Logger logger = LoggerFactory.getLogger(BatchCollector.class);
+abstract class AbstractBatchCollector {
+	protected final Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);
 	
 	/**
 	 * The size of the output batches.
@@ -63,7 +63,7 @@ abstract class BatchCollector {
 	 */
 	private final TopologyContext topologyContext;
 	/**
-	 * The ID of the producer operator which output is buffered by this {@link BatchCollector}.
+	 * The ID of the producer operator which output is buffered by this {@link AbstractBatchCollector}.
 	 */
 	private final String componentId;
 	/**
@@ -90,14 +90,14 @@ abstract class BatchCollector {
 	
 	
 	/**
-	 * Creates a new {@link BatchCollector} that emits batches of size {@code batchSize}.
+	 * Creates a new {@link AbstractBatchCollector} that emits batches of size {@code batchSize}.
 	 * 
 	 * @param context
 	 *            The current runtime environment.
 	 * @param batchSize
 	 *            The size of the output batches to be built.
 	 */
-	BatchCollector(TopologyContext context, int batchSize) {
+	AbstractBatchCollector(TopologyContext context, int batchSize) {
 		this.logger.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.batchSize = batchSize;

@@ -38,7 +38,7 @@ import backtype.storm.utils.Utils;
 
 /**
  * {@link SpoutBatchCollector} is used by {@link SpoutOutputBatcher} to capture all calls to the original provided
- * {@link SpoutOutputCollector}. It used {@link BatchCollector} to buffer all emitted tuples in batches.
+ * {@link SpoutOutputCollector}. It used {@link AbstractBatchCollector} to buffer all emitted tuples in batches.
  * 
  * @author Matthias J. Sax
  */
@@ -52,7 +52,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	/**
 	 * TODO
 	 */
-	private final BatchCollector batcher;
+	private final AbstractBatchCollector batcher;
 	
 	
 	
@@ -68,7 +68,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		this.logger.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.collector = collector;
-		this.batcher = new BatchCollector(context, batchSize) {
+		this.batcher = new AbstractBatchCollector(context, batchSize) {
 			@Override
 			protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 				assert (anchors == null);
