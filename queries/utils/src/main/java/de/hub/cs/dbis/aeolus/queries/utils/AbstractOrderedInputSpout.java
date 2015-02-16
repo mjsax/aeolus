@@ -23,11 +23,10 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  */
 
 
-import java.text.ParseException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -42,7 +41,8 @@ import backtype.storm.tuple.Values;
 
 /**
  * {@link AbstractOrderedInputSpout} reads input tuples (of type {@code T}) from multiple sources (called
- * <em>partitions</em>) and pushes raw data into the topology.<br />
+ * <em>partitions</em>) and pushes raw data into the topology. The default number of used partitions is one but can be
+ * configured using {@link #NUMBER_OF_PARTITIONS}. The IDs of the partitions are {@code 0,...,NUMBER_OF_PARTITIONS-1}.<br />
  * <br />
  * Input data must be sorted in ascending timestamp order from each partition. For each successfully processed input
  * tuple, a single output tuple is emitted.<br />
@@ -51,7 +51,7 @@ import backtype.storm.tuple.Values;
  * Attribute {@code ts} contains the extracted timestamp value of the processed input line and {@code rawTuple} contains
  * the <em>complete</em> input tuple.<br />
  * <br />
- * {@link AbstractOrderedInputSpout} is parallelizable. If multiple input files are assigned to a single task,
+ * {@link AbstractOrderedInputSpout} is parallelizable. If multiple input partitions are assigned to a single task,
  * {@link AbstractOrderedInputSpout} ensures that tuples are emitted in ascending timestamp order. In case of timestamp
  * duplicates, no ordering guarantee for all tuples having the same timestamp is given.
  * 
@@ -63,24 +63,17 @@ import backtype.storm.tuple.Values;
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private static final long serialVersionUID = 6224448887936832190L;
 	
-	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
+	
+	
 	/**
 	 * Can be used to specify an number of input partitions that are available (default value is one). The configuration
 	 * value is expected to be of type {@link Integer}.
 	 */
 	public static final String NUMBER_OF_PARTITIONS = "OrderedInputSpout.partitions";
 	/**
-	 * The number of available input partitions. Default value is one.
+	 * The merger to be used.
 	 */
-	protected int numberOfPartitons = 1;
-	/**
-	 * Buffer that holds the latest read line per input file.
-	 */
-	private T lines[];
-	/**
-	 * Buffer that holds the timestamp of the latest read line per input file.
-	 */
-	private long timestamp[];
+	private StreamMerger<Values> merger;
 	/**
 	 * The output collector to be used.
 	 */
@@ -88,127 +81,90 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	
 	
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Initializing includes the access to each partition. Hence, {@link #readNextTuple(int)} is called for each
-	 * partition once (triggering a call to {@link #extractTimestamp(Object)} each time).
-	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public final void open(Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+		// need to create new map because given one is read only
+		this.openSimple(new HashMap(conf), context);
+		
+		int numberOfPartitons = 1;
 		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
 		if(numPartitions != null) {
-			this.numberOfPartitons = numPartitions.intValue();
+			numberOfPartitons = numPartitions.intValue();
 		}
 		
+		Integer[] partitionIds = new Integer[numberOfPartitons];
+		for(int i = 0; i < numberOfPartitons; ++i) {
+			partitionIds[i] = new Integer(i);
+		}
+		this.merger = new StreamMerger<Values>(Arrays.asList(partitionIds), 0);
 		this.collector = collector;
-		
-		this.lines = (T[])new Object[this.numberOfPartitons];
-		this.timestamp = new long[this.numberOfPartitons];
-		// read first line of each input partition
-		for(int i = 0; i < this.numberOfPartitons; i++) {
-			this.processNextLine(i);
-		}
-	}
-	
-	@Override
-	public void nextTuple() {
-		// find tuple with smallest TS value from line buffer
-		long minTs = Long.MAX_VALUE;
-		int minTsIndex = -1;
-		for(int i = 0; i < this.numberOfPartitons; i++) {
-			if(this.lines[i] != null) {
-				if(minTs > this.timestamp[i]) {
-					minTs = this.timestamp[i];
-					minTsIndex = i;
-				}
-			}
-		}
-		
-		if(minTsIndex == -1) {
-			this.logger.warn("All input streams finished.");
-			return;
-		}
-		
-		// TODO add messageID for fault-tolerance
-		this.collector.emit(new Values(new Long(minTs), this.lines[minTsIndex]));
-		
-		this.processNextLine(minTsIndex);
-	}
-	
-	private void processNextLine(int index) {
-		while(true) {
-			this.lines[index] = this.readNextTuple(index);
-			if(this.lines[index] == null) {
-				this.logger.error("Could not read from partition {}.", new Integer(index));
-				return; // break loop
-			}
-			
-			try {
-				if(this.lines[index] != null) {
-					this.timestamp[index] = this.extractTimestamp(this.lines[index]);
-				}
-				
-				return; // no error occurred; break loop
-			} catch(ParseException e) {
-				this.logger.error("Invalid tuple.", e);
-				this.logger.warn("Dropping tuple <{}>", this.lines[index]);
-			}
-		}
 	}
 	
 	/**
-	 * Reads the next input tuple for the specified input partition. If no input data is available for the requested
-	 * partition, {@code null} is returned.
+	 * Replaces the regular {@link #open(Map, TopologyContext, SpoutOutputCollector)} method and will be called by the
+	 * regular one at the very beginning.
+	 * 
+	 * @param conf
+	 *            The Storm configuration for this spout. This is the configuration provided to the topology merged in
+	 *            with cluster configuration on this machine.
+	 * @param context
+	 *            This object can be used to get information about this task's place within the topology, including the
+	 *            task id and component id of this task, input and output information, etc.
+	 */
+	protected void openSimple(@SuppressWarnings("rawtypes") Map conf, TopologyContext context) {
+		// empty
+	}
+	
+	/**
+	 * Makes a new output tuple available.
+	 * 
+	 * Must be used by {@link #nextTuple()} instead of an {@link SpoutOutputCollector} to emit tuples. In each call, all
+	 * tuples that are still buffered over all partitions are considered to be emitted to the default output stream.
 	 * 
 	 * @param index
-	 *            The index of the input partition the next tuple must be read from.
+	 *            The partition id the tuple belongs to.
+	 * @param timestamp
+	 *            The timestamp of the tuple.
+	 * @param tuple
+	 *            The tuple to be emitted.
 	 * 
-	 * @return The next tuple from the input if input is not empty -- {@code null} otherwise.
+	 * @return A map of all tuple that got emitted during this call including the task IDs each emitted tuple was sent
+	 *         to.
 	 */
-	protected abstract T readNextTuple(int index);
+	// TODO: add support for non-default and/or multiple output streams (what about directEmit(...)?)
+	protected final Map<Values, List<Integer>> emitNextTuple(Integer index, Long timestamp, T tuple) {
+		assert (index != null);
+		assert (timestamp != null);
+		assert (tuple != null);
+		
+		this.merger.addTuple(index, new Values(timestamp, tuple));
+		
+		Values t;
+		Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
+		while((t = this.merger.getNextTuple()) != null) {
+			emitted.put(t, this.collector.emit(t));
+		}
+		
+		return emitted;
+	}
 	
 	/**
-	 * Extracts the timestamp from the given tuple.
+	 * Closes an input partition. Closing a partition is only successful, if no tuples belonging to the partition are
+	 * buffered internally any more. No more data can be emitted by this partition if closing was successful.
 	 * 
-	 * @param tuple
-	 *            The tuple to be processed.
+	 * @param partitionId
+	 *            The ID of the partition to be closed.
 	 * 
-	 * @return The tuple's timestamp.
-	 * 
-	 * @throws ParseException
-	 *             if the timestamp could not be extracted
+	 * @return {@code true} if the partition was closed successfully -- {@code false} otherwise
 	 */
-	protected abstract long extractTimestamp(T tuple) throws ParseException;
+	protected boolean closePartition(Integer partitionId) {
+		return this.merger.closePartition(partitionId);
+	}
 	
 	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+	public final void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(new Fields("ts", "rawTuple"));
-	}
-	
-	@Override
-	public void close() {/* empty */}
-	
-	@Override
-	public void activate() {/* empty */}
-	
-	@Override
-	public void deactivate() {/* empty */}
-	
-	@Override
-	public void ack(Object msgId) {
-		// TODO
-	}
-	
-	@Override
-	public void fail(Object msgId) {
-		// TODO
-	}
-	
-	@Override
-	public Map<String, Object> getComponentConfiguration() {
-		return null;
 	}
 	
 }

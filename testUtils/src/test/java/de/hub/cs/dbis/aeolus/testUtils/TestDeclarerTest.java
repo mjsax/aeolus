@@ -53,9 +53,9 @@ public class TestDeclarerTest {
 		declarer.declareStream(stream[0], schema[2]);
 		declarer.declareStream(stream[1], true, schema[3]);
 		
-		Assert.assertTrue(declarer.schema.size() == 4);
-		Assert.assertTrue(declarer.streamId.size() == 4);
-		Assert.assertTrue(declarer.direct.size() == 4);
+		Assert.assertEquals(4, declarer.schema.size());
+		Assert.assertEquals(4, declarer.streamId.size());
+		Assert.assertEquals(4, declarer.direct.size());
 		
 		Assert.assertSame(schema[0], declarer.schema.get(0));
 		Assert.assertEquals(null, declarer.streamId.get(0));

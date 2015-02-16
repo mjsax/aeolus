@@ -22,13 +22,12 @@ package de.hub.cs.dbis.aeolus.queries.utils;
 
 import static org.mockito.Mockito.mock;
 
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -58,80 +57,70 @@ public class OrderedInputSpoutTest {
 		private static final long serialVersionUID = -6722924299495546729L;
 		
 		private final LinkedList<String>[] data;
+		private final Random rr;
 		
 		
-		
-		public TestOrderedInputSpout(LinkedList<String>[] data) {
+		public TestOrderedInputSpout(LinkedList<String>[] data, Random rr) {
 			this.data = data;
+			this.rr = rr;
 		}
 		
 		
 		
 		@Override
-		protected String readNextTuple(int index) {
-			if(this.data[index].size() > 0) {
-				return this.data[index].removeFirst();
-			}
+		public void nextTuple() {
+			int index = this.rr.nextInt(this.data.length);
 			
+			int old = index;
+			while(this.data[index].size() == 0) {
+				index = (index + 1) % this.data.length;
+				if(index == old) {
+					return;
+				}
+			}
+			String line = this.data[index].removeFirst();
+			super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
+		}
+		
+		@Override
+		public void close() {}
+		
+		@Override
+		public void activate() {}
+		
+		@Override
+		public void deactivate() {}
+		
+		@Override
+		public void ack(Object msgId) {}
+		
+		@Override
+		public void fail(Object msgId) {}
+		
+		@Override
+		public Map<String, Object> getComponentConfiguration() {
 			return null;
 		}
 		
-		@Override
-		protected long extractTimestamp(String line) throws ParseException {
-			return Long.parseLong(line.trim());
-		}
-		
 	}
 	
-	private class Comp implements Comparator<List<Object>> {
-		@Override
-		public int compare(List<Object> o1, List<Object> o2) {
-			long first = ((Long)o1.get(0)).longValue();
-			long second = ((Long)o2.get(0)).longValue();
-			if(first < second) {
-				return -1;
-			}
-			
-			if(second < first) {
-				return 1;
-			}
-			
-			return -1 + OrderedInputSpoutTest.this.r.nextInt(3);
-		}
-	}
 	
-	private final long seed = System.currentTimeMillis();
-	private final Random r = new Random(this.seed);
+	private long seed;
+	private Random r;
 	
 	
 	@Before
 	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
-	}
-	
-	@Test
-	public void testZeroPartitions() {
-		@SuppressWarnings("unchecked")
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(new LinkedList[0]);
-		
-		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(0));
-		
-		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
-		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
-		
-		spout.nextTuple();
-		spout.nextTuple();
-		spout.nextTuple();
-		
-		Assert.assertEquals(col.output.size(), 0);
 	}
 	
 	@Test
 	public void testSingleEmptyPartition() {
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {new LinkedList<String>()};
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(data);
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
 		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
@@ -151,7 +140,7 @@ public class OrderedInputSpoutTest {
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {new LinkedList<String>(), new LinkedList<String>(),
 													new LinkedList<String>()};
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(data);
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
 		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
@@ -159,6 +148,8 @@ public class OrderedInputSpoutTest {
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
 		
+		spout.nextTuple();
+		spout.nextTuple();
 		spout.nextTuple();
 		spout.nextTuple();
 		spout.nextTuple();
@@ -179,7 +170,7 @@ public class OrderedInputSpoutTest {
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {partition};
 		
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(data);
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
 		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
@@ -223,11 +214,11 @@ public class OrderedInputSpoutTest {
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String(" 3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3 ")}));
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new Comp(this.r));
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};
 		
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(data);
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
 		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
@@ -269,9 +260,9 @@ public class OrderedInputSpoutTest {
 		
 		int size, number, totalInputSize = 0;
 		
-		final int stepSizeRange = this.r.nextInt(6);
+		final int stepSizeRange = 1 + this.r.nextInt(6);
 		
-		size = this.r.nextInt(50);
+		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
 		LinkedList<String> partition1 = new LinkedList<String>();
 		number = 0;
@@ -281,7 +272,7 @@ public class OrderedInputSpoutTest {
 			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String("" + number)}));
 		}
 		
-		size = this.r.nextInt(50);
+		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
 		LinkedList<String> partition2 = new LinkedList<String>();
 		number = 0;
@@ -291,7 +282,7 @@ public class OrderedInputSpoutTest {
 			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(" " + number)}));
 		}
 		
-		size = this.r.nextInt(50);
+		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
 		LinkedList<String> partition3 = new LinkedList<String>();
 		number = 0;
@@ -300,12 +291,12 @@ public class OrderedInputSpoutTest {
 			partition3.add(number + " ");
 			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(number + " ")}));
 		}
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new Comp(this.r));
 		
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};
 		
-		TestOrderedInputSpout spout = new TestOrderedInputSpout(data);
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
 		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
@@ -322,7 +313,7 @@ public class OrderedInputSpoutTest {
 		Assert.assertNotEquals(null, col.output.get(Utils.DEFAULT_STREAM_ID));
 		
 		List<Object> lastRemoved = null;
-		while(expectedResult.size() > numberOfNextTupleCalls) {
+		while(expectedResult.size() > col.output.get(Utils.DEFAULT_STREAM_ID).size()) {
 			lastRemoved = expectedResult.removeLast();
 		}
 		if(lastRemoved != null) {
@@ -349,5 +340,4 @@ public class OrderedInputSpoutTest {
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}
 	}
-	
 }

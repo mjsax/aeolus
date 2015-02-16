@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -45,12 +45,14 @@ import backtype.storm.utils.Utils;
  */
 @RunWith(PowerMockRunner.class)
 public class IncSpoutTest {
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
+	private long seed;
+	private Random r;
 	
-	@BeforeClass
-	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
 	}
 	
 	@Test
@@ -60,13 +62,13 @@ public class IncSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertTrue(declarer.schema.size() == 1);
-		Assert.assertTrue(declarer.schema.get(0).size() == 1);
-		Assert.assertTrue(declarer.schema.get(0).get(0).equals("id"));
-		Assert.assertTrue(declarer.streamId.size() == 1);
-		Assert.assertTrue(declarer.streamId.get(0).equals(Utils.DEFAULT_STREAM_ID));
-		Assert.assertTrue(declarer.direct.size() == 1);
-		Assert.assertTrue(declarer.direct.get(0).booleanValue() == false);
+		Assert.assertEquals(1, declarer.schema.size());
+		Assert.assertEquals(1, declarer.schema.get(0).size());
+		Assert.assertEquals("id", declarer.schema.get(0).get(0));
+		Assert.assertEquals(1, declarer.streamId.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
+		Assert.assertEquals(1, declarer.direct.size());
+		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
 	}
 	
 	@Test
@@ -77,15 +79,15 @@ public class IncSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertTrue(declarer.schema.size() == streamIds.length);
-		Assert.assertTrue(declarer.streamId.size() == streamIds.length);
-		Assert.assertTrue(declarer.direct.size() == streamIds.length);
+		Assert.assertEquals(streamIds.length, declarer.schema.size());
+		Assert.assertEquals(streamIds.length, declarer.streamId.size());
+		Assert.assertEquals(streamIds.length, declarer.direct.size());
 		
 		for(int i = 0; i < streamIds.length; ++i) {
-			Assert.assertTrue(declarer.schema.get(i).size() == 1);
-			Assert.assertTrue(declarer.schema.get(i).get(0).equals("id"));
-			Assert.assertTrue(declarer.streamId.get(i).equals(streamIds[i]));
-			Assert.assertTrue(declarer.direct.get(i).booleanValue() == false);
+			Assert.assertEquals(1, declarer.schema.get(i).size());
+			Assert.assertEquals("id", declarer.schema.get(i).get(0));
+			Assert.assertEquals(streamIds[i], declarer.streamId.get(i));
+			Assert.assertEquals(new Boolean(false), declarer.direct.get(i));
 		}
 	}
 	
@@ -111,7 +113,7 @@ public class IncSpoutTest {
 	
 	@Test
 	public void testExecuteStepSizeUnique() {
-		int stepSize = 1 + r.nextInt(5);
+		int stepSize = 1 + this.r.nextInt(5);
 		IncSpout spout = new IncSpout(0, stepSize);
 		
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
@@ -198,7 +200,7 @@ public class IncSpoutTest {
 	
 	@Test
 	public void testExecute() {
-		IncSpout spout = new IncSpout(r.nextDouble(), 1);
+		IncSpout spout = new IncSpout(this.r.nextDouble(), 1);
 		
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
 		spout.open(null, null, new SpoutOutputCollector(collector));
@@ -217,7 +219,7 @@ public class IncSpoutTest {
 	@Test
 	public void testExecuteMultipleStreams() {
 		String[] streamIds = new String[] {Utils.DEFAULT_STREAM_ID, "myStreamId"};
-		IncSpout spout = new IncSpout(streamIds, r.nextDouble(), 1);
+		IncSpout spout = new IncSpout(streamIds, this.r.nextDouble(), 1);
 		
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
 		spout.open(null, null, new SpoutOutputCollector(collector));

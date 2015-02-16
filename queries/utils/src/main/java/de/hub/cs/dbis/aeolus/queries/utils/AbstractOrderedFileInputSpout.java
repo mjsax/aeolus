@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +36,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Values;
 
 
 
@@ -80,12 +79,17 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 * All input files to read from.
 	 */
 	private final ArrayList<BufferedReader> inputFiles = new ArrayList<BufferedReader>();
+	/**
+	 * Map containing all tuples emitted by the last call of {@link #emitNextTuple(Integer, Long, String)}. The map
+	 * including the task IDs each tuple was sent to.
+	 */
+	protected Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
 	
 	
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
+	public void openSimple(@SuppressWarnings("rawtypes") Map conf, TopologyContext context) {
 		String fileName = (String)conf.get(INPUT_FILE_NAME);
 		if(fileName != null) {
 			this.prefix = fileName;
@@ -111,30 +115,62 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			}
 		}
 		
-		// need to create new HashMap because given one does not implement .put(...) method
-		@SuppressWarnings("rawtypes")
-		HashMap newConfig = new HashMap(conf);
-		newConfig.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
-		
-		super.open(newConfig, context, collector);
+		conf.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
 	}
 	
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Reads a line from at least one input file, and emits all eligible tuples (including previously buffered once).
+	 * The emitted tuples can be retrieved via {@link #emitted}.
+	 */
 	@Override
-	protected String readNextTuple(int index) {
-		try {
-			return this.inputFiles.get(index).readLine();
-		} catch(IOException e) {
-			this.logger.error(e.toString());
+	public void nextTuple() {
+		int numberOfFiles = this.inputFiles.size();
+		for(int i = 0; i < numberOfFiles; ++i) {
+			String line = null;
+			try {
+				line = this.inputFiles.get(i).readLine();
+			} catch(IOException e) {
+				this.logger.error(e.toString());
+			}
+			if(line != null) {
+				try {
+					this.emitted = super.emitNextTuple(new Integer(i), new Long(this.extractTimestamp(line)), line);
+					
+					if(this.emitted.size() != 0) {
+						return;
+					}
+				} catch(ParseException e) {
+					this.logger.error(e.toString());
+				}
+			} else if(super.closePartition(new Integer(i))) {
+				try {
+					this.inputFiles.get(i).close();
+				} catch(IOException e) {
+					this.logger.error("Closing input file reader failed.", e);
+				}
+				this.inputFiles.remove(i);
+				--numberOfFiles;
+				--i;
+			}
 		}
 		
-		return null;
 	}
 	
-	
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("ts", "rawTuple"));
-	}
+	/**
+	 * Extracts the timestamp from the given tuple.
+	 * 
+	 * @param tuple
+	 *            The tuple to be processed.
+	 * 
+	 * @return The tuple's timestamp.
+	 * 
+	 * @throws ParseException
+	 *             if the timestamp could not be extracted
+	 */
+	protected abstract long extractTimestamp(String tuple) throws ParseException;
 	
 	@Override
 	public void close() {
@@ -145,27 +181,6 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 				this.logger.error("Closing input file reader failed.", e);
 			}
 		}
-	}
-	
-	@Override
-	public void activate() {/* empty */}
-	
-	@Override
-	public void deactivate() {/* empty */}
-	
-	@Override
-	public void ack(Object msgId) {
-		// TODO
-	}
-	
-	@Override
-	public void fail(Object msgId) {
-		// TODO
-	}
-	
-	@Override
-	public Map<String, Object> getComponentConfiguration() {
-		return null;
 	}
 	
 }

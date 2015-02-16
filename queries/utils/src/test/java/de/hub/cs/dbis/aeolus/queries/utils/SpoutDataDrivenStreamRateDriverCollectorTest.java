@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -42,18 +42,20 @@ import backtype.storm.spout.SpoutOutputCollector;
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutDataDrivenStreamRateDriverCollectorTest {
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
+	private long seed;
+	private Random r;
 	
-	@BeforeClass
-	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
 	}
 	
 	@Test
 	public void testCollector() {
 		final int numberOfAttributes = 10;
-		int index = (int)(r.nextDouble() * numberOfAttributes);
+		int index = (int)(this.r.nextDouble() * numberOfAttributes);
 		
 		SpoutOutputCollector collector = mock(SpoutOutputCollector.class);
 		SpoutDataDrivenStreamRateDriverCollector<Long> driverCollector = new SpoutDataDrivenStreamRateDriverCollector<Long>(
@@ -84,38 +86,38 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 		verify(collector).emit(streamId, tuple, messageId);
 		assert (driverCollector.timestampLastTuple == index);
 		
-		int taskId = r.nextInt();
+		int taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, tuple);
 		verify(collector).emitDirect(taskId, tuple);
 		assert (driverCollector.timestampLastTuple == index);
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, tuple);
 		verify(collector).emitDirect(taskId, tuple);
 		assert (driverCollector.timestampLastTuple == index);
 		
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, tuple, messageId);
 		verify(collector).emitDirect(taskId, tuple, messageId);
 		assert (driverCollector.timestampLastTuple == index);
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, tuple, messageId);
 		verify(collector).emitDirect(taskId, tuple, messageId);
 		assert (driverCollector.timestampLastTuple == index);
 		
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, streamId, tuple);
 		verify(collector).emitDirect(taskId, streamId, tuple);
 		assert (driverCollector.timestampLastTuple == index);
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, streamId, tuple);
 		verify(collector).emitDirect(taskId, streamId, tuple);
 		assert (driverCollector.timestampLastTuple == index);
 		
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, streamId, tuple, messageId);
 		verify(collector).emitDirect(taskId, streamId, tuple, messageId);
 		assert (driverCollector.timestampLastTuple == index);
-		taskId = r.nextInt();
+		taskId = this.r.nextInt();
 		driverCollector.emitDirect(taskId, streamId, tuple, messageId);
 		verify(collector).emitDirect(taskId, streamId, tuple, messageId);
 		assert (driverCollector.timestampLastTuple == index);
@@ -129,7 +131,7 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 	@Test
 	public void testCollectorInt() {
 		final int numberOfAttributes = 10;
-		int index = r.nextInt(numberOfAttributes);
+		int index = this.r.nextInt(numberOfAttributes);
 		
 		SpoutOutputCollector collector = mock(SpoutOutputCollector.class);
 		SpoutDataDrivenStreamRateDriverCollector<Integer> driverCollector = new SpoutDataDrivenStreamRateDriverCollector<Integer>(

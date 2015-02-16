@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -52,12 +52,14 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutDataDrivenStreamRateDriverTest {
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
+	private long seed;
+	private Random r;
 	
-	@BeforeClass
-	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
 	}
 	
 	@Test
@@ -127,7 +129,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	@Test
 	public void testNextTuple() {
 		TIME_UNIT units = null;
-		switch(r.nextInt(4)) {
+		switch(this.r.nextInt(4)) {
 		case 0:
 			units = TIME_UNIT.SECONDS;
 			break;
@@ -142,7 +144,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 			break;
 		}
 		
-		double prob = r.nextDouble();
+		double prob = this.r.nextDouble();
 		int stepSize = 1;
 		int numberOfTuples = (int)(1000000000 / units.factor() / (1 - prob));
 		

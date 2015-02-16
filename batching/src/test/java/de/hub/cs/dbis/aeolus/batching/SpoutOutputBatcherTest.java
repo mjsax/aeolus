@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -44,9 +45,20 @@ import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 public class SpoutOutputBatcherTest {
 	private static IRichSpout spoutMockStatic;
 	
+	private long seed;
+	private Random r;
+	
 	@BeforeClass
 	public static void prepareStatic() {
 		spoutMockStatic = mock(IRichSpout.class);
+	}
+	
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
+		
 	}
 	
 	@Test
@@ -74,13 +86,8 @@ public class SpoutOutputBatcherTest {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testNextTupleSimpleShuffle() {
-		final long seed = System.currentTimeMillis();
-		// final long seed = 1421059222142L; System.err.println("!!! FIXED SEED USED !!!");
-		System.out.println("seed: " + seed);
-		
-		Random r = new Random(seed);
 		final int maxValue = 1000;
-		final int batchSize = 1 + r.nextInt(5);
+		final int batchSize = 1 + this.r.nextInt(5);
 		final int numberOfAttributes = 1;
 		final Integer spoutDop = new Integer(1);
 		final Integer boltDop = new Integer(1);
@@ -89,9 +96,9 @@ public class SpoutOutputBatcherTest {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout(VerifyBolt.SPOUT_ID, new RandomSpout(numberOfAttributes, maxValue, new String[] {"stream1"},
-			seed), spoutDop);
+			this.seed), spoutDop);
 		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
-			maxValue, new String[] {"stream2"}, seed), batchSize), spoutDop);
+			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
 		
 		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields("a"))), boltDop)
 			.shuffleGrouping(VerifyBolt.SPOUT_ID, "stream1").shuffleGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2");

@@ -77,8 +77,6 @@ public class TimestampMergerTest {
 	private static IRichBolt boltMockStatic;
 	private static ForwardBolt forwarder = new ForwardBolt(new Fields("ts"));
 	
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
 	private static int tsIndex;
 	private static boolean duplicates;
 	
@@ -94,7 +92,9 @@ public class TimestampMergerTest {
 	
 	@BeforeClass
 	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+		long seed = System.currentTimeMillis();
+		Random r = new Random(seed);
+		System.out.println("Static test seed: " + seed);
 		
 		tsIndex = r.nextInt();
 		if(tsIndex < 0) {
@@ -107,6 +107,16 @@ public class TimestampMergerTest {
 		when(boltMockStatic.getComponentConfiguration()).thenReturn(boltConfig);
 		
 		checker = new TimestampOrderChecker(boltMockStatic, tsIndex, duplicates);
+	}
+	
+	private long seed;
+	private Random r;
+	
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
 	}
 	
 	@Before
@@ -130,7 +140,7 @@ public class TimestampMergerTest {
 			
 			int n = numberOfTasks;
 			if(n < 0) {
-				n = 1 + r.nextInt(-numberOfTasks);
+				n = 1 + this.r.nextInt(-numberOfTasks);
 			}
 			
 			List<Integer> taskList = new LinkedList<Integer>();
@@ -148,12 +158,12 @@ public class TimestampMergerTest {
 		} else {
 			for(int i = 0; i < numberOfProducers; ++i) {
 				int numberOfAttributes = minNumberOfAttributes
-					+ r.nextInt(maxNumberOfAttributes - minNumberOfAttributes + 1);
+					+ this.r.nextInt(maxNumberOfAttributes - minNumberOfAttributes + 1);
 				List<String> schema = new ArrayList<String>(numberOfAttributes);
 				for(int j = 0; j < numberOfAttributes; ++j) {
 					schema.add("a" + j);
 				}
-				schema.set(r.nextInt(numberOfAttributes), "ts");
+				schema.set(this.r.nextInt(numberOfAttributes), "ts");
 				
 				when(this.contextMock.getComponentOutputFields(eq(bolt + i), anyString())).thenReturn(
 					new Fields(schema));
@@ -168,66 +178,67 @@ public class TimestampMergerTest {
 	
 	@Test
 	public void testExecuteMergeStrictSingleTaskSimple() {
-		this.testExecuteMerge(1, 1, 0.0, r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 1, 0.0, this.r.nextBoolean(), 1, 1);
 	}
 	
 	@Test
 	public void testExecuteMergeStrictSingleTask() {
-		this.testExecuteMerge(1, 1, 0.0, r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(1, 1, 0.0, this.r.nextBoolean(), 3, 10);
 	}
 	
 	@Test
 	public void testExecuteMergeStrictSingleProducerSimple() {
-		this.testExecuteMerge(1, 2, 0.0, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(1, 3 + r.nextInt(7), 0.0, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(1, -(3 + r.nextInt(7)), 0.0, r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 2, 0.0, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 3 + this.r.nextInt(7), 0.0, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, -(3 + this.r.nextInt(7)), 0.0, this.r.nextBoolean(), 1, 1);
 	}
 	
 	@Test
 	public void testExecuteMergeStrictSingleProducer() {
-		this.testExecuteMerge(1, 2, 0.0, r.nextBoolean(), 3, 10);
-		this.testExecuteMerge(1, 3 + r.nextInt(7), 0.0, r.nextBoolean(), 3, 10);
-		this.testExecuteMerge(1, -(3 + r.nextInt(7)), 0.0, r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(1, 2, 0.0, this.r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(1, 3 + this.r.nextInt(7), 0.0, this.r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(1, -(3 + this.r.nextInt(7)), 0.0, this.r.nextBoolean(), 3, 10);
 	}
 	
 	@Test
 	public void testExecuteMergeStrictMultipleProducersSimple() {
-		this.testExecuteMerge(2, 1, 0.0, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), 1, 0.0, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), -(3 + r.nextInt(7)), 0.0, r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(2, 1, 0.0, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), 1, 0.0, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), -(3 + this.r.nextInt(7)), 0.0, this.r.nextBoolean(), 1, 1);
 	}
 	
 	@Test
 	public void testExecuteMergeStrictMultipleProducers() {
-		this.testExecuteMerge(2, 1, 0.0, r.nextBoolean(), 3, 10);
-		this.testExecuteMerge(3 + r.nextInt(7), 1, 0.0, r.nextBoolean(), 3, 10);
-		this.testExecuteMerge(3 + r.nextInt(7), -(3 + r.nextInt(7)), 0.0, r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(2, 1, 0.0, this.r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(3 + this.r.nextInt(7), 1, 0.0, this.r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(3 + this.r.nextInt(7), -(3 + this.r.nextInt(7)), 0.0, this.r.nextBoolean(), 3, 10);
 	}
 	
 	@Test
 	public void testExecuteMergeSingleTaskSimple() {
-		this.testExecuteMerge(1, 1, 0.3, r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 1, 0.3, this.r.nextBoolean(), 1, 1);
 	}
 	
 	@Test
 	public void testExecuteMergeSingleTask() {
-		this.testExecuteMerge(1, 1, 0.3, r.nextBoolean(), 3, 10);
+		this.testExecuteMerge(1, 1, 0.3, this.r.nextBoolean(), 3, 10);
 	}
 	
 	@Test
 	public void testExecuteMergeSingleProducerSimple() {
-		this.testExecuteMerge(1, 2, 0.3, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(1, 3 + r.nextInt(7), 0.3, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(1, -(3 + r.nextInt(7)), 0.3, r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 2, 0.3, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, 3 + this.r.nextInt(7), 0.3, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(1, -(3 + this.r.nextInt(7)), 0.3, this.r.nextBoolean(), 1, 1);
 	}
 	
 	@Test
 	public void testExecuteMergeMultipleProducersSimple() {
-		this.testExecuteMerge(2, 1, 0.3, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), 1, 0.3, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), -(3 + r.nextInt(7)), 0.3, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), -(3 + r.nextInt(7)), 1, r.nextBoolean(), 1, 1);
-		this.testExecuteMerge(3 + r.nextInt(7), -(3 + r.nextInt(7)), r.nextDouble(), r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(2, 1, 0.3, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), 1, 0.3, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), -(3 + this.r.nextInt(7)), 0.3, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), -(3 + this.r.nextInt(7)), 1, this.r.nextBoolean(), 1, 1);
+		this.testExecuteMerge(3 + this.r.nextInt(7), -(3 + this.r.nextInt(7)), this.r.nextDouble(),
+			this.r.nextBoolean(), 1, 1);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -235,7 +246,7 @@ public class TimestampMergerTest {
 		int createdTasks = this.mockInputs(numberOfProducers, numberOfTasks, tsIndexOrName, minNumberOfAttributes,
 			maxNumberOfAttributes);
 		
-		final int numberOfTuples = createdTasks * 10 + r.nextInt(createdTasks * (1 + r.nextInt(10)));
+		final int numberOfTuples = createdTasks * 10 + this.r.nextInt(createdTasks * (1 + this.r.nextInt(10)));
 		TimestampOrderChecker checkerBolt;
 		TimestampMerger merger;
 		if(tsIndexOrName) {
@@ -260,13 +271,13 @@ public class TimestampMergerTest {
 		int numberDistinctValues = 1;
 		int counter = 0;
 		while(true) {
-			int taskId = r.nextInt(createdTasks);
+			int taskId = this.r.nextInt(createdTasks);
 			
 			Fields schema = this.contextMock.getComponentOutputFields(this.contextMock.getComponentId(taskId), null);
 			int numberOfAttributes = schema.size();
 			List<Object> value = new ArrayList<Object>(numberOfAttributes);
 			for(int i = 0; i < numberOfAttributes; ++i) {
-				value.add(new Character((char)(32 + r.nextInt(95))));
+				value.add(new Character((char)(32 + this.r.nextInt(95))));
 			}
 			Long ts = new Long(numberDistinctValues - 1);
 			value.set(schema.fieldIndex("ts"), ts);
@@ -278,7 +289,7 @@ public class TimestampMergerTest {
 				break;
 			}
 			
-			if(1 - r.nextDouble() > duplicatesFraction) {
+			if(1 - this.r.nextDouble() > duplicatesFraction) {
 				++numberDistinctValues;
 			}
 		}
@@ -288,7 +299,7 @@ public class TimestampMergerTest {
 		int[] max = new int[createdTasks];
 		int[][] bucketSums = new int[createdTasks][numberDistinctValues];
 		for(int i = 0; i < numberOfTuples; ++i) {
-			int taskId = r.nextInt(createdTasks);
+			int taskId = this.r.nextInt(createdTasks);
 			
 			while(input[taskId].size() == 0) {
 				taskId = (taskId + 1) % createdTasks;

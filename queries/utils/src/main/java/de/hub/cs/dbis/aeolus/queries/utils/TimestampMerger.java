@@ -22,11 +22,9 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * #L%
  */
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 
 import backtype.storm.generated.GlobalStreamId;
 import backtype.storm.generated.Grouping;
@@ -66,13 +64,9 @@ public class TimestampMerger implements IRichBolt {
 	 */
 	private final String tsAttributeName;
 	/**
-	 * Input tuple buffer for merging. Contains a list of input tuples for each producer task.
+	 * Input tuple buffer for merging.
 	 */
-	private final HashMap<Integer, LinkedList<Tuple>> mergeBuffer = new HashMap<Integer, LinkedList<Tuple>>();
-	/**
-	 * Maximum timestamp value that was forwarded already;
-	 */
-	private long latestTs = Long.MIN_VALUE;
+	private StreamMerger<Tuple> merger;
 	
 	
 	
@@ -94,7 +88,7 @@ public class TimestampMerger implements IRichBolt {
 	}
 	
 	/**
-	 * Creates a new TimestampOrderChecker wrapper that wraps the given bolt instance.
+	 * Instantiates a new {@link TimestampMerger} that wrapped the given bolt.
 	 * 
 	 * @param wrappedBolt
 	 *            The bolt to be wrapped.
@@ -113,92 +107,33 @@ public class TimestampMerger implements IRichBolt {
 	
 	
 	@Override
-	public void cleanup() {
-		this.wrappedBolt.cleanup();
+	public void prepare(@SuppressWarnings("rawtypes") Map arg0, TopologyContext arg1, OutputCollector arg2) {
+		// for each logical input stream (ie, each producer bolt), we get an input partition for each of its tasks
+		LinkedList<Integer> taskIds = new LinkedList<Integer>();
+		for(Entry<GlobalStreamId, Grouping> inputStream : arg1.getThisSources().entrySet()) {
+			taskIds.addAll(arg1.getComponentTasks(inputStream.getKey().get_componentId()));
+		}
+		
+		if(this.tsIndex != -1) {
+			assert (this.tsAttributeName == null);
+			this.merger = new StreamMerger<Tuple>(taskIds, this.tsIndex);
+		} else {
+			assert (this.tsAttributeName != null);
+			this.merger = new StreamMerger<Tuple>(taskIds, this.tsAttributeName);
+			
+		}
+		
+		this.wrappedBolt.prepare(arg0, arg1, arg2);
 	}
 	
 	@Override
 	public void execute(Tuple tuple) {
-		// if tuple has a ts-value that is equal to the latest ts-value, we can immediately forward the tuple
-		if(this.getTsValue(tuple) == this.latestTs) {
-			this.wrappedBolt.execute(tuple);
-			return;
-		}
+		this.merger.addTuple(new Integer(tuple.getSourceTask()), tuple);
 		
-		// add input tuple to merge buffer
-		Integer taskId = new Integer(tuple.getSourceTask());
-		try {
-			this.mergeBuffer.get(taskId).addLast(tuple);
-		} catch(NullPointerException e) {
-			System.out.println(e);
+		Tuple t;
+		while((t = this.merger.getNextTuple()) != null) {
+			this.wrappedBolt.execute(t);
 		}
-		
-		// check if we can safely extract an input tuple from the buffer and hand it to the wrapped bolt
-		while(true) {
-			long minTsFound = Long.MAX_VALUE;
-			
-			for(Entry<Integer, LinkedList<Tuple>> taskBuffer : this.mergeBuffer.entrySet()) {
-				try {
-					Tuple t = taskBuffer.getValue().getFirst();
-					long ts = this.getTsValue(t);
-					if(ts < minTsFound) {
-						minTsFound = ts;
-					}
-				} catch(NoSuchElementException e) {
-					// if this exception occurs, at least one input buffer is empty;
-					// thus, we cannot extract any input tuple from the buffer safely
-					// => we are done and return
-					return;
-				}
-			}
-			this.latestTs = minTsFound;
-			
-			// we extract tuples from the task buffer containing the minimum timestamp
-			// if multiple tuple which have minimum timestamp are present, we extract all of them
-			for(Entry<Integer, LinkedList<Tuple>> taskBuffer : this.mergeBuffer.entrySet()) {
-				LinkedList<Tuple> buffer = taskBuffer.getValue();
-				while(buffer.size() > 0) {
-					Tuple t = buffer.getFirst();
-					
-					if(this.getTsValue(t) == minTsFound) {
-						buffer.removeFirst();
-						this.wrappedBolt.execute(t);
-					} else {
-						// if the timestamp is not equal the minimum timestamp, we are done
-						// the current and all other remaining tuples will have a larger timestamp than minimum
-						// timestamp
-						break;
-					}
-				}
-				
-			}
-		}
-	}
-	
-	private long getTsValue(Tuple tuple) {
-		if(this.tsIndex != -1) {
-			return tuple.getLong(this.tsIndex).longValue();
-		}
-		
-		return tuple.getLongByField(this.tsAttributeName).longValue();
-	}
-	
-	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map arg0, TopologyContext arg1, OutputCollector arg2) {
-		// we need to get an entry in mergeBuffer for each task we receive tuples from in order to merge tuples
-		// correctly
-		// for each logical input stream, we need to get all tasks
-		for(Entry<GlobalStreamId, Grouping> inputStream : arg1.getThisSources().entrySet()) {
-			// get ID of bolt that write to the input stream
-			String producer = inputStream.getKey().get_componentId();
-			
-			// get all tasks ID of the producer bolt and add an entry to the buffer for each task
-			for(Integer task : arg1.getComponentTasks(producer)) {
-				this.mergeBuffer.put(task, new LinkedList<Tuple>());
-			}
-		}
-		
-		this.wrappedBolt.prepare(arg0, arg1, arg2);
 	}
 	
 	@Override
@@ -209,6 +144,11 @@ public class TimestampMerger implements IRichBolt {
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		return this.wrappedBolt.getComponentConfiguration();
+	}
+	
+	@Override
+	public void cleanup() {
+		this.wrappedBolt.cleanup();
 	}
 	
 }
