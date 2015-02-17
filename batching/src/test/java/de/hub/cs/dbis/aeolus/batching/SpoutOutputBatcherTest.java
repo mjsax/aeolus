@@ -22,18 +22,13 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import static org.mockito.Mockito.mock;
 
-import java.util.HashMap;
 import java.util.Random;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import backtype.storm.LocalCluster;
 import backtype.storm.topology.IRichSpout;
-import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Fields;
-import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 
 
 
@@ -81,39 +76,6 @@ public class SpoutOutputBatcherTest {
 	@Test
 	public void testDeactivate() {
 		
-	}
-	
-	@SuppressWarnings("rawtypes")
-	@Test
-	public void testNextTupleSimpleShuffle() {
-		final int maxValue = 1000;
-		final int batchSize = 1 + this.r.nextInt(5);
-		final int numberOfAttributes = 1;
-		final Integer spoutDop = new Integer(1);
-		final Integer boltDop = new Integer(1);
-		
-		LocalCluster cluster = new LocalCluster();
-		TopologyBuilder builder = new TopologyBuilder();
-		
-		builder.setSpout(VerifyBolt.SPOUT_ID, new RandomSpout(numberOfAttributes, maxValue, new String[] {"stream1"},
-			this.seed), spoutDop);
-		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
-			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
-		
-		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields("a"))), boltDop)
-			.shuffleGrouping(VerifyBolt.SPOUT_ID, "stream1").shuffleGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2");
-		
-		cluster.submitTopology("test", new HashMap(), builder.createTopology());
-		
-		try {
-			Thread.sleep(2 * 1000);
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		// TODO: add batch flush test
-		cluster.killTopology("test");
-		cluster.shutdown();
 	}
 	
 	@Test

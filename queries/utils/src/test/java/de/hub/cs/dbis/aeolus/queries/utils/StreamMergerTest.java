@@ -61,6 +61,8 @@ public class StreamMergerTest {
 	private long seed;
 	private Random r;
 	
+	
+	
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
@@ -256,7 +258,7 @@ public class StreamMergerTest {
 			
 		}
 		
-		Collections.sort(expectedResult, new Comp(this.r));
+		Collections.sort(expectedResult, new Comp());
 		
 		List<Object> lastRemoved = null;
 		while(expectedResult.size() > result.size()) {

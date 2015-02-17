@@ -105,8 +105,10 @@ public class OrderedInputSpoutTest {
 	}
 	
 	
+	
 	private long seed;
 	private Random r;
+	
 	
 	
 	@Before
@@ -115,6 +117,8 @@ public class OrderedInputSpoutTest {
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 	}
+	
+	
 	
 	@Test
 	public void testSingleEmptyPartition() {
@@ -132,7 +136,7 @@ public class OrderedInputSpoutTest {
 		spout.nextTuple();
 		spout.nextTuple();
 		
-		Assert.assertEquals(col.output.size(), 0);
+		Assert.assertEquals(0, col.output.size());
 	}
 	
 	@Test
@@ -154,7 +158,7 @@ public class OrderedInputSpoutTest {
 		spout.nextTuple();
 		spout.nextTuple();
 		
-		Assert.assertEquals(col.output.size(), 0);
+		Assert.assertEquals(0, col.output.size());
 	}
 	
 	@Test
@@ -184,9 +188,9 @@ public class OrderedInputSpoutTest {
 		spout.nextTuple();
 		spout.nextTuple();
 		
-		Assert.assertEquals(col.output.size(), 1);
-		Assert.assertNotEquals(col.output.get(Utils.DEFAULT_STREAM_ID), null);
-		Assert.assertEquals(col.output.get(Utils.DEFAULT_STREAM_ID), expectedResult);
+		Assert.assertEquals(1, col.output.size());
+		Assert.assertNotEquals(null, col.output.get(Utils.DEFAULT_STREAM_ID));
+		Assert.assertEquals(expectedResult, col.output.get(Utils.DEFAULT_STREAM_ID));
 	}
 	
 	@Test
@@ -214,7 +218,7 @@ public class OrderedInputSpoutTest {
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String(" 3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3 ")}));
-		Collections.sort(expectedResult, new Comp(this.r));
+		Collections.sort(expectedResult, new Comp());
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};
 		
@@ -291,7 +295,7 @@ public class OrderedInputSpoutTest {
 			partition3.add(number + " ");
 			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(number + " ")}));
 		}
-		Collections.sort(expectedResult, new Comp(this.r));
+		Collections.sort(expectedResult, new Comp());
 		
 		@SuppressWarnings("unchecked")
 		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};

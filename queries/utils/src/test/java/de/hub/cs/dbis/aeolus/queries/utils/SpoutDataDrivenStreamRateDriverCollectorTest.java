@@ -45,12 +45,16 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 	private long seed;
 	private Random r;
 	
+	
+	
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 	}
+	
+	
 	
 	@Test
 	public void testCollector() {

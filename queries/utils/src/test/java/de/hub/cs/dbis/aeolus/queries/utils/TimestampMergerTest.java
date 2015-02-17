@@ -85,6 +85,9 @@ public class TimestampMergerTest {
 	private final static List<List<Object>> result = new LinkedList<List<Object>>();
 	private static LinkedList<Tuple>[] input;
 	
+	private long seed;
+	private Random r;
+	
 	@Mock private GeneralTopologyContext contextMock;
 	@Mock private TopologyContext topologyContextMock;
 	
@@ -109,18 +112,13 @@ public class TimestampMergerTest {
 		checker = new TimestampOrderChecker(boltMockStatic, tsIndex, duplicates);
 	}
 	
-	private long seed;
-	private Random r;
+	
 	
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
-	}
-	
-	@Before
-	public void prepareTest() {
 		forwarder.prepare(TimestampMergerTest.boltConfig, null, null);
 	}
 	
@@ -173,8 +171,6 @@ public class TimestampMergerTest {
 		
 		return createdTasks;
 	}
-	
-	
 	
 	@Test
 	public void testExecuteMergeStrictSingleTaskSimple() {

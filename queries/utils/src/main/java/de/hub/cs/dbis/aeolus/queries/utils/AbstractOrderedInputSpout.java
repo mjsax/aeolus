@@ -85,10 +85,11 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	@Override
 	public final void open(Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
 		// need to create new map because given one is read only
-		this.openSimple(new HashMap(conf), context);
+		HashMap newConfig = new HashMap(conf);
+		this.openSimple(newConfig, context);
 		
 		int numberOfPartitons = 1;
-		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
+		Integer numPartitions = (Integer)newConfig.get(NUMBER_OF_PARTITIONS);
 		if(numPartitions != null) {
 			numberOfPartitons = numPartitions.intValue();
 		}

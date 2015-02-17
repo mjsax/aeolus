@@ -118,7 +118,6 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 		conf.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
 	}
 	
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -129,6 +128,9 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	public void nextTuple() {
 		int numberOfFiles = this.inputFiles.size();
 		for(int i = 0; i < numberOfFiles; ++i) {
+			if(this.inputFiles.get(i) == null) { // check for closed partition
+				continue;
+			}
 			String line = null;
 			try {
 				line = this.inputFiles.get(i).readLine();
@@ -151,12 +153,9 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 				} catch(IOException e) {
 					this.logger.error("Closing input file reader failed.", e);
 				}
-				this.inputFiles.remove(i);
-				--numberOfFiles;
-				--i;
+				this.inputFiles.set(i, null); // do not remove -> would change partition IDs in super.emitNextTuple
 			}
 		}
-		
 	}
 	
 	/**

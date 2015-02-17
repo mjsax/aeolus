@@ -86,8 +86,6 @@ public class SpoutFixedStreamRateDriverTest {
 		Assert.assertEquals(config, driver.getComponentConfiguration());
 	}
 	
-	
-	
 	@Test
 	public void testNextTuple() {
 		SpoutFixedStreamRateDriver driver = new SpoutFixedStreamRateDriver(new IncSpout(), 10);
