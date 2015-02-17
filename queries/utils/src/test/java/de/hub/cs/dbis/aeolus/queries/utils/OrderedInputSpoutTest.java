@@ -21,9 +21,11 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  */
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,12 +37,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
+import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 
@@ -59,6 +64,7 @@ public class OrderedInputSpoutTest {
 		private final LinkedList<String>[] data;
 		private final Random rr;
 		
+		Map<Values, List<Integer>> emitted;
 		
 		public TestOrderedInputSpout(LinkedList<String>[] data, Random rr) {
 			this.data = data;
@@ -70,16 +76,16 @@ public class OrderedInputSpoutTest {
 		@Override
 		public void nextTuple() {
 			int index = this.rr.nextInt(this.data.length);
-			
 			int old = index;
 			while(this.data[index].size() == 0) {
 				index = (index + 1) % this.data.length;
 				if(index == old) {
+					this.emitted = super.emitNextTuple(null, null, null);
 					return;
 				}
 			}
 			String line = this.data[index].removeFirst();
-			super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
+			this.emitted = super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
 		}
 		
 		@Override
@@ -119,6 +125,78 @@ public class OrderedInputSpoutTest {
 	}
 	
 	
+	
+	@Test
+	public void testOpen() throws Exception {
+		AbstractOrderedInputSpout<?> spout = mock(AbstractOrderedInputSpout.class);
+		
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("dummyKey", "dummyValue");
+		
+		TopologyContext context = mock(TopologyContext.class);
+		
+		spout.open(map, context, null);
+		
+		verify(spout).openSimple(Matchers.eq(map), Matchers.same(context));
+	}
+	
+	@Test
+	public void testDeclareOutputFields() {
+		AbstractOrderedInputSpout<?> spout = mock(AbstractOrderedInputSpout.class);
+		
+		TestDeclarer declarer = new TestDeclarer();
+		spout.declareOutputFields(declarer);
+		
+		Assert.assertEquals(1, declarer.direct.size());
+		Assert.assertEquals(1, declarer.schema.size());
+		Assert.assertEquals(1, declarer.streamId.size());
+		
+		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
+		Assert.assertEquals(2, declarer.schema.get(0).size());
+		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
+		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
+		Assert.assertEquals(null, declarer.streamId.get(0));
+	}
+	
+	@Test
+	public void testClosePartiton() {
+		LinkedList<String> partition1 = new LinkedList<String>();
+		partition1.add("0");
+		LinkedList<String> partition2 = new LinkedList<String>();
+		partition2.add("1");
+		@SuppressWarnings("unchecked")
+		LinkedList<String>[] data = new LinkedList[] {partition1, partition2};
+		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
+		
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		map.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(2));
+		spout.open(map, null, mock(SpoutOutputCollector.class));
+		
+		spout.nextTuple();
+		Assert.assertEquals(0, spout.emitted.size());
+		
+		spout.nextTuple();
+		Assert.assertEquals(1, spout.emitted.size());
+		int partition = ((Long)spout.emitted.keySet().iterator().next().get(0)).intValue();
+		spout.emitted.clear();
+		
+		spout.nextTuple();
+		Assert.assertEquals(0, spout.emitted.size());
+		
+		Assert.assertFalse(spout.closePartition(new Integer(1 - partition)));
+		Assert.assertTrue(spout.closePartition(new Integer(partition)));
+		
+		spout.nextTuple();
+		Assert.assertEquals(1, spout.emitted.size());
+		
+		spout.nextTuple();
+		Assert.assertEquals(0, spout.emitted.size());
+		
+		Assert.assertTrue(spout.closePartition(new Integer(1 - partition)));
+		
+		spout.nextTuple();
+		Assert.assertEquals(0, spout.emitted.size());
+	}
 	
 	@Test
 	public void testSingleEmptyPartition() {

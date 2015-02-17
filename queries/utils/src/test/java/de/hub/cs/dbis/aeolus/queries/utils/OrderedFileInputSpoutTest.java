@@ -22,6 +22,7 @@ package de.hub.cs.dbis.aeolus.queries.utils;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -70,6 +72,140 @@ public class OrderedFileInputSpoutTest {
 		this.seed = System.currentTimeMillis();
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
+	}
+	
+	@Test
+	public void testOpenSimpleDefault() throws Exception {
+		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
+		
+		spout.open(mock(Map.class), mock(TopologyContext.class), mock(SpoutOutputCollector.class));
+		try {
+			spout.closePartition(new Integer(0));
+			Assert.fail();
+		} catch(RuntimeException e) {
+			// expected
+		}
+		
+		
+		
+		Config conf = new Config();
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(2));
+		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
+		try {
+			spout.closePartition(new Integer(0));
+			Assert.fail();
+		} catch(RuntimeException e) {
+			// expected
+		}
+		
+		
+		
+		FileReader fileReaderMock = PowerMockito.mock(FileReader.class);
+		PowerMockito.whenNew(FileReader.class).withAnyArguments().thenReturn(fileReaderMock);
+		
+		BufferedReader bufferedReaderMock = PowerMockito.mock(BufferedReader.class);
+		PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
+		
+		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
+		Assert.assertTrue(spout.closePartition(new Integer(0)));
+		try {
+			spout.closePartition(new Integer(1));
+			Assert.fail();
+		} catch(RuntimeException e) {
+			// expected
+		}
+	}
+	
+	@Test
+	public void testOpenSimpleSinglePartition() throws Exception {
+		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
+		
+		Config conf = new Config();
+		conf.put(TestOrderedFileInputSpout.INPUT_FILE_NAME, "dummyFileName");
+		
+		FileReader fileReaderMock = PowerMockito.mock(FileReader.class);
+		PowerMockito.whenNew(FileReader.class).withArguments("dummyFileName").thenReturn(fileReaderMock);
+		
+		BufferedReader bufferedReaderMock = PowerMockito.mock(BufferedReader.class);
+		PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
+		
+		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
+		Assert.assertTrue(spout.closePartition(new Integer(0)));
+		try {
+			spout.closePartition(new Integer(1));
+			Assert.fail();
+		} catch(RuntimeException e) {
+			// expected
+		}
+	}
+	
+	@Test
+	public void testOpenSimpleMultiplePartitions() throws Exception {
+		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
+		
+		Config conf = new Config();
+		conf.put(TestOrderedFileInputSpout.INPUT_FILE_NAME, "dummyFileName-");
+		conf.put(TestOrderedFileInputSpout.INPUT_FILE_SUFFIXES, Arrays.asList(new String[] {"1", "2", "3"}));
+		
+		for(int i = 1; i <= 3; ++i) {
+			FileReader fileReaderMock = PowerMockito.mock(FileReader.class);
+			PowerMockito.whenNew(FileReader.class).withArguments("dummyFileName-" + i).thenReturn(fileReaderMock);
+			
+			BufferedReader bufferedReaderMock = PowerMockito.mock(BufferedReader.class);
+			PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
+		}
+		List<Integer> taskMock = new LinkedList<Integer>();
+		taskMock.add(new Integer(0));
+		TopologyContext contextMock = mock(TopologyContext.class);
+		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
+		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		
+		spout.open(conf, contextMock, mock(SpoutOutputCollector.class));
+		Assert.assertTrue(spout.closePartition(new Integer(0)));
+		Assert.assertTrue(spout.closePartition(new Integer(1)));
+		Assert.assertTrue(spout.closePartition(new Integer(2)));
+		try {
+			spout.closePartition(new Integer(3));
+			Assert.fail();
+		} catch(RuntimeException e) {
+			// expected
+		}
+	}
+	
+	@Test
+	public void testClose() throws Exception {
+		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
+		
+		Config conf = new Config();
+		conf.put(TestOrderedFileInputSpout.INPUT_FILE_NAME, "dummyFileName-");
+		conf.put(TestOrderedFileInputSpout.INPUT_FILE_SUFFIXES, Arrays.asList(new String[] {"1", "2", "3"}));
+		
+		
+		BufferedReader[] readerMocks = new BufferedReader[3];
+		for(int i = 1; i <= 3; ++i) {
+			FileReader fileReaderMock = PowerMockito.mock(FileReader.class);
+			PowerMockito.whenNew(FileReader.class).withArguments("dummyFileName-" + i).thenReturn(fileReaderMock);
+			
+			readerMocks[i - 1] = PowerMockito.mock(BufferedReader.class);
+			PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(readerMocks[i - 1]);
+		}
+		List<Integer> taskMock = new LinkedList<Integer>();
+		taskMock.add(new Integer(0));
+		TopologyContext contextMock = mock(TopologyContext.class);
+		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
+		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		
+		spout.open(conf, contextMock, mock(SpoutOutputCollector.class));
+		
+		if(this.r.nextBoolean()) {
+			Assert.assertTrue(spout.closePartition(new Integer(this.r.nextInt(3))));
+		}
+		
+		spout.close();
+		
+		for(int i = 0; i < 3; ++i) {
+			verify(readerMocks[i]).close();
+		}
 	}
 	
 	@Test
@@ -260,38 +396,23 @@ public class OrderedFileInputSpoutTest {
 		
 		spout.open(conf, contextMock, new SpoutOutputCollector(col));
 		
-		final int numberOfNextTupleCalls = (int)(0.8 * totalInputSize) + this.r.nextInt((int)(0.4 * totalInputSize));
-		for(int i = 0; i < numberOfNextTupleCalls; ++i) {
+		for(int i = 0; i < totalInputSize + 5; ++i) {
 			spout.nextTuple();
 		}
 		
 		Assert.assertEquals(1, col.output.size());
 		Assert.assertNotEquals(null, col.output.get(Utils.DEFAULT_STREAM_ID));
-		
-		List<Object> lastRemoved = null;
-		while(expectedResult.size() > col.output.get(Utils.DEFAULT_STREAM_ID).size()) {
-			lastRemoved = expectedResult.removeLast();
-		}
-		if(lastRemoved != null) {
-			while(expectedResult.size() > 0
-				&& ((Long)lastRemoved.get(0)).longValue() == ((Long)expectedResult.getLast().get(0)).longValue()) {
-				expectedResult.removeLast();
-			}
-		}
+		Assert.assertEquals(totalInputSize, col.output.get(Utils.DEFAULT_STREAM_ID).size());
 		
 		while(expectedResult.size() > 0) {
 			Set<List<Object>> expectedSubset = new HashSet<List<Object>>();
 			Set<List<Object>> resultSubset = new HashSet<List<Object>>();
-			List<Object> first;
+			long ts;
 			do {
-				first = expectedResult.removeFirst();
-				expectedSubset.add(first);
+				ts = ((Long)expectedResult.getFirst().get(0)).longValue();
+				expectedSubset.add(expectedResult.removeFirst());
 				resultSubset.add(col.output.get(Utils.DEFAULT_STREAM_ID).removeFirst());
-				
-				if(expectedResult.size() == 0) {
-					break;
-				}
-			} while(((Long)expectedResult.getFirst().get(0)).longValue() == ((Long)first.get(0)).longValue());
+			} while(expectedResult.size() > 0 && ts == ((Long)expectedResult.getFirst().get(0)).longValue());
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}

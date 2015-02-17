@@ -80,6 +80,10 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 */
 	private final ArrayList<BufferedReader> inputFiles = new ArrayList<BufferedReader>();
 	/**
+	 * Emit-Round-Robin-Index.
+	 */
+	private int emitIndex = -1;
+	/**
 	 * Map containing all tuples emitted by the last call of {@link #emitNextTuple(Integer, Long, String)}. The map
 	 * including the task IDs each tuple was sent to.
 	 */
@@ -126,20 +130,23 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 */
 	@Override
 	public void nextTuple() {
-		int numberOfFiles = this.inputFiles.size();
+		final int numberOfFiles = this.inputFiles.size();
 		for(int i = 0; i < numberOfFiles; ++i) {
-			if(this.inputFiles.get(i) == null) { // check for closed partition
+			this.emitIndex = (this.emitIndex + 1) % numberOfFiles;
+			
+			if(this.inputFiles.get(this.emitIndex) == null) { // check for closed partition
 				continue;
 			}
 			String line = null;
 			try {
-				line = this.inputFiles.get(i).readLine();
+				line = this.inputFiles.get(this.emitIndex).readLine();
 			} catch(IOException e) {
 				this.logger.error(e.toString());
 			}
 			if(line != null) {
 				try {
-					this.emitted = super.emitNextTuple(new Integer(i), new Long(this.extractTimestamp(line)), line);
+					this.emitted = super.emitNextTuple(new Integer(this.emitIndex),
+						new Long(this.extractTimestamp(line)), line);
 					
 					if(this.emitted.size() != 0) {
 						return;
@@ -147,13 +154,17 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 				} catch(ParseException e) {
 					this.logger.error(e.toString());
 				}
-			} else if(super.closePartition(new Integer(i))) {
+			} else if(super.closePartition(new Integer(this.emitIndex))) {
 				try {
-					this.inputFiles.get(i).close();
+					this.inputFiles.get(this.emitIndex).close();
 				} catch(IOException e) {
 					this.logger.error("Closing input file reader failed.", e);
 				}
-				this.inputFiles.set(i, null); // do not remove -> would change partition IDs in super.emitNextTuple
+				this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
+															// super.emitNextTuple
+			} else {
+				// we cannot put any more data,
+				this.emitted = super.emitNextTuple(null, null, null);
 			}
 		}
 	}
@@ -175,7 +186,9 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	public void close() {
 		for(BufferedReader reader : this.inputFiles) {
 			try {
-				reader.close();
+				if(reader != null) {
+					reader.close();
+				}
 			} catch(IOException e) {
 				this.logger.error("Closing input file reader failed.", e);
 			}

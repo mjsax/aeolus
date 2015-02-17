@@ -135,11 +135,9 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 */
 	// TODO: add support for non-default and/or multiple output streams (what about directEmit(...)?)
 	protected final Map<Values, List<Integer>> emitNextTuple(Integer index, Long timestamp, T tuple) {
-		assert (index != null);
-		assert (timestamp != null);
-		assert (tuple != null);
-		
-		this.merger.addTuple(index, new Values(timestamp, tuple));
+		if(index != null && timestamp != null && tuple != null) {
+			this.merger.addTuple(index, new Values(timestamp, tuple));
+		}
 		
 		Values t;
 		Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();

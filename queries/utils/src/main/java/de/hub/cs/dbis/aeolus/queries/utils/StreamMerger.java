@@ -157,8 +157,7 @@ class StreamMerger<T> {
 			}
 		}
 		
-		if(eachBufferFilled) {
-			assert (minTsPartitionNumber != null);
+		if(eachBufferFilled && minTsPartitionNumber != null) {
 			this.latestTs = minTsFound;
 			return this.mergeBuffer.get(minTsPartitionNumber).removeFirst();
 		}
