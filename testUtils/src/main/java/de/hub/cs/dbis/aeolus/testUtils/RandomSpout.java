@@ -41,9 +41,10 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link IncSpout} emit tuples with random values to one or multiple output streams. The output schema has a single
- * integer attribute with name {@code a} by default. However, up to 10 attributes can be generated (with names {@code a}
- * to {@code j}). The generated numbers for each attribute are between {@code 1} and {@link #maxValue} (both inclusive).
+ * {@link RandomSpout} emits tuples with random values to one or multiple output streams (ie, data is replicated to all
+ * output streams). The output schema has a single integer attribute with name {@code a} by default. However, up to 10
+ * attributes can be generated (with names {@code a} to {@code j}). The generated numbers for each attribute are between
+ * {@code 1} and {@code maxValue} (both inclusive).
  * 
  * @author Matthias J. Sax
  */
@@ -66,7 +67,7 @@ public class RandomSpout implements IRichSpout {
 	
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with a single attribute to the default output stream.
+	 * Instantiates a new {@link RandomSpout} that emits tuples with a single attribute to the default output stream.
 	 * 
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
@@ -76,7 +77,7 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with a single attribute to the given output streams.
+	 * Instantiates a new {@link RandomSpout} that emits tuples with a single attribute to the given output streams.
 	 * 
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
@@ -88,8 +89,8 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes} attributes to the default
-	 * output stream.
+	 * Instantiates a new {@link RandomSpout} that emits tuples with {@code numberOfAttributes} attributes to the
+	 * default output stream.
 	 * 
 	 * @param numberOfAttributes
 	 *            The number of attributes of the output tuples.
@@ -101,7 +102,7 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes} attributes to the given
+	 * Instantiates a new {@link RandomSpout} that emits tuples with {@code numberOfAttributes} attributes to the given
 	 * output streams.
 	 * 
 	 * @param numberOfAttributes
@@ -116,8 +117,8 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} with initial {@code seed} that emits tuple with {@code numberOfAttributes}
-	 * attributes to the given output streams.
+	 * Instantiates a new {@link RandomSpout} with initial {@code seed} that emits tuples with
+	 * {@code numberOfAttributes} attributes to the given output streams.
 	 * 
 	 * @param numberOfAttributes
 	 *            The number of attributes of the output tuples.

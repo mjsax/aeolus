@@ -40,8 +40,9 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link ForwardBolt} forwards each incoming tuple to one or multiple output streams. All incoming tuples must have the
- * same schema. {@link ForwardBolt} acknowledges all forwarded tuples.
+ * {@link ForwardBolt} forwards each incoming tuple to one or multiple output streams (ie, data is replicated to all
+ * output streams). All incoming tuples must have the same schema. {@link ForwardBolt} acknowledges all forwarded
+ * tuples.
  * 
  * @author Matthias J. Sax
  */
@@ -57,7 +58,7 @@ public class ForwardBolt implements IRichBolt {
 	
 	
 	/**
-	 * Instantiates a new {@link ForwardBolt} for the given tuple schema that emits all tuple to the default output
+	 * Instantiates a new {@link ForwardBolt} for the given tuple schema that emits all tuples to the default output
 	 * stream.
 	 * 
 	 * @param schema
@@ -68,7 +69,7 @@ public class ForwardBolt implements IRichBolt {
 	}
 	
 	/**
-	 * Instantiates a new {@link ForwardBolt} for the given tuple schema that emits all tuple to the given output
+	 * Instantiates a new {@link ForwardBolt} for the given tuple schema that emits all tuples to the given output
 	 * streams.
 	 * 
 	 * @param schema

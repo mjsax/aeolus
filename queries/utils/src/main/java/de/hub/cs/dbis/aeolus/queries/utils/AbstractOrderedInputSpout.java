@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
@@ -44,12 +47,12 @@ import backtype.storm.tuple.Values;
  * <em>partitions</em>) and pushes raw data into the topology. The default number of used partitions is one but can be
  * configured using {@link #NUMBER_OF_PARTITIONS}. The IDs of the partitions are {@code 0,...,NUMBER_OF_PARTITIONS-1}.<br />
  * <br />
- * Input data must be sorted in ascending timestamp order from each partition. For each successfully processed input
+ * Input data must be sorted in ascending timestamp order in each partition. For each successfully processed input
  * tuple, a single output tuple is emitted.<br />
  * <br />
  * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:T>}<br />
- * Attribute {@code ts} contains the extracted timestamp value of the processed input line and {@code rawTuple} contains
- * the <em>complete</em> input tuple.<br />
+ * Attribute {@code ts} contains the extracted timestamp value of the processed input tuple and {@code rawTuple}
+ * contains the <em>complete</em> input tuple.<br />
  * <br />
  * {@link AbstractOrderedInputSpout} is parallelizable. If multiple input partitions are assigned to a single task,
  * {@link AbstractOrderedInputSpout} ensures that tuples are emitted in ascending timestamp order. In case of timestamp
@@ -63,11 +66,13 @@ import backtype.storm.tuple.Values;
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private static final long serialVersionUID = 6224448887936832190L;
 	
+	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
+	
 	
 	
 	/**
-	 * Can be used to specify an number of input partitions that are available (default value is one). The configuration
-	 * value is expected to be of type {@link Integer}.
+	 * Can be used to specify the number of input partitions that are available (default value is one). The
+	 * configuration value is expected to be of type {@link Integer}.
 	 */
 	public static final String NUMBER_OF_PARTITIONS = "OrderedInputSpout.partitions";
 	/**
@@ -81,18 +86,21 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	
 	
 	
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Sets up internal data structures according to the number of used partitions {@link #NUMBER_OF_PARTITIONS}. Calls
+	 * {@link #openSimple(Map, TopologyContext)} in the beginning and forwards parameters {@code Map} and
+	 * {@code TopologyContext}.
+	 */
 	@Override
-	public final void open(Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
-		// need to create new map because given one is read only
-		HashMap newConfig = new HashMap(conf);
-		this.openSimple(newConfig, context);
-		
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
 		int numberOfPartitons = 1;
-		Integer numPartitions = (Integer)newConfig.get(NUMBER_OF_PARTITIONS);
+		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
 		if(numPartitions != null) {
 			numberOfPartitons = numPartitions.intValue();
 		}
+		this.logger.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
 		
 		Integer[] partitionIds = new Integer[numberOfPartitons];
 		for(int i = 0; i < numberOfPartitons; ++i) {
@@ -100,21 +108,6 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		}
 		this.merger = new StreamMerger<Values>(Arrays.asList(partitionIds), 0);
 		this.collector = collector;
-	}
-	
-	/**
-	 * Replaces the regular {@link #open(Map, TopologyContext, SpoutOutputCollector)} method and will be called by the
-	 * regular one at the very beginning.
-	 * 
-	 * @param conf
-	 *            The Storm configuration for this spout. This is the configuration provided to the topology merged in
-	 *            with cluster configuration on this machine.
-	 * @param context
-	 *            This object can be used to get information about this task's place within the topology, including the
-	 *            task id and component id of this task, input and output information, etc.
-	 */
-	protected void openSimple(@SuppressWarnings("rawtypes") Map conf, TopologyContext context) {
-		// empty
 	}
 	
 	/**
@@ -135,6 +128,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 */
 	// TODO: add support for non-default and/or multiple output streams (what about directEmit(...)?)
 	protected final Map<Values, List<Integer>> emitNextTuple(Integer index, Long timestamp, T tuple) {
+		this.logger.trace("Received new output tuple (partitionId, ts, tuple): {}, {}, {}", index, timestamp, tuple);
 		if(index != null && timestamp != null && tuple != null) {
 			this.merger.addTuple(index, new Values(timestamp, tuple));
 		}
@@ -142,6 +136,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		Values t;
 		Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
 		while((t = this.merger.getNextTuple()) != null) {
+			this.logger.trace("Emitting tuple: {}", t);
 			emitted.put(t, this.collector.emit(t));
 		}
 		

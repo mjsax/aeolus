@@ -82,8 +82,8 @@ public class TimestampMergerTest {
 	
 	private final static String bolt = "b";
 	
-	private final static List<List<Object>> result = new LinkedList<List<Object>>();
-	private static LinkedList<Tuple>[] input;
+	private final List<List<Object>> result = new LinkedList<List<Object>>();
+	private LinkedList<Tuple>[] input;
 	
 	private long seed;
 	private Random r;
@@ -257,11 +257,11 @@ public class TimestampMergerTest {
 		merger.prepare(null, this.topologyContextMock, new OutputCollector(collector));
 		
 		
-		input = new LinkedList[createdTasks];
+		this.input = new LinkedList[createdTasks];
 		for(int i = 0; i < createdTasks; ++i) {
-			input[i] = new LinkedList<Tuple>();
+			this.input[i] = new LinkedList<Tuple>();
 		}
-		result.clear();
+		this.result.clear();
 		
 		
 		int numberDistinctValues = 1;
@@ -278,8 +278,8 @@ public class TimestampMergerTest {
 			Long ts = new Long(numberDistinctValues - 1);
 			value.set(schema.fieldIndex("ts"), ts);
 			
-			result.add(value);
-			input[taskId].add(new TupleImpl(this.contextMock, value, taskId, null));
+			this.result.add(value);
+			this.input[taskId].add(new TupleImpl(this.contextMock, value, taskId, null));
 			
 			if(++counter == numberOfTuples) {
 				break;
@@ -297,11 +297,11 @@ public class TimestampMergerTest {
 		for(int i = 0; i < numberOfTuples; ++i) {
 			int taskId = this.r.nextInt(createdTasks);
 			
-			while(input[taskId].size() == 0) {
+			while(this.input[taskId].size() == 0) {
 				taskId = (taskId + 1) % createdTasks;
 			}
 			
-			Tuple t = input[taskId].removeFirst();
+			Tuple t = this.input[taskId].removeFirst();
 			max[taskId] = t.getLongByField("ts").intValue();
 			++bucketSums[taskId][max[taskId]];
 			merger.execute(t);
@@ -317,7 +317,7 @@ public class TimestampMergerTest {
 			}
 		}
 		
-		Assert.assertEquals(result.subList(0, result.size() - stillBuffered),
+		Assert.assertEquals(this.result.subList(0, this.result.size() - stillBuffered),
 			collector.output.get(Utils.DEFAULT_STREAM_ID));
 		Assert.assertTrue(collector.acked.size() == numberOfTuples - stillBuffered);
 		Assert.assertTrue(collector.failed.size() == 0);

@@ -8,9 +8,10 @@
     </encoder>
   </appender>
 
-  <!-- logger name="de.hub.cs.dbis.aeolus.batching" level="TRACE"/-->
+  <!-- logger name="de.hub.cs.dbis.aeolus.queries.utils" level="TRACE"/-->
+  <!-- logger name="de.hub.cs.dbis.aeolus.testUtils" level="TRACE"/-->
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>

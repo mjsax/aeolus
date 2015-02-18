@@ -21,7 +21,6 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  */
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.Config;
@@ -125,20 +123,6 @@ public class OrderedInputSpoutTest {
 	}
 	
 	
-	
-	@Test
-	public void testOpen() throws Exception {
-		AbstractOrderedInputSpout<?> spout = mock(AbstractOrderedInputSpout.class);
-		
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("dummyKey", "dummyValue");
-		
-		TopologyContext context = mock(TopologyContext.class);
-		
-		spout.open(map, context, null);
-		
-		verify(spout).openSimple(Matchers.eq(map), Matchers.same(context));
-	}
 	
 	@Test
 	public void testDeclareOutputFields() {

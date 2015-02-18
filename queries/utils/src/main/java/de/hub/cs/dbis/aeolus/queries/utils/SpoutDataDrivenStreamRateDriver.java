@@ -139,12 +139,7 @@ public class SpoutDataDrivenStreamRateDriver<T extends Number> implements IRichS
 		
 		long nextValidEmitTime = this.startTS + this.timestampChecker.timestampLastTuple * this.timeUnit.factor;
 		
-		boolean print = true;
 		while(nextValidEmitTime - System.nanoTime() > 0) {
-			if(print) {
-				// System.out.println("busy wait");
-				print = false;
-			}
 			// busy wait
 		}
 	}

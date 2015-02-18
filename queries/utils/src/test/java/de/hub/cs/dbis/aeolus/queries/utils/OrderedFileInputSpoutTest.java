@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -75,10 +76,11 @@ public class OrderedFileInputSpoutTest {
 	}
 	
 	@Test
-	public void testOpenSimpleDefault() throws Exception {
+	public void testOpenDefault() throws Exception {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
-		spout.open(mock(Map.class), mock(TopologyContext.class), mock(SpoutOutputCollector.class));
+		Map<Object, Object> dummyConf = new HashMap<Object, Object>();
+		spout.open(dummyConf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
 		try {
 			spout.closePartition(new Integer(0));
 			Assert.fail();
@@ -117,7 +119,7 @@ public class OrderedFileInputSpoutTest {
 	}
 	
 	@Test
-	public void testOpenSimpleSinglePartition() throws Exception {
+	public void testOpenSinglePartition() throws Exception {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();
@@ -140,7 +142,7 @@ public class OrderedFileInputSpoutTest {
 	}
 	
 	@Test
-	public void testOpenSimpleMultiplePartitions() throws Exception {
+	public void testOpenMultiplePartitions() throws Exception {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();
@@ -173,7 +175,7 @@ public class OrderedFileInputSpoutTest {
 	}
 	
 	@Test
-	public void testClose() throws Exception {
+	public void testClosePartition() throws Exception {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();

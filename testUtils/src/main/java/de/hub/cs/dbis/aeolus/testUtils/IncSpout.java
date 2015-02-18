@@ -41,8 +41,9 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link IncSpout} emit tuples with increasing values to one or multiple output streams. The output schema has a single
- * {@link Long} attribute with name {@code id}. The first emitted tuple has value {@code 0}.
+ * {@link IncSpout} emits tuples with increasing values to one or multiple output streams (ie, data is replicated to all
+ * output streams). The output schema has a single {@link Long} attribute with name {@code id}. The first emitted tuple
+ * has value {@code 0}.
  * 
  * @author Matthias J. Sax
  */
@@ -71,10 +72,13 @@ public class IncSpout implements IRichSpout {
 	/**
 	 * Instantiates a new {@link IncSpout} that emits to the default output stream.
 	 * 
+	 * If unique values should be emitted, {@code probability} should be set to zero (or any negative value). For value
+	 * greater or equal to one, all emitted tuples will have the same value.
+	 * 
 	 * @param probability
 	 *            The probability that duplicates occur.
 	 * @param stepSize
-	 *            * The step size for increasing values;
+	 *            The step size for increasing values.
 	 */
 	public IncSpout(double probability, int stepSize) {
 		this(new String[] {Utils.DEFAULT_STREAM_ID}, probability, stepSize, System.currentTimeMillis());
@@ -93,12 +97,15 @@ public class IncSpout implements IRichSpout {
 	/**
 	 * Instantiates a new {@link IncSpout} that emits to the given output streams with given duplicates probability.
 	 * 
+	 * If unique values should be emitted, {@code probability} should be set to zero (or any negative value). For value
+	 * greater or equal to one, all emitted tuples will have the same value.
+	 * 
 	 * @param outputStreamIds
 	 *            The IDs of the output stream to use.
 	 * @param probability
 	 *            The probability that duplicates occur.
 	 * @param stepSize
-	 *            The step size for increasing values;
+	 *            The step size for increasing values.
 	 */
 	public IncSpout(String[] outputStreamIds, double probability, int stepSize) {
 		this(outputStreamIds, probability, stepSize, System.currentTimeMillis());
@@ -107,12 +114,15 @@ public class IncSpout implements IRichSpout {
 	/**
 	 * Instantiates a new {@link IncSpout} that emits to the given output streams with given duplicates probability.
 	 * 
+	 * If unique values should be emitted, {@code probability} should be set to zero (or any negative value). For value
+	 * greater or equal to one, all emitted tuples will have the same value.
+	 * 
 	 * @param outputStreamIds
 	 *            The IDs of the output stream to use.
 	 * @param probability
 	 *            The probability that duplicates occur.
 	 * @param stepSize
-	 *            The step size for increasing values;
+	 *            The step size for increasing values.
 	 * @param seed
 	 *            Initial seed for randomly generating duplicates.
 	 */

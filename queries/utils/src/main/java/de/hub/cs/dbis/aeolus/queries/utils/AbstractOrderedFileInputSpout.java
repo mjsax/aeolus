@@ -36,6 +36,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Values;
 
@@ -48,8 +49,9 @@ import backtype.storm.tuple.Values;
  * from multiple files (ie, each line must contain exactly one tuple). Each file is an <em>input partition</em> in
  * {@link AbstractOrderedInputSpout} terminology. The default file is {@code input}. Use {@link #INPUT_FILE_NAME} and
  * {@link #INPUT_FILE_SUFFIXES} to specify different file name(s) in the topology configuration (see
- * {@link backtype.storm.Config}).
- * 
+ * {@link backtype.storm.Config}).<br />
+ * <br />
+ * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:}{@link String}{@code >}<br />
  * 
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
  * @author Roberto Baldoni (Sapienza Università di Roma, Roma, Italy)
@@ -60,6 +62,9 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	private static final long serialVersionUID = -4690963122364704481L;
 	
 	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
+	
+	
+	
 	/**
 	 * Can be used to specify an input file name (or prefix together with {@link #INPUT_FILE_SUFFIXES}). The
 	 * configuration value is expected to be of type {@link String}.
@@ -93,7 +98,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void openSimple(@SuppressWarnings("rawtypes") Map conf, TopologyContext context) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		String fileName = (String)conf.get(INPUT_FILE_NAME);
 		if(fileName != null) {
 			this.prefix = fileName;
@@ -106,6 +111,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			
 			for(int index = context.getThisTaskIndex(); index < suffixes.size(); index += componentTaskCount) {
 				try {
+					this.logger.debug("Adding partition input file {}", this.prefix + suffixes.get(index));
 					this.inputFiles.add(new BufferedReader(new FileReader(this.prefix + suffixes.get(index))));
 				} catch(FileNotFoundException e) {
 					this.logger.error("Input file <{}> not found.", this.prefix + suffixes.get(index));
@@ -113,13 +119,17 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			}
 		} else {
 			try {
+				this.logger.debug("Adding single input file {}", this.prefix);
 				this.inputFiles.add(new BufferedReader(new FileReader(this.prefix)));
 			} catch(FileNotFoundException e) {
 				this.logger.error("Input file <{}> not found:", this.prefix);
 			}
 		}
 		
-		conf.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
+		@SuppressWarnings("rawtypes")
+		Map newConfig = new HashMap(conf); // need to copy into new HashMap because given one is read-only
+		newConfig.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
+		super.open(newConfig, context, collector);
 	}
 	
 	/**
@@ -139,6 +149,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			}
 			String line = null;
 			try {
+				this.logger.trace("Read from partition {}", new Integer(this.emitIndex));
 				line = this.inputFiles.get(this.emitIndex).readLine();
 			} catch(IOException e) {
 				this.logger.error(e.toString());
@@ -148,23 +159,28 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 					this.emitted = super.emitNextTuple(new Integer(this.emitIndex),
 						new Long(this.extractTimestamp(line)), line);
 					
+					this.logger.trace("Emitted the following tuples {}", this.emitted);
 					if(this.emitted.size() != 0) {
 						return;
 					}
 				} catch(ParseException e) {
 					this.logger.error(e.toString());
 				}
-			} else if(super.closePartition(new Integer(this.emitIndex))) {
-				try {
-					this.inputFiles.get(this.emitIndex).close();
-				} catch(IOException e) {
-					this.logger.error("Closing input file reader failed.", e);
-				}
-				this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
-															// super.emitNextTuple
 			} else {
-				// we cannot put any more data,
-				this.emitted = super.emitNextTuple(null, null, null);
+				this.logger.debug("Try to close empty partition {}", new Integer(this.emitIndex));
+				if(super.closePartition(new Integer(this.emitIndex))) {
+					try {
+						this.inputFiles.get(this.emitIndex).close();
+					} catch(IOException e) {
+						this.logger.error("Closing input file reader failed.", e);
+					}
+					this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
+																// super.emitNextTuple
+				} else {
+					// we cannot put any more data,
+					this.emitted = super.emitNextTuple(null, null, null);
+					this.logger.trace("Emitted the following tuples {}", this.emitted);
+				}
 			}
 		}
 	}
