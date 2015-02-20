@@ -4,7 +4,6 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.AuthorizationException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.utils.Utils;
@@ -65,7 +64,7 @@ public class LRBTopologyMain {
      * @param nameext
      * @throws AlreadyAliveException
      * @throws InvalidTopologyException
-     * @throws AuthorizationException 
+     * @throws java.io.FileNotFoundException
      */
     public static void main0(int offset,
             int executors,
@@ -79,7 +78,7 @@ public class LRBTopologyMain {
             boolean stormConfigDebug,
             int workers,
             String nameext
-    ) throws AlreadyAliveException, InvalidTopologyException, AuthorizationException, FileNotFoundException {
+    ) throws AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
         StopWatch stormTimer = new StopWatch(offset);
         String topologyNamePrefix = nameext + "_lrbNormal_" + Helper.readable(fields) + "_L" + xways + "_"
                 + workers + "W_T" + tasks + "_" + executors + "E_O" + offset;
