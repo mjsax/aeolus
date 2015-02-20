@@ -6,130 +6,139 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.joda.time.DateTime;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import storm.lrb.tools.TupleHelpers;
 
 /**
- * This bolt bufferwrites all recieved tuples to the given filename in the STORM_LOCAL_DIR.
- * The buffersize can be adjusted with the constructor.
- * (flushes every two minutes, this can be adjusted by changing the TOPOLOGY_TICK_TUPLE_FREQ_SECS)
+ * This bolt bufferwrites all recieved tuples to the given filename in the
+ * STORM_LOCAL_DIR. The buffersize can be adjusted with the constructor.
+ * (flushes every two minutes, this can be adjusted by changing the
+ * TOPOLOGY_TICK_TUPLE_FREQ_SECS)
  */
 public class FileWriterBolt extends BaseRichBolt {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
+    private final static Logger LOGGER = LoggerFactory.getLogger(FileWriterBolt.class);
 
-	PrintWriter printwriter;
-	Writer filewriter;
-	Writer bufferedwriter;
+    private PrintWriter printwriter;
+    private Writer filewriter;
+    private Writer bufferedwriter;
 
-	int count = 0;
-	private OutputCollector _collector;
+    private OutputCollector collector;
 
-	private String filename;
-	
-	private final boolean local;
+    private final String filename;
 
-	private int bufferfactor = 2;
+    private final boolean local;
 
-	public FileWriterBolt(String filename, int bufferfactor) {
-		// TODO Auto-generated constructor stub
-		this.filename = filename;
-		this.local = false;
-		this.bufferfactor = bufferfactor;
-	} 
-	public FileWriterBolt(String filename, boolean submitted) {
-		this.filename = filename;
-		this.local = !submitted;
-	}
+    private int bufferfactor = 2;
 
-	/**
-	 * set the bufferfactor higher if a the rate of emitting tuples is expected to be high
-	 */
-	public FileWriterBolt(String filename, int bufferfactor, boolean submitted) {
-		
-		this.filename = filename;
-		this.local = submitted;
-		this.bufferfactor = bufferfactor;
-	}
+    public FileWriterBolt(String filename, int bufferfactor) {
+        this.filename = filename;
+        this.local = false;
+        this.bufferfactor = bufferfactor;
+    }
 
-	@Override
-	public void prepare(Map conf, TopologyContext topologyContext,
-			OutputCollector outputCollector) {
-		_collector = outputCollector;
-		printwriter = null;
+    public FileWriterBolt(String filename, boolean local) {
+        this.filename = filename;
+        this.local = local;
+    }
 
-		String path = (String) conf.get(Config.STORM_LOCAL_DIR);
+    /**
+     * set the bufferfactor higher if a the rate of emitting tuples is expected
+     * to be high
+     *
+     * @param filename
+     * @param bufferfactor
+     * @param local activate some buffer tweaks when the bolt runnings locally
+     */
+    public FileWriterBolt(String filename, int bufferfactor, boolean local) {
+        this.filename = filename;
+        this.local = local;
+        this.bufferfactor = bufferfactor;
+    }
 
-		DateTime dt = new DateTime();
-		String b = dt.toString("hh-mm-ss");
+    @Override
+    public void prepare(@SuppressWarnings("rawtypes") Map conf, 
+            TopologyContext topologyContext,
+            OutputCollector outputCollector) {
+        this.collector = outputCollector;
+        printwriter = null;
 
-		String fileuri = path + "/" + filename+"_" +b+  ".out";
-		System.out.println("Writing to : " + fileuri);
+        String path = (String) conf.get(Config.STORM_LOCAL_DIR);
 
-		try {
+        DateTime dt = new DateTime();
+        String b = dt.toString("hh-mm-ss");
 
-			filewriter = new FileWriter(fileuri);
-			bufferedwriter = new BufferedWriter(filewriter, bufferfactor * 1024);
-			printwriter = new PrintWriter(bufferedwriter);
+        String fileuri = path + "/" + filename + "_" + b + ".out";
+        LOGGER.debug("Writing to file '%s'", fileuri);
 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try {
 
-	}
+            filewriter = new FileWriter(fileuri);
+            bufferedwriter = new BufferedWriter(filewriter, bufferfactor * 1024);
+            printwriter = new PrintWriter(bufferedwriter);
 
-	@Override
-	public void execute(Tuple tuple) {
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-		if (TupleHelpers.isTickTuple(tuple)) {
-			
-			printwriter.flush();
-			
-			return;
-		} else {
-			printwriter.println(tuple.getValue(0));
-			_collector.ack(tuple);
-			
-			if(local) printwriter.flush();
-			
-		}
-	}
+    }
 
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
+    @Override
+    public void execute(Tuple tuple) {
 
-	}
+        if (TupleHelpers.isTickTuple(tuple)) {
 
-	@Override
-	public Map<String, Object> getComponentConfiguration() {
-		Map<String, Object> conf = new HashMap<String, Object>();
-		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 70);
-		return conf;
-	}
+            printwriter.flush();
+        } else {
+            Object value = tuple.getValue(0);
+            printwriter.println(value);
+            collector.ack(tuple);
 
-	@Override
-	public void cleanup() {
-		printwriter.flush();
-		printwriter.close();
-		try {
-			bufferedwriter.close();
-			filewriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		super.cleanup();
+            if (local) {
+                printwriter.flush();
+            }
 
-	}
+        }
+    }
+
+    @Override
+    public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
+    }
+
+    @Override
+    public Map<String, Object> getComponentConfiguration() {
+        Map<String, Object> conf = new HashMap<String, Object>();
+        conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 70);
+        return conf;
+    }
+
+    @Override
+    public void cleanup() {
+        printwriter.flush();
+        printwriter.close();
+        try {
+            bufferedwriter.close();
+            filewriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        super.cleanup();
+
+    }
 }

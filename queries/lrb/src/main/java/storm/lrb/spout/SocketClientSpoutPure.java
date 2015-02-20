@@ -8,7 +8,6 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,155 +15,152 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import storm.lrb.TopologyControl;
 import storm.lrb.tools.StopWatch;
 
 /**
  * This Spout connects to the given host and socket, reads tuples line by line
- * and emits it to the default stream. This spout is used to make reading from socket faster
- * by defering LRBtuple creation to the {@link DispatcherBolt} which can be parallelized
- * 
+ * and emits it to the default stream. This spout is used to make reading from
+ * socket faster by defering LRBtuple creation to the {@link DispatcherBolt}
+ * which can be parallelized
+ *
  */
-@SuppressWarnings("serial")
 public class SocketClientSpoutPure extends BaseRichSpout {
-	SpoutOutputCollector _collector;
-	LinkedBlockingQueue<String> queue = null;
-	String _host;
-	int _port;
-	Socket clientSocket;
-	InputStreamReader isr;
-	BufferedReader in;
-	StopWatch cnt;
-	int _processed_xway;
-	long tupleCnt = 0;
-	boolean firstrun = true;
-	
-	
 
-	private static final Logger LOG = Logger.getLogger(SocketClientSpoutPure.class);
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOG = LoggerFactory.getLogger(SocketClientSpoutPure.class);
+    private SpoutOutputCollector collector;
+    private final String host;
+    private final int port;
+    private Socket clientSocket;
+    private InputStreamReader isr;
+    private BufferedReader in;
+    private final StopWatch cnt;
+    private long tupleCnt = 0;
+    private boolean firstrun = true;
 
-	public SocketClientSpoutPure(String host, int port) {
-		_host = host;
-		_port = port;
-		this.cnt = new StopWatch();
-		
-	
-	}
+    public SocketClientSpoutPure(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.cnt = new StopWatch();
+    }
 
-	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf,TopologyContext context, SpoutOutputCollector collector) {
-		
-		_collector = collector;
+    @Override
+    @SuppressWarnings("SleepWhileInLoop")
+    public void open(@SuppressWarnings("rawtypes") Map conf, 
+            TopologyContext context, 
+            SpoutOutputCollector collector) {
+        this.collector = collector;
 
-		boolean goon = true;
-		//try no more than 2 minutes to connect 
-		while (cnt.getElapsedTimeSecs()  <= 120) {
-			try {
-				
-				if (cnt.getElapsedTimeSecs() > 2)	Utils.sleep(5000);
+        boolean goon = true;
+        //try no more than 2 minutes to connect 
+        while (cnt.getElapsedTimeSecs() <= 120) {
+            try {
 
-				if (goon == true) {
-                                    goon = false;
-                                } else {
-                                    break;
-                                }
-				
-				clientSocket = new Socket(InetAddress.getByName(_host), _port);
-				LOG.info("Connection to " + _host + ":" + _port
-						+ " established.\t StormTimer: "+ cnt.getElapsedTimeSecs()+"s");
-				System.out.println("######connection established");
-			
-				isr = new InputStreamReader(clientSocket.getInputStream());
-				in = new BufferedReader(isr);
+                if (cnt.getElapsedTimeSecs() > 2) {
+                    Utils.sleep(5000);
+                }
 
-			} catch (java.net.ConnectException e) {
-				goon = true;
-				LOG.info("Trying to connect...");
-				System.out.println("Trying to connect...");
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-				LOG.error("Unknown Host...",e);
-			} catch (IOException e) {
-				e.printStackTrace();
-				LOG.error("IOexception...",e);
-			}
-		}
+                if (goon == true) {
+                    goon = false;
+                } else {
+                    break;
+                }
 
-	}
+                clientSocket = new Socket(InetAddress.getByName(host), port);
+                LOG.info("Connection to " + host + ":" + port
+                        + " established.\t StormTimer: " + cnt.getElapsedTimeSecs() + "s");
 
-	@Override
-	public void nextTuple() {
+                isr = new InputStreamReader(clientSocket.getInputStream());
+                in = new BufferedReader(isr);
 
-		String line = "";
+            } catch (java.net.ConnectException e) {
+                goon = true;
+                LOG.warn(String.format("failed to connect to host '%s' on port %d (see following exception for details), retrying...", host, port), e);
+                Utils.sleep(2000);
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-		try {
-			if ((line = in.readLine()) != null) {
-				if (line.startsWith("#")) {
-                                    return;
-                                }	
-				if(firstrun){
-					int offset = Integer.parseInt(line.substring(2, line.indexOf(",", 2)));
-					LOG.info("Simulation starts with offset "+offset);
-					cnt.start(offset);
-					firstrun = false;
-				}
-				//LOG.info(line+ " at "+cnt.getElapsedTimeSecs());
-				_collector.emit("stream", new Values(line,cnt), tupleCnt);
-				tupleCnt++;
-				
-			}else if (line == null)
-				Utils.sleep(50);
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			System.out.println("Fehler"+line);
-		}catch(IllegalArgumentException e){
-			LOG.debug("Tupel does not match required LRB format" + line);
-			System.out.println("Fehler"+line);
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    }
 
-	@Override
-	public void close() {
-		// in.close();
-		try {
-			cnt.stop();
-			LOG.debug("Simulation Duration " + cnt.getDurationTimeSecs()+ " mit "+tupleCnt);
-			isr.close();
-			in.close();
-			clientSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			LOG.debug("IOException..",e);
-		}
+    @Override
+    public void nextTuple() {
+        String line = "";
+        try {
+            line = in.readLine();
+            if (line != null) {
+                if (line.startsWith("#")) {
+                    return;
+                }
+                if (firstrun) {
+                    int offset = Integer.parseInt(line.substring(2, line.indexOf(',', 2)));
+                    LOG.info("Simulation starts with offset " + offset);
+                    cnt.start(offset);
+                    firstrun = false;
+                }
+                //LOG.info(line+ " at "+cnt.getElapsedTimeSecs());
+                collector.emit(TopologyControl.SPOUT_STREAM_ID, new Values(line, cnt), tupleCnt);
+                tupleCnt++;
 
-	}
+            } else {
+                int waitMillis = 50;
+                LOG.debug("Waiting %d millis for the next tuple to arrive", waitMillis);
+                Utils.sleep(waitMillis);
+            }
+        } catch (NumberFormatException e) {
+            LOG.error("Error in line '%s'", line);
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Error in line '%s'", line);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public Map<String, Object> getComponentConfiguration() {
-		Config conf = new Config();
-		conf.setMaxTaskParallelism(1);
-		return conf;
-	}
+    @Override
+    public void close() {
+        // in.close();
+        try {
+            cnt.stop();
+            LOG.debug("Simulation duration: %d s; # of tuples: ", 
+                    cnt.getDurationTimeSecs(),
+                    tupleCnt);
+            isr.close();
+            in.close();
+            clientSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-	@Override
-	public void ack(Object id) {
-	}
+    }
 
-	@Override
-	public void fail(Object id) {
-	}
+    @Override
+    public Map<String, Object> getComponentConfiguration() {
+        Config conf = new Config();
+        conf.setMaxTaskParallelism(1);
+        return conf;
+    }
 
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declareStream("stream", new Fields("tuple","StormTimer"));
-		
-	}
+    @Override
+    public void ack(Object id) {
+    }
+
+    @Override
+    public void fail(Object id) {
+    }
+
+    @Override
+    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        declarer.declareStream(TopologyControl.SPOUT_STREAM_ID, 
+                new Fields(TopologyControl.TUPLE_FIELD_NAME, 
+                        TopologyControl.TIMER_FIELD_NAME));
+    }
 
 }
