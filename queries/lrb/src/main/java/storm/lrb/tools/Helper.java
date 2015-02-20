@@ -9,13 +9,19 @@ import java.util.List;
  */
 public class Helper {
 
-	public static String readable(List<String> fields) {
-		StringBuilder tmp = new StringBuilder();
-		for (Iterator iterator = fields.iterator(); iterator.hasNext();) {
-			String string = (String) iterator.next();
-			if(iterator.hasNext()) tmp.append(string).append("-");
-			else tmp.append(string);
-		}
-		return tmp.toString();
-	}
+    public static String readable(List<String> fields) {
+        StringBuilder tmp = new StringBuilder();
+        for (Iterator<String> iterator = fields.iterator(); iterator.hasNext();) {
+            String string = iterator.next();
+            if (iterator.hasNext()) {
+                tmp.append(string).append("-");
+            } else {
+                tmp.append(string);
+            }
+        }
+        return tmp.toString();
+    }
+
+    private Helper() {
+    }
 }

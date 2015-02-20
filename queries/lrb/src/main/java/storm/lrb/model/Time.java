@@ -5,8 +5,12 @@ package storm.lrb.model;
  *
  */
 public class Time {
-	public static int getMinute(int sec) {
-		return ((sec / 60) + 1);
-	}
+
+    public static int getMinute(int sec) {
+        return ((sec / 60) + 1);
+    }
+
+    private Time() {
+    }
 
 }
