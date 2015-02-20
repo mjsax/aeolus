@@ -23,11 +23,16 @@ package storm.lrb.model;
  */
 
 import java.io.Serializable;
-
 import storm.lrb.tools.StopWatch;
+
 /**
  * object to represent time travel requests
  */
+/*
+internal implementation notes:
+- does not implement clone because Values doesn't
+*/
+@SuppressWarnings("CloneableImplementsClone")
 public class TTEstRequest extends LRBtuple implements Serializable {
 
 	private static final long serialVersionUID = 1L;

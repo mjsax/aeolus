@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package storm.lrb.tools;
+package storm.lrb;
 
 /*
  * #%L
@@ -35,23 +35,65 @@ package storm.lrb.tools;
  * #L%
  */
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedList;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+
+
+
+
 /**
- * Constants related to the benchmark constraints only.
- *
+ * 
  * @author richter
  */
-public class Constants {
-
-    /**
-     * see p. 483
-     */
-    public final static int MAX_NUMBER_OF_POSITIONS = 5280;
-
-    /**
-     * @TODO: search in benchmark specification
-     */
-    public final static int INITIAL_TOLL = 20;
-
-    private Constants() {
-    }
+public class LRBTopologyMainTest {
+	
+	@BeforeClass
+	public static void setUpClass() {}
+	
+	@AfterClass
+	public static void tearDownClass() {}
+	
+	public LRBTopologyMainTest() {}
+	
+	@Before
+	public void setUp() {}
+	
+	@After
+	public void tearDown() {}
+	
+	/**
+	 * Test of main method, of class LRBTopologyMain.
+	 * 
+	 * @throws java.lang.Exception
+	 */
+	@Test
+	public void testMain0() throws Exception {
+		String histFilePath = File.createTempFile("lrb-test", null).getAbsolutePath();
+		LRBTopologyMain.main0(
+			0, // offset
+			1, // executors
+			2, // xways
+			"127.0.0.1", // host
+			5060, // port
+			histFilePath,
+			2, // tasks,
+			new LinkedList<String>(Arrays
+				.asList(TopologyControl.XWAY_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME)), // fields
+			false, // submit
+			true, // stormConfigDebug
+			2, // workers
+			"nameext" // nameext
+		);
+		// TODO review the generated test code and remove the default call to fail.
+		// fail("The test case is a prototype.");
+	}
+	
 }

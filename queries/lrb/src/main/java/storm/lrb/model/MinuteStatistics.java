@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package storm.lrb.tools;
+package storm.lrb.model;
 
 /*
  * #%L
@@ -35,23 +35,45 @@ package storm.lrb.tools;
  * #L%
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Constants related to the benchmark constraints only.
+ * Helper class that computes statistics associated with one segment, over one
+ * minute.
  *
  * @author richter
  */
-public class Constants {
+public class MinuteStatistics {
 
-    /**
-     * see p. 483
-     */
-    public final static int MAX_NUMBER_OF_POSITIONS = 5280;
+    private final Map<Integer, Integer> vehicleSpeeds = new HashMap<Integer, Integer>();
+    private double speedAverage; // rolling average for vehicles in this segment
 
-    /**
-     * @TODO: search in benchmark specification
-     */
-    public final static int INITIAL_TOLL = 20;
+    protected synchronized void addVehicleSpeed(int vehicleId, int vehicleSpeed) {
+        double cumulativeSpeed = speedAverage * vehicleSpeeds.size();
+        if (vehicleSpeeds.containsKey(vehicleId)) {
+            int prevVehicleSpeed = vehicleSpeeds.get(vehicleId);
+            cumulativeSpeed -= prevVehicleSpeed;
+            cumulativeSpeed += (prevVehicleSpeed + vehicleSpeed) / 2.0;
+        } else {
+            vehicleSpeeds.put(vehicleId, vehicleSpeed);
+            cumulativeSpeed += vehicleSpeed;
+        }
 
-    private Constants() {
+        speedAverage = cumulativeSpeed / vehicleSpeeds.size();
+    }
+
+    protected synchronized double speedAverage() {
+        return speedAverage;
+    }
+
+    protected synchronized int vehicleCount() {
+        return vehicleSpeeds.size();
+    }
+
+    @Override
+    public String toString() {
+        return " [vehicleSpeeds=" + vehicleSpeeds
+                + ", speedAverage=" + speedAverage + "]";
     }
 }

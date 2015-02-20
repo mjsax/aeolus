@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>de.hub.cs.dbis.aeolus</groupId>
-  <artifactId>aeolus</artifactId>
-  <version>1.0-SNAPSHOT</version>
+    <groupId>de.hub.cs.dbis.aeolus</groupId>
+    <artifactId>aeolus</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-  <name>aeolus</name>
-  <packaging>pom</packaging>
-  <url>http://www.dbis.informatik.hu-berlin.de/aeolus/</url>
-  <inceptionYear>2014</inceptionYear>
+    <name>aeolus</name>
+    <packaging>pom</packaging>
+    <url>http://www.dbis.informatik.hu-berlin.de/aeolus/</url>
+    <inceptionYear>2014</inceptionYear>
 
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
-  <organization>
-    <name>Humboldt-Universität zu Berlin</name>
-    <url>https://www.hu-berlin.de</url>
-  </organization>
+    <organization>
+        <name>Humboldt-Universität zu Berlin</name>
+        <url>https://www.hu-berlin.de</url>
+    </organization>
 
-  <developers>
-    <developer>
-      <id>mjsax</id>
-      <name>Matthias J. Sax</name>
-      <email>mjsax@informatik.hu-berlin.de</email>
-      <organization>Humboldt-Universität zu Berlin, DBIS Group</organization>
-      <organizationUrl>http://www.dbis.informatik.hu-berlin.de/</organizationUrl>
-      <roles>
-        <role>Lead Developer</role>
-      </roles>
-    </developer>
-  </developers>
+    <developers>
+        <developer>
+            <id>mjsax</id>
+            <name>Matthias J. Sax</name>
+            <email>mjsax@informatik.hu-berlin.de</email>
+            <organization>Humboldt-Universität zu Berlin, DBIS Group</organization>
+            <organizationUrl>http://www.dbis.informatik.hu-berlin.de/</organizationUrl>
+            <roles>
+                <role>Lead Developer</role>
+            </roles>
+        </developer>
+    </developers>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
   <dependencies>
     <dependency>

@@ -20,12 +20,13 @@ package storm.lrb.bolt;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-
+import storm.lrb.TopologyControl;
 import storm.lrb.model.AccBalRequest;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.VehicleAccount;
@@ -37,80 +38,79 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+
+
+
+
 /**
  * 
- * This bolt recieves the toll values assesed by the tollnotificationbolt and
- * answers to account balance queries.
+ * This bolt recieves the toll values assesed by the tollnotificationbolt and answers to account balance queries.
  * 
  */
 public class AccountBalanceBolt extends BaseRichBolt {
 	
 	private static final long serialVersionUID = 1L;
-
-	OutputCollector _collector;
-
-	private static final Logger LOG = Logger.getLogger(AccountBalanceBolt.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AccountBalanceBolt.class);
+	
+	private OutputCollector collector;
 	
 	/**
 	 * Contains all vehicles and the accountinformation of the current day.
 	 */
-	private ConcurrentHashMap<Integer, VehicleAccount> allVehicles;
-	
+	private Map<Integer, VehicleAccount> allVehicles;
 	
 	@Override
-	public void prepare(Map conf, TopologyContext context,
-			OutputCollector collector) {
-		_collector = collector;
-		allVehicles = new ConcurrentHashMap<Integer, VehicleAccount>();
+	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
+		this.collector = collector;
+		this.allVehicles = new HashMap<Integer, VehicleAccount>();
 	}
-
+	
 	@Override
 	public void execute(Tuple tuple) {
-
+		
 		Fields fields = tuple.getFields();
-
-		if (fields.contains("AccBalRequests")) {
-			getBalanceAndSend(tuple);
+		
+		if(fields.contains(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME)) {
+			this.getBalanceAndSend(tuple);
 		}
-
-		if (tuple.contains("tollAssessed")) {
 		
-			updateBalance(tuple);
-		} 
+		if(tuple.contains(TopologyControl.TOLL_ASSESSED_FIELD_NAME)) {
+			
+			this.updateBalance(tuple);
+		}
 		
-		_collector.ack(tuple);
+		this.collector.ack(tuple);
 	}
-
+	
 	private void updateBalance(Tuple tuple) {
-		Integer vid = tuple.getIntegerByField("vid");
-		VehicleAccount account = allVehicles.get(vid);
-		PosReport pos = (PosReport) tuple.getValueByField("PosReport");
-		if(account==null){	
-			account = new VehicleAccount(tuple.getIntegerByField("tollAssessed"), pos);
-			allVehicles.put(tuple.getIntegerByField("vid"), account);
-		}else
-			account.assessToll(tuple.getIntegerByField("tollAssessed"), pos.getEmitTime());
-	}
-
-	private void getBalanceAndSend(Tuple tuple) {
-		AccBalRequest bal = (AccBalRequest) tuple.getValueByField("AccBalRequests");
-		VehicleAccount account = allVehicles.get(bal.getVehicleIdentifier());
-	
-		if(account==null){
-			LOG.debug("No account information available yet: at:"+bal.getTime()+" for request" + bal);
-			String notification = "2," + bal.getTime()+","+bal.getEmitTime()+","+ bal.getQueryIdentifier() + ","+ 0 + ","+  0 + "###"+bal.toString()+"###";
-			//_collector.emit(tuple, new Values(notification));
-			_collector.emit(new Values(notification));
+		Integer vid = tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME);
+		VehicleAccount account = this.allVehicles.get(vid);
+		PosReport pos = (PosReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
+		if(account == null) {
+			account = new VehicleAccount(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos);
+			this.allVehicles.put(tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME), account);
+		} else {
+			account.assessToll(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos.getEmitTime());
 		}
-		else
-			_collector.emit(new Values(account.getAccBalanceNotification(bal)));
-			//_collector.emit(tuple, new Values(account.getAccBalanceNotification(bal)));
 	}
 	
-
+	private void getBalanceAndSend(Tuple tuple) {
+		AccBalRequest bal = (AccBalRequest)tuple.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
+		VehicleAccount account = this.allVehicles.get(bal.getVehicleIdentifier());
+		
+		if(account == null) {
+			LOG.debug("No account information available yet: at:" + bal.getTime() + " for request" + bal);
+			String notification = "2," + bal.getTime() + "," + bal.getEmitTime() + "," + bal.getQueryIdentifier() + ","
+				+ 0 + "," + 0 + "###" + bal.toString() + "###";
+			this.collector.emit(new Values(notification));
+		} else {
+			this.collector.emit(new Values(account.getAccBalanceNotification(bal)));
+		}
+	}
+	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("balancenotification"));
+		declarer.declare(new Fields(TopologyControl.BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME));
 	}
-
+	
 }

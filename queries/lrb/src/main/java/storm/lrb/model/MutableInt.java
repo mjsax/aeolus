@@ -27,36 +27,34 @@ import java.io.Serializable;
 /**
  * Mutable Integer object.
  */
-public class MutableInt implements Serializable{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	int value = 1;
+public class MutableInt implements Serializable {
 
-	public int increment() {
-		return ++value;
-	}
+    private static final long serialVersionUID = 1L;
+    private int value = 1;
 
-	public int get() {
-		return value;
-	}
+    public int increment() {
+        return ++value;
+    }
 
-	public int add(int summand) {
-		return value += summand;
-	}
+    public int get() {
+        return value;
+    }
 
-	public void reset() {
-		value = 1;
-		
-	}
+    public int add(int summand) {
+        return value += summand;
+    }
 
-	@Override
-	public String toString() {
-		return ""+value;
-	}
+    public void reset() {
+        value = 1;
 
-	public int decrement() {
-		return --value;
-	}
+    }
+
+    @Override
+    public String toString() {
+        return "" + value;
+    }
+
+    public int decrement() {
+        return --value;
+    }
 }
