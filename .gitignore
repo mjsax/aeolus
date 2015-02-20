@@ -1,5 +1,6 @@
 .*
 sensor*
 target/
+bin/
 queries/lrb/src/main/resources/datadriverTestData.tar.gz
 queries/lrb/src/main/resources/datafile3hours.dat

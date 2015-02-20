@@ -1,22 +1,26 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package de.hub.cs.dbis.aeolus.monitoring;
+
+/*
+ * #%L
+ * monitoring
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -70,8 +74,8 @@ public class TimestampOrderCheckerTest {
 	private static ForwardBolt forwarder = new ForwardBolt(new Fields("dummy"));
 	private static IRichBolt boltMockStatic;
 	
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
+	private long seed;
+	private Random r;
 	private static int tsIndex;
 	private static boolean duplicates;
 	
@@ -82,7 +86,9 @@ public class TimestampOrderCheckerTest {
 	
 	@BeforeClass
 	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+		long seed = System.currentTimeMillis();
+		Random r = new Random(seed);
+		System.out.println("Static test seed: " + seed);
 		
 		tsIndex = r.nextInt();
 		if(tsIndex < 0) {
@@ -99,13 +105,17 @@ public class TimestampOrderCheckerTest {
 	
 	@Before
 	public void prepareTest() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
+		
 		PowerMockito.mockStatic(LoggerFactory.class);
 		when(LoggerFactory.getLogger(any(Class.class))).thenReturn(this.loggerMock);
 	}
 	
 	@Test
 	public void testExecuteDetectOutOfOrderStrict() {
-		boolean indexVsName = r.nextBoolean();
+		boolean indexVsName = this.r.nextBoolean();
 		
 		TestOutputCollector collector = new TestOutputCollector();
 		forwarder.prepare(boltConfig, null, new OutputCollector(collector));
@@ -121,32 +131,32 @@ public class TimestampOrderCheckerTest {
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(0), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(0), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
 		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
 		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(2)));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
 		verify(this.loggerMock, atMost(2)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
-		Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == 5);
-		Assert.assertTrue(collector.acked.size() == 5);
-		Assert.assertTrue(collector.failed.size() == 0);
+		Assert.assertEquals(5, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(5, collector.acked.size());
+		Assert.assertEquals(0, collector.failed.size());
 	}
 	
 	@Test
 	public void testExecuteDetectOutOfOrder() {
-		boolean indexVsName = r.nextBoolean();
+		boolean indexVsName = this.r.nextBoolean();
 		
 		TestOutputCollector collector = new TestOutputCollector();
 		forwarder.prepare(boltConfig, null, new OutputCollector(collector));
@@ -162,22 +172,22 @@ public class TimestampOrderCheckerTest {
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
 		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character(
-			(char)(32 + r.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
 		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
-		Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == 4);
-		Assert.assertTrue(collector.acked.size() == 4);
-		Assert.assertTrue(collector.failed.size() == 0);
+		Assert.assertEquals(4, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(4, collector.acked.size());
+		Assert.assertEquals(0, collector.failed.size());
 	}
 	
 	@Test

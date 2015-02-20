@@ -1,27 +1,31 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package de.hub.cs.dbis.aeolus.testUtils;
+
+/*
+ * #%L
+ * testUtils
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 import java.util.Random;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -38,12 +42,14 @@ import backtype.storm.utils.Utils;
  */
 @RunWith(PowerMockRunner.class)
 public class RandomSpoutTest {
-	private final static long seed = System.currentTimeMillis();
-	private final static Random r = new Random(seed);
+	private long seed;
+	private Random r;
 	
-	@BeforeClass
-	public static void prepareStatic() {
-		System.out.println("Test seed: " + seed);
+	@Before
+	public void prepare() {
+		this.seed = System.currentTimeMillis();
+		this.r = new Random(this.seed);
+		System.out.println("Test seed: " + this.seed);
 	}
 	
 	@Test
@@ -53,54 +59,54 @@ public class RandomSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertTrue(declarer.schema.size() == 1);
-		Assert.assertTrue(declarer.schema.get(0).size() == 1);
-		Assert.assertTrue(declarer.schema.get(0).get(0).equals("a"));
-		Assert.assertTrue(declarer.streamId.size() == 1);
-		Assert.assertTrue(declarer.streamId.get(0).equals(Utils.DEFAULT_STREAM_ID));
-		Assert.assertTrue(declarer.direct.size() == 1);
-		Assert.assertTrue(declarer.direct.get(0).booleanValue() == false);
+		Assert.assertEquals(1, declarer.schema.size());
+		Assert.assertEquals(1, declarer.schema.get(0).size());
+		Assert.assertEquals("a", declarer.schema.get(0).get(0));
+		Assert.assertEquals(1, declarer.streamId.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
+		Assert.assertEquals(1, declarer.direct.size());
+		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
 	}
 	
 	@Test
 	public void testDeclareOutputFields() {
-		int numberOfAttributes = 1 + r.nextInt(10);
+		int numberOfAttributes = 1 + this.r.nextInt(10);
 		RandomSpout spout = new RandomSpout(numberOfAttributes, 1000);
 		
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertTrue(declarer.schema.size() == 1);
-		Assert.assertTrue(declarer.schema.get(0).size() == numberOfAttributes);
+		Assert.assertEquals(1, declarer.schema.size());
+		Assert.assertEquals(numberOfAttributes, declarer.schema.get(0).size());
 		for(int i = 0; i < numberOfAttributes; ++i) {
-			Assert.assertTrue(declarer.schema.get(0).get(i).equals("" + (char)(97 + i)));
+			Assert.assertEquals("" + (char)(97 + i), declarer.schema.get(0).get(i));
 		}
-		Assert.assertTrue(declarer.streamId.size() == 1);
-		Assert.assertTrue(declarer.streamId.get(0).equals(Utils.DEFAULT_STREAM_ID));
-		Assert.assertTrue(declarer.direct.size() == 1);
-		Assert.assertTrue(declarer.direct.get(0).booleanValue() == false);
+		Assert.assertEquals(1, declarer.streamId.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
+		Assert.assertEquals(1, declarer.direct.size());
+		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
 	}
 	
 	@Test
 	public void testDeclareOutputFieldsMultipleStreams() {
-		int numberOfAttributes = 1 + r.nextInt(10);
+		int numberOfAttributes = 1 + this.r.nextInt(10);
 		String[] streamIds = new String[] {Utils.DEFAULT_STREAM_ID, "myStreamId"};
 		RandomSpout spout = new RandomSpout(numberOfAttributes, 1000, streamIds);
 		
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertTrue(declarer.schema.size() == streamIds.length);
-		Assert.assertTrue(declarer.streamId.size() == streamIds.length);
-		Assert.assertTrue(declarer.direct.size() == streamIds.length);
+		Assert.assertEquals(streamIds.length, declarer.schema.size());
+		Assert.assertEquals(streamIds.length, declarer.streamId.size());
+		Assert.assertEquals(streamIds.length, declarer.direct.size());
 		
 		for(int i = 0; i < streamIds.length; ++i) {
-			Assert.assertTrue(declarer.schema.get(i).size() == numberOfAttributes);
+			Assert.assertEquals(numberOfAttributes, declarer.schema.get(i).size());
 			for(int j = 0; j < numberOfAttributes; ++j) {
-				Assert.assertTrue(declarer.schema.get(i).get(j).equals("" + (char)(97 + j)));
+				Assert.assertEquals("" + (char)(97 + j), declarer.schema.get(i).get(j));
 			}
-			Assert.assertTrue(declarer.streamId.get(i).equals(streamIds[i]));
-			Assert.assertTrue(declarer.direct.get(i).booleanValue() == false);
+			Assert.assertEquals(streamIds[i], declarer.streamId.get(i));
+			Assert.assertEquals(new Boolean(false), declarer.direct.get(i));
 		}
 	}
 	
@@ -113,8 +119,8 @@ public class RandomSpoutTest {
 		
 		for(int i = 0; i < 50; ++i) {
 			spout.nextTuple();
-			Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == i + 1); // size of result
-			Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size() == 1); // single attribute
+			Assert.assertEquals(i + 1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
+			Assert.assertEquals(1, collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size());
 			Assert.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)).intValue());
 			Assert.assertTrue(100 >= ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)).intValue());
 		}
@@ -123,7 +129,7 @@ public class RandomSpoutTest {
 	
 	@Test
 	public void testExecute() {
-		int numberOfAttributes = 1 + r.nextInt(10);
+		int numberOfAttributes = 1 + this.r.nextInt(10);
 		RandomSpout spout = new RandomSpout(numberOfAttributes, 100);
 		
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
@@ -131,8 +137,8 @@ public class RandomSpoutTest {
 		
 		for(int i = 0; i < 50; ++i) {
 			spout.nextTuple();
-			Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).size() == i + 1); // size of result
-			Assert.assertTrue(collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size() == numberOfAttributes);
+			Assert.assertEquals(i + 1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
+			Assert.assertEquals(numberOfAttributes, collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size());
 			for(int j = 0; j < numberOfAttributes; ++j) {
 				Assert
 					.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(j)).intValue());
@@ -145,7 +151,7 @@ public class RandomSpoutTest {
 	
 	@Test
 	public void testExecuteMultipleStreams() {
-		int numberOfAttributes = 1 + r.nextInt(10);
+		int numberOfAttributes = 1 + this.r.nextInt(10);
 		String[] streamIds = new String[] {Utils.DEFAULT_STREAM_ID, "myStreamId"};
 		RandomSpout spout = new RandomSpout(numberOfAttributes, 100, streamIds);
 		

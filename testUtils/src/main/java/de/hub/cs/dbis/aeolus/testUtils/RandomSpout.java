@@ -1,22 +1,24 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 package de.hub.cs.dbis.aeolus.testUtils;
+
+/*
+ * #%L
+ * testUtils
+ * %%
+ * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,9 +41,10 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link IncSpout} emit tuples with random values to one or multiple output streams. The output schema has a single
- * integer attribute with name {@code a} by default. However, up to 10 attributes can be generated (with names {@code a}
- * to {@code j}). The generated numbers for each attribute are between {@code 1} and {@link #maxValue} (both inclusive).
+ * {@link RandomSpout} emits tuples with random values to one or multiple output streams (ie, data is replicated to all
+ * output streams). The output schema has a single integer attribute with name {@code a} by default. However, up to 10
+ * attributes can be generated (with names {@code a} to {@code j}). The generated numbers for each attribute are between
+ * {@code 1} and {@code maxValue} (both inclusive).
  * 
  * @author Matthias J. Sax
  */
@@ -64,7 +67,7 @@ public class RandomSpout implements IRichSpout {
 	
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with a single attribute to the default output stream.
+	 * Instantiates a new {@link RandomSpout} that emits tuples with a single attribute to the default output stream.
 	 * 
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
@@ -74,7 +77,7 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with a single attribute to the given output streams.
+	 * Instantiates a new {@link RandomSpout} that emits tuples with a single attribute to the given output streams.
 	 * 
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
@@ -85,8 +88,8 @@ public class RandomSpout implements IRichSpout {
 		this(1, maxValue, outputStreams, System.currentTimeMillis());
 	}
 	
-/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes attributes to the
+	/**
+	 * Instantiates a new {@link RandomSpout} that emits tuples with {@code numberOfAttributes} attributes to the
 	 * default output stream.
 	 * 
 	 * @param numberOfAttributes
@@ -99,11 +102,11 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} that emits tuple with {@code numberOfAttributes} attributes to the given
+	 * Instantiates a new {@link RandomSpout} that emits tuples with {@code numberOfAttributes} attributes to the given
 	 * output streams.
 	 * 
-	 * @param maxValue
-	 *            The maximum value of the generated numbers (inclusive).
+	 * @param numberOfAttributes
+	 *            The number of attributes of the output tuples.
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
 	 * @param outputStreams
@@ -114,11 +117,11 @@ public class RandomSpout implements IRichSpout {
 	}
 	
 	/**
-	 * Instantiates a new {@link RandomSpout} with initial {@code seed} that emits tuple with {@code numberOfAttributes}
-	 * attributes to the given output streams.
+	 * Instantiates a new {@link RandomSpout} with initial {@code seed} that emits tuples with
+	 * {@code numberOfAttributes} attributes to the given output streams.
 	 * 
-	 * @param maxValue
-	 *            The maximum value of the generated numbers (inclusive).
+	 * @param numberOfAttributes
+	 *            The number of attributes of the output tuples.
 	 * @param maxValue
 	 *            The maximum value of the generated numbers (inclusive).
 	 * @param outputStreams
