@@ -105,7 +105,39 @@
           </execution>
         </executions>
       </plugin>
-    </plugins>
+       <plugin>  
+         <groupId>org.apache.maven.plugins</groupId>  
+         <!-- Plugin that gives ability to generate your projects site -->  
+         <artifactId>maven-site-plugin</artifactId>  
+         <version>3.4</version>  
+         <configuration>  
+           <!-- Reports that will be displayed on a generated site -->  
+           <reportPlugins>  
+             <!-- Produces a cross-reference of the project's sources. This is useful  
+                for other reports like PMD or Checkstyle. When this plugin is used with  
+                checkstyle you can see code that produces style warning/error in the report. -->  
+             <plugin>  
+               <groupId>org.apache.maven.plugins</groupId>  
+               <artifactId>maven-jxr-plugin</artifactId>  
+               <version>2.1</version>
+               <configuration>
+                 <aggregate>true</aggregate>
+               </configuration>
+             </plugin>  
+             <!-- Checks projects code conventions -->  
+             <plugin>  
+               <groupId>org.apache.maven.plugins</groupId>  
+               <artifactId>maven-checkstyle-plugin</artifactId>  
+               <version>2.6</version>  
+               <configuration>  
+                 <configLocation>check_style.xml</configLocation>  
+               </configuration>  
+             </plugin>  
+           </reportPlugins>  
+         </configuration>  
+       </plugin>  
+     </plugins>  
+    
     <pluginManagement>
       <plugins>
          <!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
