@@ -16,7 +16,7 @@
         <dependency>
             <groupId>de.hub.cs.dbis.aeolus</groupId>
             <artifactId>testUtils</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>de.hub.cs.dbis.aeolus</groupId>
             <artifactId>utils</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>

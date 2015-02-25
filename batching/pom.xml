@@ -16,13 +16,13 @@
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
       <artifactId>aeolus-storm-connector</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
       <artifactId>testUtils</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
