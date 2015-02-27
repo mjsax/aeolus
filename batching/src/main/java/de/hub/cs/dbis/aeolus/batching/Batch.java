@@ -26,13 +26,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backtype.storm.tuple.Values;
+
 
 
 
 
 /**
- * TODO write this at the very last -> before check consistent comments in all other classes -> check consistent asserts
- * in all other classes-> check consistent logging (debug/trace) in all other classes -> check final modifiers
+ * A {@link Batch} is a buffer that stores multiple tuples (ie, {@link Values}). It requires that all tuples have the
+ * same number of attributes.
  * 
  * @author Matthias J. Sax
  */
@@ -46,7 +48,7 @@ class Batch extends ArrayList<BatchColumn> {
 	 */
 	private int batchSize;
 	/**
-	 * The number of attributes of tuple's buffered in this {@link Batch}.
+	 * The number of attributes buffered in this {@link Batch}.
 	 */
 	private int numberOfAttributes;
 	/**
@@ -57,17 +59,20 @@ class Batch extends ArrayList<BatchColumn> {
 	
 	
 	/**
-	 * Default constructor. Needed for deserialization.
+	 * Default constructor. Needed for serialization.
 	 */
 	public Batch() {
 		super();
 	}
 	
 	/**
-	 * TODO
+	 * Instantiates a new {@link Batch} with size {@code batchSize}. All tuples that are inserted, must have the same
+	 * number of attributes as specified by {@code numberOfAttributes}.
 	 * 
 	 * @param batchSize
+	 *            The number of tuples that can be stored in this {@link Batch} (must be largen than 0).
 	 * @param numberOfAttributes
+	 *            The number of attributes of the tuples stored in this {@link Batch} (must be larger than 0).
 	 */
 	Batch(int batchSize, int numberOfAttributes) {
 		super(numberOfAttributes);
@@ -78,6 +83,9 @@ class Batch extends ArrayList<BatchColumn> {
 		this.logger.debug("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(
 			numberOfAttributes));
 		
+		if(batchSize == 1 && this.logger.isWarnEnabled()) {
+			this.logger.warn("Instantiating a Batch of size 1.");
+		}
 		this.batchSize = batchSize;
 		this.numberOfAttributes = numberOfAttributes;
 		this.size = 0;
@@ -87,10 +95,13 @@ class Batch extends ArrayList<BatchColumn> {
 		}
 	}
 	
+	
+	
 	/**
-	 * TODO
+	 * Appends a new tuple to the {@link Batch}.
 	 * 
 	 * @param tuple
+	 *            The tuple to be added.
 	 */
 	void addTuple(List<Object> tuple) { // cannot use backtype.storm.tuple.Tuple or backtype.storm.tuple.Values because
 										// Collector.emit(...) uses "List<Object> tuple" as parameter

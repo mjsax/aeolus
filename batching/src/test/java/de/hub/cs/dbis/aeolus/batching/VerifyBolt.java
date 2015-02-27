@@ -38,8 +38,6 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link VerifyBolt} TODO
- * 
  * @author Matthias J. Sax
  */
 public class VerifyBolt implements IRichBolt {
@@ -50,26 +48,21 @@ public class VerifyBolt implements IRichBolt {
 	public static final String SPOUT_ID = "noBatchingSpout";
 	public static final String BATCHING_SPOUT_ID = "batchingSpout";
 	
-	
 	private final Fields tupleSchema;
-	private OutputCollector collector;
 	
+	private OutputCollector collector;
 	private Integer taskId;
 	
-	/**
-	 * Instantiates a new {@link VerifyBolt} for the given tuple schema that acknowledges all forwarded tuples.
-	 * 
-	 * @param schema
-	 *            The schema of the input (and output) tuples.
-	 */
+	LinkedList<Tuple> noBatching = new LinkedList<Tuple>();
+	LinkedList<Tuple> batching = new LinkedList<Tuple>();
+	
+	
+	
 	public VerifyBolt(Fields schema) {
 		this.tupleSchema = schema;
 	}
 	
 	
-	
-	LinkedList<Tuple> noBatching = new LinkedList<Tuple>();
-	LinkedList<Tuple> batching = new LinkedList<Tuple>();
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {

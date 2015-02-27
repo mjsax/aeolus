@@ -3,8 +3,6 @@ package storm.lrb.tools;
 /*
  * #%L
  * lrb
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
@@ -25,13 +23,16 @@ package storm.lrb.tools;
 import backtype.storm.Constants;
 import backtype.storm.tuple.Tuple;
 
+
+
+
+
 public class TupleHelpers {
-
-    public static boolean isTickTuple(Tuple tuple) {
-        return tuple.getSourceComponent().equals(Constants.SYSTEM_COMPONENT_ID) && tuple.getSourceStreamId().equals(
-                Constants.SYSTEM_TICK_STREAM_ID);
-    }
-
-    private TupleHelpers() {
-    }
+	
+	public static boolean isTickTuple(Tuple tuple) {
+		return tuple.getSourceComponent().equals(Constants.SYSTEM_COMPONENT_ID)
+			&& tuple.getSourceStreamId().equals(Constants.SYSTEM_TICK_STREAM_ID);
+	}
+	
+	private TupleHelpers() {}
 }

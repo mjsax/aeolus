@@ -3,8 +3,6 @@ package storm.lrb.model;
 /*
  * #%L
  * lrb
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
@@ -24,15 +22,14 @@ package storm.lrb.model;
 
 /**
  * helper class to compute the current minute of given second
- *
+ * 
  */
 public class Time {
-
-    public static int getMinute(int sec) {
-        return ((sec / 60) + 1);
-    }
-
-    private Time() {
-    }
-
+	
+	public static int getMinute(int sec) {
+		return ((sec / 60) + 1);
+	}
+	
+	private Time() {}
+	
 }

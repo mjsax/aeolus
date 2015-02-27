@@ -3,8 +3,6 @@ package storm.lrb.model;
 /*
  * #%L
  * lrb
- * $Id:$
- * $HeadURL:$
  * %%
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
  * %%
