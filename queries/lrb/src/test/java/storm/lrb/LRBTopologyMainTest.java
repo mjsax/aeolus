@@ -30,10 +30,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-
-
-
 /**
  * 
  * @author richter
@@ -75,10 +71,9 @@ public class LRBTopologyMainTest {
 			false, // submit
 			true, // stormConfigDebug
 			2, // workers
-			"nameext" // nameext
+			"nameext", // nameext
+                        5000 //runtimeMillis
 		);
-		// TODO review the generated test code and remove the default call to fail.
-		// fail("The test case is a prototype.");
 	}
 	
 }

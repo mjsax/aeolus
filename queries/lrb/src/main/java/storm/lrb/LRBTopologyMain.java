@@ -64,7 +64,7 @@ public class LRBTopologyMain {
 		}
 		int tasks = executors * cmd.getTasks();
 		main0(cmd.getOffset(), executors, cmd.getXways(), cmd.getHost(), cmd.getPort(), cmd.getHistFile(), tasks,
-			cmd.getFields(), cmd.isSubmit(), cmd.isDebug(), cmd.getWorkers(), cmd.getNameext());
+			cmd.getFields(), cmd.isSubmit(), cmd.isDebug(), cmd.getWorkers(), cmd.getNameext(), cmd.getRuntimeMillis());
 	}
 	
 	/**
@@ -82,11 +82,12 @@ public class LRBTopologyMain {
 	 * @param stormConfigDebug
 	 * @param workers
 	 * @param nameext
+     * @param runtimeMillis
 	 * @throws AlreadyAliveException
 	 * @throws InvalidTopologyException
 	 * @throws AuthorizationException
 	 */
-	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, List<String> fields, boolean submit, boolean stormConfigDebug, int workers, String nameext)
+	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, List<String> fields, boolean submit, boolean stormConfigDebug, int workers, String nameext, int runtimeMillis)
 		throws AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
 		StopWatch stormTimer = new StopWatch(offset);
 		String topologyNamePrefix = nameext + "_lrbNormal_" + Helper.readable(fields) + "_L" + xways + "_" + workers
@@ -115,7 +116,7 @@ public class LRBTopologyMain {
 			LocalCluster cluster = new LocalCluster();
 			cluster.submitTopology(TopologyControl.TOPOLOGY_NAME, conf, topology);
 			
-			Utils.sleep(10000);
+			Utils.sleep(runtimeMillis);
 			cluster.killTopology(TopologyControl.TOPOLOGY_NAME);
 			cluster.shutdown();
 		}
