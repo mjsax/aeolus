@@ -85,7 +85,7 @@ public class LRBTopologyMain {
      * @param runtimeMillis
 	 * @throws AlreadyAliveException
 	 * @throws InvalidTopologyException
-	 * @throws AuthorizationException
+     * @throws java.io.FileNotFoundException
 	 */
 	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, List<String> fields, boolean submit, boolean stormConfigDebug, int workers, String nameext, int runtimeMillis)
 		throws AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
