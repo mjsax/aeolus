@@ -67,7 +67,7 @@ public class CommandLineParser {
 	
 	@Parameter(names = {"-r", "-runtimeMillis"}, description = "the time in milli seconds to run") private int runtimeMillis;
 	
-	public void setRuntimeMillis(int runtimeMillis) {
+	protected void setRuntimeMillis(int runtimeMillis) {
 		this.runtimeMillis = runtimeMillis;
 	}
 	
