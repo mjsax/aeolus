@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.bolt.TollNotificationBolt;
-import storm.lrb.spout.DataDriverSpout;
 import storm.lrb.tools.CommandLineParser;
 import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
@@ -39,6 +38,8 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
+import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
 
 //import storm.lrb.spout.SocketClientSpout;
 /**
@@ -93,11 +94,12 @@ public class LRBTopologyMain {
 		String topologyNamePrefix = nameext + "_lrbNormal_" + Helper.readable(fields) + "_L" + xways + "_" + workers
 			+ "W_T" + tasks + "_" + executors + "E_O" + offset;
 		LRBTopology lRBTopology = new LRBTopology(nameext, fields, xways, workers, tasks, executors, offset,
-			new DataDriverSpout(Thread.currentThread().getContextClassLoader().getResource("datafile20seconds.dat")
-				.getFile()), stormTimer, submit, histFile, topologyNamePrefix);
+			new FileReaderSpout(TopologyControl.SPOUT_STREAM_ID), //add AbstractOrderedFileInputSpout.INPUT_FILE_NAME and AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES in Config below
+                        stormTimer, submit, histFile, topologyNamePrefix);
 		StormTopology topology = lRBTopology.getStormTopology();
 		Config conf = lRBTopology.getStormConfig();
 		conf.setDebug(stormConfigDebug);
+                conf.put(AbstractOrderedFileInputSpout.INPUT_FILE_NAME, LRBTopologyMain.class.getResource("/datafile20seconds.dat").getFile());
 		
 		Locale newLocale = new Locale("en", "US");
 		LOGGER.debug(String.format("setting locale to %s", newLocale));
