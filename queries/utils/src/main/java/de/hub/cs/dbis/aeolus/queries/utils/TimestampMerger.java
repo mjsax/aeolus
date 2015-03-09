@@ -85,7 +85,7 @@ public class TimestampMerger implements IRichBolt {
 		assert (wrappedBolt != null);
 		assert (tsIndex >= 0);
 		
-		LOGGER.debug("Initialize with timestamp index {}", new Integer(tsIndex));
+		LOGGER.debug("Initialize with timestamp index {}", tsIndex);
 		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = tsIndex;
@@ -138,7 +138,7 @@ public class TimestampMerger implements IRichBolt {
 	@Override
 	public void execute(Tuple tuple) {
 		LOGGER.trace("Adding tuple to internal buffer tuple: {}", tuple);
-		this.merger.addTuple(new Integer(tuple.getSourceTask()), tuple);
+		this.merger.addTuple(tuple.getSourceTask(), tuple);
 		
 		Tuple t;
 		while((t = this.merger.getNextTuple()) != null) {

@@ -98,7 +98,7 @@ abstract class AbstractBatchCollector {
 	 *            The size of the output batches to be built.
 	 */
 	AbstractBatchCollector(TopologyContext context, int batchSize) {
-		LOGGER.trace("batchSize: {}", new Integer(batchSize));
+		LOGGER.trace("batchSize: {}", batchSize);
 		
 		this.batchSize = batchSize;
 		this.topologyContext = context;
@@ -186,7 +186,7 @@ abstract class AbstractBatchCollector {
 		buffer.addTuple(tuple);
 		
 		this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
-		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
+		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, taskId);
 	}
 	
 	/**

@@ -129,21 +129,21 @@ public class TimestampOrderCheckerTest {
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(0), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 0, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
 		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
 		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(2)));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
 		verify(this.loggerMock, atMost(2)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
@@ -170,16 +170,16 @@ public class TimestampOrderCheckerTest {
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
 		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
-			.nextInt(95)))), 0, null));
+		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
+                        .nextInt(95))), 0, null));
 		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
 		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		

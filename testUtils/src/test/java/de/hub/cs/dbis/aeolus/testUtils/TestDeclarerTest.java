@@ -57,18 +57,18 @@ public class TestDeclarerTest {
 		
 		Assert.assertSame(schema[0], declarer.schema.get(0));
 		Assert.assertEquals(null, declarer.streamId.get(0));
-		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
+		Assert.assertEquals(false, declarer.direct.get(0));
 		
 		Assert.assertSame(schema[1], declarer.schema.get(1));
 		Assert.assertEquals(null, declarer.streamId.get(1));
-		Assert.assertEquals(new Boolean(true), declarer.direct.get(1));
+		Assert.assertEquals(true, declarer.direct.get(1));
 		
 		Assert.assertSame(schema[2], declarer.schema.get(2));
 		Assert.assertEquals(stream[0], declarer.streamId.get(2));
-		Assert.assertEquals(new Boolean(false), declarer.direct.get(2));
+		Assert.assertEquals(false, declarer.direct.get(2));
 		
 		Assert.assertSame(schema[3], declarer.schema.get(3));
 		Assert.assertEquals(stream[1], declarer.streamId.get(3));
-		Assert.assertEquals(new Boolean(true), declarer.direct.get(3));
+		Assert.assertEquals(true, declarer.direct.get(3));
 	}
 }

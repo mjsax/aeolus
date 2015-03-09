@@ -82,7 +82,7 @@ public class OrderedFileInputSpoutTest {
 		Map<Object, Object> dummyConf = new HashMap<Object, Object>();
 		spout.open(dummyConf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
 		try {
-			spout.closePartition(new Integer(0));
+			spout.closePartition(0);
 			Assert.fail();
 		} catch(RuntimeException e) {
 			// expected
@@ -91,10 +91,10 @@ public class OrderedFileInputSpoutTest {
 		
 		
 		Config conf = new Config();
-		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(2));
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, 2);
 		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
 		try {
-			spout.closePartition(new Integer(0));
+			spout.closePartition(0);
 			Assert.fail();
 		} catch(RuntimeException e) {
 			// expected
@@ -109,9 +109,9 @@ public class OrderedFileInputSpoutTest {
 		PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
 		
 		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
-		Assert.assertTrue(spout.closePartition(new Integer(0)));
+		Assert.assertTrue(spout.closePartition(0));
 		try {
-			spout.closePartition(new Integer(1));
+			spout.closePartition(1);
 			Assert.fail();
 		} catch(RuntimeException e) {
 			// expected
@@ -132,9 +132,9 @@ public class OrderedFileInputSpoutTest {
 		PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
 		
 		spout.open(conf, mock(TopologyContext.class), mock(SpoutOutputCollector.class));
-		Assert.assertTrue(spout.closePartition(new Integer(0)));
+		Assert.assertTrue(spout.closePartition(0));
 		try {
-			spout.closePartition(new Integer(1));
+			spout.closePartition(1);
 			Assert.fail();
 		} catch(RuntimeException e) {
 			// expected
@@ -157,17 +157,17 @@ public class OrderedFileInputSpoutTest {
 			PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(bufferedReaderMock);
 		}
 		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(new Integer(0));
+		taskMock.add(0);
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
 		
 		spout.open(conf, contextMock, mock(SpoutOutputCollector.class));
-		Assert.assertTrue(spout.closePartition(new Integer(0)));
-		Assert.assertTrue(spout.closePartition(new Integer(1)));
-		Assert.assertTrue(spout.closePartition(new Integer(2)));
+		Assert.assertTrue(spout.closePartition(0));
+		Assert.assertTrue(spout.closePartition(1));
+		Assert.assertTrue(spout.closePartition(2));
 		try {
-			spout.closePartition(new Integer(3));
+			spout.closePartition(3);
 			Assert.fail();
 		} catch(RuntimeException e) {
 			// expected
@@ -192,15 +192,15 @@ public class OrderedFileInputSpoutTest {
 			PowerMockito.whenNew(BufferedReader.class).withArguments(fileReaderMock).thenReturn(readerMocks[i - 1]);
 		}
 		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(new Integer(0));
+		taskMock.add(0);
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
 		
 		spout.open(conf, contextMock, mock(SpoutOutputCollector.class));
 		
 		if(this.r.nextBoolean()) {
-			Assert.assertTrue(spout.closePartition(new Integer(this.r.nextInt(3))));
+			Assert.assertTrue(spout.closePartition(this.r.nextInt(3)));
 		}
 		
 		spout.close();
@@ -215,7 +215,7 @@ public class OrderedFileInputSpoutTest {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();
-		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(0));
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, 0);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -232,7 +232,7 @@ public class OrderedFileInputSpoutTest {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();
-		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, 1);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -249,7 +249,7 @@ public class OrderedFileInputSpoutTest {
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
 		Config conf = new Config();
-		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, 3);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -277,12 +277,12 @@ public class OrderedFileInputSpoutTest {
 		for(int i = 0; i < numberOfLines; ++i) {
 			String line = "sid" + i + "," + i + ",dummy";
 			stub = stub.thenReturn(line);
-			expectedResult.add(new Values(new Long(i), line));
+			expectedResult.add(new Values((long) i, line));
 		}
 		stub = stub.thenReturn(null);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
+		conf.put(TestOrderedFileInputSpout.NUMBER_OF_PARTITIONS, 1);
 		
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
@@ -311,7 +311,7 @@ public class OrderedFileInputSpoutTest {
 			for(int j = 0; j < numberOfLines; ++j) {
 				String line = "sid" + j + "," + j + ",dummy" + i;
 				stub = stub.thenReturn(line);
-				expectedResult.add(new Values(new Long(j), line));
+				expectedResult.add(new Values((long) j, line));
 			}
 			stub = stub.thenReturn(null);
 		}
@@ -324,10 +324,10 @@ public class OrderedFileInputSpoutTest {
 		conf.put(TestOrderedFileInputSpout.INPUT_FILE_SUFFIXES, Arrays.asList(new String[] {"1", "2", "3"}));
 		
 		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(new Integer(0));
+		taskMock.add(0);
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		
@@ -376,7 +376,7 @@ public class OrderedFileInputSpoutTest {
 				number += this.r.nextInt(stepSizeRange);
 				String line = "sid" + j + "," + number + ",dummy" + i;
 				stub = stub.thenReturn(line);
-				expectedResult.add(new Values(new Long(number), line));
+				expectedResult.add(new Values((long) number, line));
 			}
 			stub = stub.thenReturn(null);
 		}
@@ -389,10 +389,10 @@ public class OrderedFileInputSpoutTest {
 		conf.put(TestOrderedFileInputSpout.INPUT_FILE_SUFFIXES, Arrays.asList(new String[] {"1", "2", "3"}));
 		
 		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(new Integer(0));
+		taskMock.add(0);
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		
@@ -411,10 +411,10 @@ public class OrderedFileInputSpoutTest {
 			Set<List<Object>> resultSubset = new HashSet<List<Object>>();
 			long ts;
 			do {
-				ts = ((Long)expectedResult.getFirst().get(0)).longValue();
+				ts = ((Long)expectedResult.getFirst().get(0));
 				expectedSubset.add(expectedResult.removeFirst());
 				resultSubset.add(col.output.get(Utils.DEFAULT_STREAM_ID).removeFirst());
-			} while(expectedResult.size() > 0 && ts == ((Long)expectedResult.getFirst().get(0)).longValue());
+			} while(expectedResult.size() > 0 && ts == ((Long)expectedResult.getFirst().get(0)));
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}

@@ -126,9 +126,9 @@ public class TimestampOrderChecker implements IRichBolt {
 	public void execute(Tuple tuple) {
 		long currentTimestamp;
 		if(this.tsIndex != -1) {
-			currentTimestamp = tuple.getLong(this.tsIndex).longValue();
+			currentTimestamp = tuple.getLong(this.tsIndex);
 		} else {
-			currentTimestamp = tuple.getLongByField(this.tsAttributeName).longValue();
+			currentTimestamp = tuple.getLongByField(this.tsAttributeName);
 		}
 		
 		if(currentTimestamp < this.lastTimestamp || !this.duplicates && currentTimestamp == this.lastTimestamp) {

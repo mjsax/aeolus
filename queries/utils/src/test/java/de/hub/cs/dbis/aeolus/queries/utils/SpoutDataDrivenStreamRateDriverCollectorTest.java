@@ -67,7 +67,7 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 		
 		ArrayList<Object> tuple = new ArrayList<Object>(numberOfAttributes);
 		for(int i = 0; i < numberOfAttributes; ++i) {
-			tuple.add(new Long(i));
+			tuple.add((long) i);
 		}
 		Object messageId = mock(Object.class);
 		String streamId = "streamId";
@@ -143,7 +143,7 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 		
 		ArrayList<Object> tuple = new ArrayList<Object>(numberOfAttributes);
 		for(int i = 0; i < numberOfAttributes; ++i) {
-			tuple.add(new Integer(i));
+			tuple.add(i);
 		}
 		
 		driverCollector.emit(tuple);

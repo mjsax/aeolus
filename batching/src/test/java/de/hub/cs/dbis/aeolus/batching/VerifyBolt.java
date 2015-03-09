@@ -67,7 +67,7 @@ public class VerifyBolt implements IRichBolt {
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
 		this.collector = collector;
-		this.taskId = new Integer(context.getThisTaskId());
+		this.taskId = context.getThisTaskId();
 	}
 	
 	

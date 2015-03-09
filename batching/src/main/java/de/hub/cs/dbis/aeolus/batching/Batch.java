@@ -80,8 +80,7 @@ class Batch extends ArrayList<BatchColumn> {
 		assert (batchSize > 0);
 		assert (numberOfAttributes > 0);
 		
-		LOGGER.debug("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(
-			numberOfAttributes));
+		LOGGER.debug("batchSize: {}; numberOfAttributes: {}", batchSize, numberOfAttributes);
 		
 		if(batchSize == 1 && LOGGER.isWarnEnabled()) {
 			LOGGER.warn("Instantiating a Batch of size 1.");
@@ -109,7 +108,7 @@ class Batch extends ArrayList<BatchColumn> {
 		assert (tuple.size() == this.numberOfAttributes);
 		assert (this.size < this.batchSize);
 		
-		LOGGER.trace("tuple: {}; size before insert: {}", tuple, new Integer(this.size));
+		LOGGER.trace("tuple: {}; size before insert: {}", tuple, this.size);
 		
 		for(int i = 0; i < this.numberOfAttributes; ++i) {
 			this.get(i).add(tuple.get(i));

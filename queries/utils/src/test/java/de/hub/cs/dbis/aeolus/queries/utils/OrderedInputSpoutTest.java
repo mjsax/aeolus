@@ -90,7 +90,7 @@ public class OrderedInputSpoutTest {
 				}
 			}
 			String line = this.data.get(index).removeFirst();
-			this.emitted = super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
+			this.emitted = super.emitNextTuple(index, Long.parseLong(line.trim()), line);
 		}
 		
 		@Override
@@ -144,7 +144,7 @@ public class OrderedInputSpoutTest {
 		Assert.assertEquals(1, declarer.schema.size());
 		Assert.assertEquals(1, declarer.streamId.size());
 		
-		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
+		Assert.assertEquals(false, declarer.direct.get(0));
 		Assert.assertEquals(2, declarer.schema.get(0).size());
 		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
 		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
@@ -161,7 +161,7 @@ public class OrderedInputSpoutTest {
 		Assert.assertEquals(1, declarer.schema.size());
 		Assert.assertEquals(1, declarer.streamId.size());
 
-		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
+		Assert.assertEquals(false, declarer.direct.get(0));
 		Assert.assertEquals(2, declarer.schema.get(0).size());
 		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
 		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
@@ -179,7 +179,7 @@ public class OrderedInputSpoutTest {
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Map<String, Integer> map = new HashMap<String, Integer>();
-		map.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(2));
+		map.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 2);
 		spout.open(map, null, mock(SpoutOutputCollector.class));
 		
 		spout.nextTuple();
@@ -193,8 +193,8 @@ public class OrderedInputSpoutTest {
 		spout.nextTuple();
 		Assert.assertEquals(0, spout.emitted.size());
 		
-		Assert.assertFalse(spout.closePartition(new Integer(1 - partition)));
-		Assert.assertTrue(spout.closePartition(new Integer(partition)));
+		Assert.assertFalse(spout.closePartition(1 - partition));
+		Assert.assertTrue(spout.closePartition(partition));
 		
 		spout.nextTuple();
 		Assert.assertEquals(1, spout.emitted.size());
@@ -202,7 +202,7 @@ public class OrderedInputSpoutTest {
 		spout.nextTuple();
 		Assert.assertEquals(0, spout.emitted.size());
 		
-		Assert.assertTrue(spout.closePartition(new Integer(1 - partition)));
+		Assert.assertTrue(spout.closePartition(1 - partition));
 		
 		spout.nextTuple();
 		Assert.assertEquals(0, spout.emitted.size());
@@ -215,7 +215,7 @@ public class OrderedInputSpoutTest {
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
+		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 1);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -235,7 +235,7 @@ public class OrderedInputSpoutTest {
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
+		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 3);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -256,16 +256,16 @@ public class OrderedInputSpoutTest {
 		partition.add("2");
 		partition.add("3");
 		LinkedList<List<Object>> expectedResult = new LinkedList<List<Object>>();
-		expectedResult.add(Arrays.asList(new Object[] {new Long(1), new String("1")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(2), new String("2")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 1, new String("1")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 2, new String("2")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 3, new String("3")}));
 		@SuppressWarnings("unchecked")
 		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition));
 		
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(1));
+		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 1);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -297,15 +297,15 @@ public class OrderedInputSpoutTest {
 		partition3.add(" 3");
 		
 		LinkedList<List<Object>> expectedResult = new LinkedList<List<Object>>();
-		expectedResult.add(Arrays.asList(new Object[] {new Long(1), new String("1")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(1), new String("1 ")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(1), new String(" 1")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(2), new String("2 ")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(2), new String(" 2")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(2), new String("2")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String(" 3")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
-		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3 ")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 1, new String("1")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 1, new String("1 ")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 1, new String(" 1")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 2, new String("2 ")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 2, new String(" 2")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 2, new String("2")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 3, new String(" 3")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 3, new String("3")}));
+		expectedResult.add(Arrays.asList(new Object[] {(long) 3, new String("3 ")}));
 		Collections.sort(expectedResult, new Comp());
 		@SuppressWarnings("unchecked")
 		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2, partition3));
@@ -313,7 +313,7 @@ public class OrderedInputSpoutTest {
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
+		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 3);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -361,7 +361,7 @@ public class OrderedInputSpoutTest {
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
 			partition1.add("" + number);
-			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String("" + number)}));
+			expectedResult.add(Arrays.asList(new Object[] {(long) number, new String("" + number)}));
 		}
 		
 		size = 20 + this.r.nextInt(200);
@@ -371,7 +371,7 @@ public class OrderedInputSpoutTest {
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
 			partition2.add(" " + number);
-			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(" " + number)}));
+			expectedResult.add(Arrays.asList(new Object[] {(long) number, new String(" " + number)}));
 		}
 		
 		size = 20 + this.r.nextInt(200);
@@ -381,7 +381,7 @@ public class OrderedInputSpoutTest {
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
 			partition3.add(number + " ");
-			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(number + " ")}));
+			expectedResult.add(Arrays.asList(new Object[] {(long) number, new String(number + " ")}));
 		}
 		Collections.sort(expectedResult, new Comp());
 		
@@ -391,7 +391,7 @@ public class OrderedInputSpoutTest {
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
-		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, new Integer(3));
+		conf.put(TestOrderedInputSpout.NUMBER_OF_PARTITIONS, 3);
 		
 		TestSpoutOutputCollector col = new TestSpoutOutputCollector();
 		spout.open(conf, mock(TopologyContext.class), new SpoutOutputCollector(col));
@@ -410,7 +410,7 @@ public class OrderedInputSpoutTest {
 		}
 		if(lastRemoved != null) {
 			while(expectedResult.size() > 0
-				&& ((Long)lastRemoved.get(0)).longValue() == ((Long)expectedResult.getLast().get(0)).longValue()) {
+				&& ((Long)lastRemoved.get(0)) == ((Long)expectedResult.getLast().get(0))) {
 				expectedResult.removeLast();
 			}
 		}
@@ -427,7 +427,7 @@ public class OrderedInputSpoutTest {
 				if(expectedResult.size() == 0) {
 					break;
 				}
-			} while(((Long)expectedResult.getFirst().get(0)).longValue() == ((Long)first.get(0)).longValue());
+			} while(((Long)expectedResult.getFirst().get(0)) == ((Long)first.get(0)));
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}

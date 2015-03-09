@@ -65,7 +65,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	 */
 	SpoutBatchCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
 		super(collector);
-		LOGGER.trace("batchSize: {}", new Integer(batchSize));
+		LOGGER.trace("batchSize: {}", batchSize);
 		
 		this.collector = collector;
 		this.batcher = new AbstractBatchCollector(context, batchSize) {
@@ -79,7 +79,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 			@Override
 			protected void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 				assert (anchors == null);
-				LOGGER.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", new Integer(taskId), streamId,
+				LOGGER.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", taskId, streamId,
 					batch, messageId);
 				SpoutBatchCollector.this.collector.emitDirect(taskId, streamId, (List)batch, messageId);
 			}
@@ -114,7 +114,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	
 	@Override
 	public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
-		LOGGER.trace("taskId: {}; streamId: {}; tuple: {}; messageId: {}", new Integer(taskId), streamId, tuple,
+		LOGGER.trace("taskId: {}; streamId: {}; tuple: {}; messageId: {}", taskId, streamId, tuple,
 			messageId);
 		this.batcher.tupleEmitDirect(taskId, streamId, null, tuple, messageId);
 	}

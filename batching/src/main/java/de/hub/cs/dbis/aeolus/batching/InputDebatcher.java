@@ -82,7 +82,7 @@ public class InputDebatcher implements IRichBolt {
 			LOGGER.trace("debatching");
 			
 			final int numberOfAttributes = input.size();
-			LOGGER.trace("numberOfAttributes: {}", new Integer(numberOfAttributes));
+			LOGGER.trace("numberOfAttributes: {}", numberOfAttributes);
 			final BatchColumn[] columns = new BatchColumn[numberOfAttributes];
 			
 			for(int i = 0; i < numberOfAttributes; ++i) {
@@ -90,14 +90,14 @@ public class InputDebatcher implements IRichBolt {
 			}
 			
 			final int size = columns[0].size();
-			LOGGER.trace("batchSize: {}", new Integer(size));
+			LOGGER.trace("batchSize: {}", size);
 			for(int i = 0; i < size; ++i) {
 				final ArrayList<Object> attributes = new ArrayList<Object>(numberOfAttributes);
 				
 				for(int j = 0; j < numberOfAttributes; ++j) {
 					attributes.add(columns[j].get(i));
 				}
-				LOGGER.trace("extracted tuple #{}: {}", new Integer(i), attributes);
+				LOGGER.trace("extracted tuple #{}: {}", i, attributes);
 				
 				final TupleImpl tuple = new TupleImpl(this.topologyContext, attributes, input.getSourceTask(),
 					input.getSourceStreamId());

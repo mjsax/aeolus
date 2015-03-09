@@ -71,7 +71,7 @@ public class SpoutOutputBatcher implements IRichSpout {
 	 * @param batchSize
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, int batchSize) {
-		LOGGER.debug("batchSize: {}", new Integer(batchSize));
+		LOGGER.debug("batchSize: {}", batchSize);
 		this.wrappedSpout = spout;
 		this.batchSize = batchSize;
 	}

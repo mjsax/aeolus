@@ -84,9 +84,9 @@ public class FileReaderSpoutITCase {
 		
 		TopologyBuilder builder = new TopologyBuilder();
 		final int dop = 1 + this.r.nextInt(10);
-		builder.setSpout("Spout", new FileReaderSpout(), new Integer(dop));
+		builder.setSpout("Spout", new FileReaderSpout(), dop);
 		SpoutDataFileOutputBolt sink = new SpoutDataFileOutputBolt();
-		builder.setBolt("Sink", new TimestampMerger(sink, 0), new Integer(1)).shuffleGrouping("Spout");
+		builder.setBolt("Sink", new TimestampMerger(sink, 0), 1).shuffleGrouping("Spout");
 		
 		
 		
