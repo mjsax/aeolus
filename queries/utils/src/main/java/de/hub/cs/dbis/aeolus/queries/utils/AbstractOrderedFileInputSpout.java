@@ -91,9 +91,14 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 * including the task IDs each tuple was sent to.
 	 */
 	protected Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
-	
-	
-	
+
+    public AbstractOrderedFileInputSpout() {
+    }
+
+    public AbstractOrderedFileInputSpout(String streamID) {
+        super(streamID);
+    }
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {

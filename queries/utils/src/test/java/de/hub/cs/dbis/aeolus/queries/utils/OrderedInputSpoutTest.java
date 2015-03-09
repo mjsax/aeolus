@@ -45,6 +45,8 @@ import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
+import java.util.Deque;
+import java.util.Queue;
 
 
 
@@ -59,30 +61,35 @@ public class OrderedInputSpoutTest {
 	private class TestOrderedInputSpout extends AbstractOrderedInputSpout<String> {
 		private static final long serialVersionUID = -6722924299495546729L;
 		
-		private final LinkedList<String>[] data;
+		private final List<Deque<String>> data;
 		private final Random rr;
 		
 		Map<Values, List<Integer>> emitted;
 		
-		public TestOrderedInputSpout(LinkedList<String>[] data, Random rr) {
+		TestOrderedInputSpout(List<Deque<String>> data, Random rr) {
 			this.data = data;
 			this.rr = rr;
 		}
-		
+
+        public TestOrderedInputSpout(List<Deque<String>> data, Random rr, String streamID) {
+            super(streamID);
+            this.data = data;
+            this.rr = rr;
+        }
 		
 		
 		@Override
 		public void nextTuple() {
-			int index = this.rr.nextInt(this.data.length);
+			int index = this.rr.nextInt(this.data.size());
 			int old = index;
-			while(this.data[index].size() == 0) {
-				index = (index + 1) % this.data.length;
+			while(this.data.get(index).size() == 0) {
+				index = (index + 1) % this.data.size();
 				if(index == old) {
 					this.emitted = super.emitNextTuple(null, null, null);
 					return;
 				}
 			}
-			String line = this.data[index].removeFirst();
+			String line = this.data.get(index).removeFirst();
 			this.emitted = super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
 		}
 		
@@ -126,7 +133,9 @@ public class OrderedInputSpoutTest {
 	
 	@Test
 	public void testDeclareOutputFields() {
-		AbstractOrderedInputSpout<?> spout = mock(AbstractOrderedInputSpout.class);
+            List<Deque<String>> data = new LinkedList<Deque<String>>();
+            //test without explicit stream ID
+		AbstractOrderedInputSpout<?> spout = new TestOrderedInputSpout(data, r);
 		
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
@@ -140,16 +149,33 @@ public class OrderedInputSpoutTest {
 		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
 		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
 		Assert.assertEquals(null, declarer.streamId.get(0));
+
+                //test with explicit stream ID
+                String streamID = "streamID";
+		spout = new TestOrderedInputSpout(data, r, streamID);
+
+		declarer = new TestDeclarer();
+		spout.declareOutputFields(declarer);
+
+		Assert.assertEquals(1, declarer.direct.size());
+		Assert.assertEquals(1, declarer.schema.size());
+		Assert.assertEquals(1, declarer.streamId.size());
+
+		Assert.assertEquals(new Boolean(false), declarer.direct.get(0));
+		Assert.assertEquals(2, declarer.schema.get(0).size());
+		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
+		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
+		Assert.assertEquals(streamID, declarer.streamId.get(0));
 	}
 	
 	@Test
 	public void testClosePartiton() {
-		LinkedList<String> partition1 = new LinkedList<String>();
+		Deque<String> partition1 = new LinkedList<String>();
 		partition1.add("0");
-		LinkedList<String> partition2 = new LinkedList<String>();
+		Deque<String> partition2 = new LinkedList<String>();
 		partition2.add("1");
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {partition1, partition2};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2));
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Map<String, Integer> map = new HashMap<String, Integer>();
@@ -185,7 +211,7 @@ public class OrderedInputSpoutTest {
 	@Test
 	public void testSingleEmptyPartition() {
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {new LinkedList<String>()};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(new LinkedList<String>()));
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
@@ -204,8 +230,8 @@ public class OrderedInputSpoutTest {
 	@Test
 	public void testAllPartitionsEmpty() {
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {new LinkedList<String>(), new LinkedList<String>(),
-													new LinkedList<String>()};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(new LinkedList<String>(), new LinkedList<String>(),
+													new LinkedList<String>()));
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
 		Config conf = new Config();
@@ -234,7 +260,7 @@ public class OrderedInputSpoutTest {
 		expectedResult.add(Arrays.asList(new Object[] {new Long(2), new String("2")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {partition};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition));
 		
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
@@ -257,15 +283,15 @@ public class OrderedInputSpoutTest {
 	
 	@Test
 	public void testMultiplePartitionsStrict() {
-		LinkedList<String> partition1 = new LinkedList<String>();
+		Deque<String> partition1 = new LinkedList<String>();
 		partition1.add("1");
 		partition1.add("2");
 		partition1.add("3");
-		LinkedList<String> partition2 = new LinkedList<String>();
+		Deque<String> partition2 = new LinkedList<String>();
 		partition2.add("1 ");
 		partition2.add("2 ");
 		partition2.add("3 ");
-		LinkedList<String> partition3 = new LinkedList<String>();
+		Deque<String> partition3 = new LinkedList<String>();
 		partition3.add(" 1");
 		partition3.add(" 2");
 		partition3.add(" 3");
@@ -282,7 +308,7 @@ public class OrderedInputSpoutTest {
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3 ")}));
 		Collections.sort(expectedResult, new Comp());
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2, partition3));
 		
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		
@@ -330,7 +356,7 @@ public class OrderedInputSpoutTest {
 		
 		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
-		LinkedList<String> partition1 = new LinkedList<String>();
+		Deque<String> partition1 = new LinkedList<String>();
 		number = 0;
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
@@ -340,7 +366,7 @@ public class OrderedInputSpoutTest {
 		
 		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
-		LinkedList<String> partition2 = new LinkedList<String>();
+		Deque<String> partition2 = new LinkedList<String>();
 		number = 0;
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
@@ -350,7 +376,7 @@ public class OrderedInputSpoutTest {
 		
 		size = 20 + this.r.nextInt(200);
 		totalInputSize += size;
-		LinkedList<String> partition3 = new LinkedList<String>();
+		Deque<String> partition3 = new LinkedList<String>();
 		number = 0;
 		for(int i = 0; i < size; ++i) {
 			number += this.r.nextInt(stepSizeRange);
@@ -360,7 +386,7 @@ public class OrderedInputSpoutTest {
 		Collections.sort(expectedResult, new Comp());
 		
 		@SuppressWarnings("unchecked")
-		LinkedList<String>[] data = new LinkedList[] {partition1, partition2, partition3};
+		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2, partition3));
 		
 		TestOrderedInputSpout spout = new TestOrderedInputSpout(data, this.r);
 		

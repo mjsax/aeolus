@@ -25,7 +25,10 @@ import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
+import storm.lrb.TopologyControl;
 
 
 
@@ -57,9 +60,14 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	 * The prefix of all input file names.
 	 */
 	private final String defaultPrefix = "xway";
-	
-	
-	
+
+    public FileReaderSpout() {
+    }
+
+    public FileReaderSpout(String streamID) {
+        super(streamID);
+    }
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
@@ -68,7 +76,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 		}
 		super.open(conf, context, collector);
 	}
-	
+
 	/**
 	 * {@inheritDoc} <br />
 	 * <br />
