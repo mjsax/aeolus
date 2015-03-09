@@ -154,8 +154,14 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		return this.merger.closePartition(partitionId);
 	}
 	
+        /**
+         * Declares the two fields necessary for transmitting tuples with a
+         * timestamp. Calling {@code super.declareOutputFields} in overriding
+         * methods is strongly recommended.
+         * @param declarer 
+         */
 	@Override
-	public final void declareOutputFields(OutputFieldsDeclarer declarer) {
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(new Fields("ts", "rawTuple"));
 	}
 	
