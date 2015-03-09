@@ -41,28 +41,28 @@ public class TestDeclarer implements OutputFieldsDeclarer {
 	public void declare(Fields fields) {
 		this.schema.add(fields);
 		this.streamId.add(null);
-		this.direct.add(new Boolean(false));
+		this.direct.add(false);
 	}
 	
 	@Override
 	public void declare(boolean direct, Fields fields) {
 		this.schema.add(fields);
 		this.streamId.add(null);
-		this.direct.add(new Boolean(direct));
+		this.direct.add(direct);
 	}
 	
 	@Override
 	public void declareStream(String streamId, Fields fields) {
 		this.schema.add(fields);
 		this.streamId.add(streamId);
-		this.direct.add(new Boolean(false));
+		this.direct.add(false);
 	}
 	
 	@Override
 	public void declareStream(String streamId, boolean direct, Fields fields) {
 		this.schema.add(fields);
 		this.streamId.add(streamId);
-		this.direct.add(new Boolean(direct));
+		this.direct.add(direct);
 	}
 	
 }
