@@ -59,19 +59,19 @@ public class AccidentDetectionBolt extends BaseRichBolt {
     /**
      * holds vids of stoppedcars (keyed on position)
      */
-    private Map<Integer, HashSet<Integer>> stoppedCarsPerPosition;
+    private final Map<Integer, HashSet<Integer>> stoppedCarsPerPosition = new HashMap<Integer, HashSet<Integer>>();
     /**
      * holds all accident infos keyed on postion
      */
-    private Map<Integer, Accident> allAccidentPositions;
+    private final Map<Integer, Accident> allAccidentPositions = new HashMap<Integer, Accident>();
     /**
      * holds cnts of stops for each vehicle
      */
-    private Map<Integer, StoppedVehicle> stoppedCars;
+    private final Map<Integer, StoppedVehicle> stoppedCars = new HashMap<Integer, StoppedVehicle>();
     /**
      * map of all accident cars and the position of the accident
      */
-    private Map<Integer, Integer> allAccidentCars;
+    private final Map<Integer, Integer> allAccidentCars = new HashMap<Integer, Integer>();
 
     private final int processed_xway;
 
@@ -86,12 +86,6 @@ public class AccidentDetectionBolt extends BaseRichBolt {
             TopologyContext context, 
             OutputCollector collector) {
         this.collector = collector;
-
-        this.stoppedCarsPerPosition = new HashMap<Integer, HashSet<Integer>>();
-        this.allAccidentPositions = new HashMap<Integer, Accident>();
-        this.allAccidentCars = new HashMap<Integer, Integer>();
-        this.stoppedCars = new HashMap<Integer, StoppedVehicle>();
-
     }
 
     @Override
