@@ -44,7 +44,11 @@ import backtype.storm.tuple.Tuple;
 public class TimestampOrderChecker implements IRichBolt {
 	private static final long serialVersionUID = -6266187713977343965L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(TimestampOrderChecker.class);
+        /*
+        internal implementation notes:
+        - @TODO: making LOGGER static makes TimestampOrderCheckerTest fail
+        */
+	private final Logger LOGGER = LoggerFactory.getLogger(TimestampOrderChecker.class);
 	
 	/**
 	 * The bolt to be wrapped.
