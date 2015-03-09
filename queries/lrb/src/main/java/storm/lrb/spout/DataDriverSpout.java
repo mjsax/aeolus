@@ -88,7 +88,7 @@ public class DataDriverSpout extends BaseRichSpout {
 
     private final Map<Integer, Queue<String>> bufferlist = new HashMap<Integer, Queue<String>>();
 
-    private final StopWatch stw = new StopWatch();
+    private final StopWatch stopWatch = new StopWatch();
 
     private Timer timer;
 
@@ -121,7 +121,7 @@ public class DataDriverSpout extends BaseRichSpout {
         try {
             Queue<String> myQ = new LinkedList<String>();
             // Reader ready? && actual read second < queueBuffer?
-            while (in.ready() && readSecond <= queueBuffer + stw.getElapsedTimeSecs()) {
+            while (in.ready() && readSecond <= queueBuffer + stopWatch.getElapsedTimeSecs()) {
                 String line = in.readLine();
 
                 line = transformTuple(line);
@@ -132,7 +132,7 @@ public class DataDriverSpout extends BaseRichSpout {
                     offset = Integer.parseInt(tupel[1]);
                     if (offset > 0) {
                         LOGGER.debug("Simulation starts with offset of: " + offset);
-                        stw.setOffset(offset);
+                        stopWatch.setOffset(offset);
                     }
                 }
 
@@ -178,7 +178,7 @@ public class DataDriverSpout extends BaseRichSpout {
                 LOGGER.debug("Bufferlist: " + bufferlist.get(0).toString());
             }
 
-            stw.start(offset);
+            stopWatch.start(offset);
 
             // Timer to refill Queue each second
             Thread t = new Thread(new Runnable() {
@@ -200,21 +200,21 @@ public class DataDriverSpout extends BaseRichSpout {
 
         try {
 
-            if ((sendSecond <= stw.getElapsedTimeSecs())) {
+            if ((sendSecond <= stopWatch.getElapsedTimeSecs())) {
                 Queue<String> myQ = bufferlist.get(sendSecond);
 
                 while (myQ != null && myQ.size() > 0) {
                     if (tupleCnt % 100 == 0) {
-                        LOGGER.debug(myQ.peek() + " at" + stw.getElapsedTimeSecs());
+                        LOGGER.debug(myQ.peek() + " at" + stopWatch.getElapsedTimeSecs());
                     }
-                    collector.emit("stream", new Values(myQ.poll(), stw));//,tupleCnt);
+                    collector.emit("stream", new Values(myQ.poll(), stopWatch));//,tupleCnt);
                     tupleCnt++;
                 }
                 LOGGER.debug("queue empty wait for next second?" + bufferlist.keySet());
                 //queue empty go to next second
                 sendSecond++;
             } else {
-                int sleepMillis = (int) ((sendSecond - stw.getElapsedTimeSecs()) * 100);
+                int sleepMillis = (int) ((sendSecond - stopWatch.getElapsedTimeSecs()) * 100);
                 LOGGER.debug("waiting %d millis for next second", sleepMillis);
                 Utils.sleep(sleepMillis);
             }
@@ -246,21 +246,21 @@ public class DataDriverSpout extends BaseRichSpout {
 
             try {
 
-                while (!stw.isRunning()) {
+                while (!stopWatch.isRunning()) {
                     LOGGER.debug("FillBufferQueue sleeping");
                     Utils.sleep(1000);
                 }
 
-                LOGGER.debug("Sim starting fill bufferqueue at::" + stw);
+                LOGGER.debug("Sim starting fill bufferqueue at::" + stopWatch);
                 //test = (int) (DataDriverSpout.stw.getElapsedTimeSecs() + DataDriverSpout.bufferInSeconds);
 
                 Queue<String> myQ = new LinkedList<String>();
 
-                if (in.ready() && stw.isRunning()) {// && TCPDataFeeder2.readSecond <=
+                if (in.ready() && stopWatch.isRunning()) {// && TCPDataFeeder2.readSecond <=
                     int test = sendSecond + offset;							// TCPDataFeeder2.stw.getElapsedTimeSecs()){
-                    if (stw.getElapsedTimeSecs() > 0 && test < stw.getElapsedTimeSecs() + 20) {
+                    if (stopWatch.getElapsedTimeSecs() > 0 && test < stopWatch.getElapsedTimeSecs() + 20) {
                         LOGGER.debug("Too slow with output at "
-                                + stw.getElapsedTimeSecs() + "while sendsecond is" + test);
+                                + stopWatch.getElapsedTimeSecs() + "while sendsecond is" + test);
                     } else {
 
                         //delete old stuff
@@ -273,7 +273,7 @@ public class DataDriverSpout extends BaseRichSpout {
                         }
 
                         //fill it up so that we have at least a buffer of 5 seconds
-                        while (in.ready() && readSecond <= queueBuffer + stw.getElapsedTimeSecs()) {
+                        while (in.ready() && readSecond <= queueBuffer + stopWatch.getElapsedTimeSecs()) {
                             String line = in.readLine();
                             if (line != null) {
                                 //in case the input file is fro uppsalla
