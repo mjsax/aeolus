@@ -52,7 +52,7 @@ import backtype.storm.tuple.Tuple;
  */
 // TODO: what about batches of different sizes (for different output streams? or for different consumers?)
 abstract class AbstractBatchCollector {
-	protected final Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);
+	protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractBatchCollector.class);
 	
 	/**
 	 * The size of the output batches.
@@ -98,7 +98,7 @@ abstract class AbstractBatchCollector {
 	 *            The size of the output batches to be built.
 	 */
 	AbstractBatchCollector(TopologyContext context, int batchSize) {
-		this.logger.trace("batchSize: {}", new Integer(batchSize));
+		LOGGER.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.batchSize = batchSize;
 		this.topologyContext = context;
@@ -154,7 +154,7 @@ abstract class AbstractBatchCollector {
 				streamId, receiverComponentId, tuple));
 			// }
 		}
-		this.logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, computedTaskIds);
+		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, computedTaskIds);
 		
 		for(Integer taskId : computedTaskIds) {
 			final Batch buffer = this.outputBuffers.get(streamId).get(taskId);
@@ -186,7 +186,7 @@ abstract class AbstractBatchCollector {
 		buffer.addTuple(tuple);
 		
 		this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
-		this.logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
+		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
 	}
 	
 	/**

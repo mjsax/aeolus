@@ -47,7 +47,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 public class SpoutOutputBatcher implements IRichSpout {
 	private static final long serialVersionUID = -8627934412821417370L;
 	
-	private final Logger logger = LoggerFactory.getLogger(SpoutOutputBatcher.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(SpoutOutputBatcher.class);
 	
 	/**
 	 * The used {@link SpoutBatchCollector} that wraps the actual {@link SpoutOutputCollector}.
@@ -71,7 +71,7 @@ public class SpoutOutputBatcher implements IRichSpout {
 	 * @param batchSize
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, int batchSize) {
-		this.logger.debug("batchSize: {}", new Integer(batchSize));
+		LOGGER.debug("batchSize: {}", new Integer(batchSize));
 		this.wrappedSpout = spout;
 		this.batchSize = batchSize;
 	}

@@ -50,7 +50,7 @@ import backtype.storm.tuple.Tuple;
 public class TimestampMerger implements IRichBolt {
 	private static final long serialVersionUID = -6930627449574381467L;
 	
-	private final Logger logger = LoggerFactory.getLogger(TimestampMerger.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(TimestampMerger.class);
 	
 	
 	
@@ -85,7 +85,7 @@ public class TimestampMerger implements IRichBolt {
 		assert (wrappedBolt != null);
 		assert (tsIndex >= 0);
 		
-		this.logger.debug("Initialize with timestamp index {}", new Integer(tsIndex));
+		LOGGER.debug("Initialize with timestamp index {}", new Integer(tsIndex));
 		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = tsIndex;
@@ -104,7 +104,7 @@ public class TimestampMerger implements IRichBolt {
 		assert (wrappedBolt != null);
 		assert (tsAttributeName != null);
 		
-		this.logger.debug("Initialize with timestamp attribute {}", tsAttributeName);
+		LOGGER.debug("Initialize with timestamp attribute {}", tsAttributeName);
 		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = -1;
@@ -121,7 +121,7 @@ public class TimestampMerger implements IRichBolt {
 			taskIds.addAll(arg1.getComponentTasks(inputStream.getKey().get_componentId()));
 		}
 		
-		this.logger.debug("Detected producer tasks: {}", taskIds);
+		LOGGER.debug("Detected producer tasks: {}", taskIds);
 		
 		if(this.tsIndex != -1) {
 			assert (this.tsAttributeName == null);
@@ -137,12 +137,12 @@ public class TimestampMerger implements IRichBolt {
 	
 	@Override
 	public void execute(Tuple tuple) {
-		this.logger.trace("Adding tuple to internal buffer tuple: {}", tuple);
+		LOGGER.trace("Adding tuple to internal buffer tuple: {}", tuple);
 		this.merger.addTuple(new Integer(tuple.getSourceTask()), tuple);
 		
 		Tuple t;
 		while((t = this.merger.getNextTuple()) != null) {
-			this.logger.trace("Extrated tuple from internal buffer for processing: {}", tuple);
+			LOGGER.trace("Extrated tuple from internal buffer for processing: {}", tuple);
 			this.wrappedBolt.execute(t);
 		}
 	}

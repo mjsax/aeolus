@@ -44,7 +44,7 @@ import backtype.storm.tuple.Values;
  */
 // TODO: make more efficient (avoid linear scan of all partitions to extract next tuple)
 class StreamMerger<T> {
-	private final Logger logger = LoggerFactory.getLogger(StreamMerger.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(StreamMerger.class);
 	
 	/**
 	 * The index of the timestamp attribute ({@code -1} if attribute name is used).
@@ -77,7 +77,7 @@ class StreamMerger<T> {
 		assert (partitionIds != null);
 		assert (tsIndex >= 0);
 		
-		this.logger.debug("Initializing with timestamp index: {}", new Integer(tsIndex));
+		LOGGER.debug("Initializing with timestamp index: {}", new Integer(tsIndex));
 		
 		this.tsIndex = tsIndex;
 		this.tsAttributeName = null;
@@ -95,7 +95,7 @@ class StreamMerger<T> {
 		assert (partitionIds != null);
 		assert (tsAttributeName != null);
 		
-		this.logger.debug("Initializing with timestamp attribute: {}", tsAttributeName);
+		LOGGER.debug("Initializing with timestamp attribute: {}", tsAttributeName);
 		
 		this.tsIndex = -1;
 		this.tsAttributeName = tsAttributeName;
@@ -104,7 +104,7 @@ class StreamMerger<T> {
 	}
 	
 	private void initialize(Collection<Integer> partitionIds) {
-		this.logger.debug("Initializing partition buffer: {}", partitionIds);
+		LOGGER.debug("Initializing partition buffer: {}", partitionIds);
 		for(Integer partition : partitionIds) {
 			this.mergeBuffer.put(partition, new LinkedList<T>());
 		}
@@ -117,7 +117,7 @@ class StreamMerger<T> {
 	 * timestamp of the inserted tuple is not smaller
 	 */
 	public void addTuple(Integer partitionNumber, T t) {
-		this.logger.trace("Add tuple to buffer (partitionId, tuple): {}, {}", partitionNumber, t);
+		LOGGER.trace("Add tuple to buffer (partitionId, tuple): {}, {}", partitionNumber, t);
 		assert (partitionNumber != null);
 		assert (t != null);
 		LinkedList<T> partitionBuffer = this.mergeBuffer.get(partitionNumber);
@@ -147,7 +147,7 @@ class StreamMerger<T> {
 				assert (ts >= this.latestTs);
 				
 				if(ts == this.latestTs) {
-					this.logger.trace("Extract tuple with same timestamp (partition, tuple): {}, {}",
+					LOGGER.trace("Extract tuple with same timestamp (partition, tuple): {}, {}",
 						partition.getKey(), partitionBuffer.getFirst());
 					return partitionBuffer.removeFirst();
 				}
@@ -159,19 +159,19 @@ class StreamMerger<T> {
 			} catch(NoSuchElementException e) {
 				// in this case, we stay in the loop, because we still might find a tuple with equal ts value as last
 				// returned tuple
-				this.logger.trace("Found empty parition: {}", partition.getKey());
+				LOGGER.trace("Found empty parition: {}", partition.getKey());
 				eachBufferFilled = false;
 			}
 		}
 		
 		if(eachBufferFilled && minTsPartitionNumber != null) {
-			this.logger.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}", new Long(minTsFound),
+			LOGGER.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}", new Long(minTsFound),
 				minTsPartitionNumber, this.mergeBuffer.get(minTsPartitionNumber).getFirst());
 			this.latestTs = minTsFound;
 			return this.mergeBuffer.get(minTsPartitionNumber).removeFirst();
 		}
 		
-		this.logger.trace("Could not extract tuple.");
+		LOGGER.trace("Could not extract tuple.");
 		return null;
 	}
 	
@@ -206,12 +206,12 @@ class StreamMerger<T> {
 	 */
 	public boolean closePartition(Integer partitionId) {
 		if(this.mergeBuffer.get(partitionId).size() == 0) {
-			this.logger.debug("Closing partition: {}", partitionId);
+			LOGGER.debug("Closing partition: {}", partitionId);
 			this.mergeBuffer.remove(partitionId);
 			return true;
 		}
 		
-		this.logger.debug("Closing partition {} failed.", partitionId);
+		LOGGER.debug("Closing partition {} failed.", partitionId);
 		return false;
 	}
 }

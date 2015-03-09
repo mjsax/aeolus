@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public class BatchColumn extends ArrayList<Object> {
 	private static final long serialVersionUID = -2215147192473477343L;
 	
-	private final Logger logger = LoggerFactory.getLogger(BatchColumn.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(BatchColumn.class);
 	
 	
 	
@@ -58,8 +58,8 @@ public class BatchColumn extends ArrayList<Object> {
 		super(batchSize);
 		assert (batchSize > 0);
 		
-		if(batchSize == 1 && this.logger.isWarnEnabled()) {
-			this.logger.warn("Instantiating a BatchColumn of size 1.");
+		if(batchSize == 1 && LOGGER.isWarnEnabled()) {
+			LOGGER.warn("Instantiating a BatchColumn of size 1.");
 		}
 	}
 	

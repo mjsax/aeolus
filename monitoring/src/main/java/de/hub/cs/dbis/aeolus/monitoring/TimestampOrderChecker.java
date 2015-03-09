@@ -44,7 +44,7 @@ import backtype.storm.tuple.Tuple;
 public class TimestampOrderChecker implements IRichBolt {
 	private static final long serialVersionUID = -6266187713977343965L;
 	
-	private final Logger logger = LoggerFactory.getLogger(TimestampOrderChecker.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(TimestampOrderChecker.class);
 	
 	/**
 	 * The bolt to be wrapped.
@@ -128,7 +128,7 @@ public class TimestampOrderChecker implements IRichBolt {
 		}
 		
 		if(currentTimestamp < this.lastTimestamp || !this.duplicates && currentTimestamp == this.lastTimestamp) {
-			this.logger.error("Out-of-order tuples detected; previous ts {}; current ts {}", this.lastTimestamp,
+			LOGGER.error("Out-of-order tuples detected; previous ts {}; current ts {}", this.lastTimestamp,
 				currentTimestamp);
 		}
 		this.lastTimestamp = currentTimestamp;

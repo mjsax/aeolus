@@ -64,7 +64,7 @@ import backtype.storm.tuple.Values;
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private static final long serialVersionUID = 6224448887936832190L;
 	
-	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
 	
 	
 	
@@ -98,7 +98,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		if(numPartitions != null) {
 			numberOfPartitons = numPartitions.intValue();
 		}
-		this.logger.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
+		LOGGER.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
 		
 		Integer[] partitionIds = new Integer[numberOfPartitons];
 		for(int i = 0; i < numberOfPartitons; ++i) {
@@ -126,7 +126,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 */
 	// TODO: add support for non-default and/or multiple output streams (what about directEmit(...)?)
 	protected final Map<Values, List<Integer>> emitNextTuple(Integer index, Long timestamp, T tuple) {
-		this.logger.trace("Received new output tuple (partitionId, ts, tuple): {}, {}, {}", index, timestamp, tuple);
+		LOGGER.trace("Received new output tuple (partitionId, ts, tuple): {}, {}, {}", index, timestamp, tuple);
 		if(index != null && timestamp != null && tuple != null) {
 			this.merger.addTuple(index, new Values(timestamp, tuple));
 		}
@@ -134,7 +134,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		Values t;
 		Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
 		while((t = this.merger.getNextTuple()) != null) {
-			this.logger.trace("Emitting tuple: {}", t);
+			LOGGER.trace("Emitting tuple: {}", t);
 			emitted.put(t, this.collector.emit(t));
 		}
 		

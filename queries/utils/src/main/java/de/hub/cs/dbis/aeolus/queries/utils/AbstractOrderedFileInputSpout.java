@@ -59,7 +59,7 @@ import backtype.storm.tuple.Values;
 public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInputSpout<String> {
 	private static final long serialVersionUID = -4690963122364704481L;
 	
-	private final Logger logger = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
 	
 	
 	
@@ -109,18 +109,18 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			
 			for(int index = context.getThisTaskIndex(); index < suffixes.size(); index += componentTaskCount) {
 				try {
-					this.logger.debug("Adding partition input file {}", this.prefix + suffixes.get(index));
+					LOGGER.debug("Adding partition input file {}", this.prefix + suffixes.get(index));
 					this.inputFiles.add(new BufferedReader(new FileReader(this.prefix + suffixes.get(index))));
 				} catch(FileNotFoundException e) {
-					this.logger.error("Input file <{}> not found.", this.prefix + suffixes.get(index));
+					LOGGER.error("Input file <{}> not found.", this.prefix + suffixes.get(index));
 				}
 			}
 		} else {
 			try {
-				this.logger.debug("Adding single input file {}", this.prefix);
+				LOGGER.debug("Adding single input file {}", this.prefix);
 				this.inputFiles.add(new BufferedReader(new FileReader(this.prefix)));
 			} catch(FileNotFoundException e) {
-				this.logger.error("Input file <{}> not found:", this.prefix);
+				LOGGER.error("Input file <{}> not found:", this.prefix);
 			}
 		}
 		
@@ -147,37 +147,37 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			}
 			String line = null;
 			try {
-				this.logger.trace("Read from partition {}", new Integer(this.emitIndex));
+				LOGGER.trace("Read from partition {}", new Integer(this.emitIndex));
 				line = this.inputFiles.get(this.emitIndex).readLine();
 			} catch(IOException e) {
-				this.logger.error(e.toString());
+				LOGGER.error(e.toString());
 			}
 			if(line != null) {
 				try {
 					this.emitted = super.emitNextTuple(new Integer(this.emitIndex),
 						new Long(this.extractTimestamp(line)), line);
 					
-					this.logger.trace("Emitted the following tuples {}", this.emitted);
+					LOGGER.trace("Emitted the following tuples {}", this.emitted);
 					if(this.emitted.size() != 0) {
 						return;
 					}
 				} catch(ParseException e) {
-					this.logger.error(e.toString());
+					LOGGER.error(e.toString());
 				}
 			} else {
-				this.logger.debug("Try to close empty partition {}", new Integer(this.emitIndex));
+				LOGGER.debug("Try to close empty partition {}", new Integer(this.emitIndex));
 				if(super.closePartition(new Integer(this.emitIndex))) {
 					try {
 						this.inputFiles.get(this.emitIndex).close();
 					} catch(IOException e) {
-						this.logger.error("Closing input file reader failed.", e);
+						LOGGER.error("Closing input file reader failed.", e);
 					}
 					this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
 																// super.emitNextTuple
 				} else {
 					// we cannot put any more data,
 					this.emitted = super.emitNextTuple(null, null, null);
-					this.logger.trace("Emitted the following tuples {}", this.emitted);
+					LOGGER.trace("Emitted the following tuples {}", this.emitted);
 				}
 			}
 		}
@@ -204,7 +204,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 					reader.close();
 				}
 			} catch(IOException e) {
-				this.logger.error("Closing input file reader failed.", e);
+				LOGGER.error("Closing input file reader failed.", e);
 			}
 		}
 	}

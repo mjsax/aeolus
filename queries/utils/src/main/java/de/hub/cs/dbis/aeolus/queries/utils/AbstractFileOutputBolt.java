@@ -51,7 +51,7 @@ import backtype.storm.tuple.Tuple;
 public abstract class AbstractFileOutputBolt implements IRichBolt {
 	private static final long serialVersionUID = 5082995927274164044L;
 	
-	private final Logger logger = LoggerFactory.getLogger(AbstractFileOutputBolt.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractFileOutputBolt.class);
 	
 	
 	
@@ -97,7 +97,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 		try {
 			this.writer = new BufferedWriter(new FileWriter(this.outputDirName + File.separator + this.outputFileName));
 		} catch(IOException e) {
-			this.logger.error("Could not open output file <{}> for writing.", this.outputDirName + File.separator
+			LOGGER.error("Could not open output file <{}> for writing.", this.outputDirName + File.separator
 				+ this.outputFileName);
 		}
 		
@@ -110,7 +110,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 			try {
 				this.writer.write(this.tupleToString(input));
 			} catch(IOException e) {
-				this.logger.error("Could not output tuple to output file: {}", input);
+				LOGGER.error("Could not output tuple to output file: {}", input);
 			}
 		}
 		this.collector.ack(input);
@@ -135,7 +135,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 			try {
 				this.writer.close();
 			} catch(IOException e) {
-				this.logger.error(e.getMessage());
+				LOGGER.error(e.getMessage());
 			}
 		}
 	}

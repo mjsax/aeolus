@@ -45,7 +45,7 @@ import backtype.storm.tuple.TupleImpl;
 public class InputDebatcher implements IRichBolt {
 	private static final long serialVersionUID = 7781347435499103691L;
 	
-	private final Logger logger = LoggerFactory.getLogger(InputDebatcher.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(InputDebatcher.class);
 	
 	/**
 	 * TODO
@@ -76,13 +76,13 @@ public class InputDebatcher implements IRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
-		this.logger.trace("input: {}", input);
+		LOGGER.trace("input: {}", input);
 		
 		if(input.getValues().getClass().getName().equals(Batch.class.getName())) {
-			this.logger.trace("debatching");
+			LOGGER.trace("debatching");
 			
 			final int numberOfAttributes = input.size();
-			this.logger.trace("numberOfAttributes: {}", new Integer(numberOfAttributes));
+			LOGGER.trace("numberOfAttributes: {}", new Integer(numberOfAttributes));
 			final BatchColumn[] columns = new BatchColumn[numberOfAttributes];
 			
 			for(int i = 0; i < numberOfAttributes; ++i) {
@@ -90,14 +90,14 @@ public class InputDebatcher implements IRichBolt {
 			}
 			
 			final int size = columns[0].size();
-			this.logger.trace("batchSize: {}", new Integer(size));
+			LOGGER.trace("batchSize: {}", new Integer(size));
 			for(int i = 0; i < size; ++i) {
 				final ArrayList<Object> attributes = new ArrayList<Object>(numberOfAttributes);
 				
 				for(int j = 0; j < numberOfAttributes; ++j) {
 					attributes.add(columns[j].get(i));
 				}
-				this.logger.trace("extracted tuple #{}: {}", new Integer(i), attributes);
+				LOGGER.trace("extracted tuple #{}: {}", new Integer(i), attributes);
 				
 				final TupleImpl tuple = new TupleImpl(this.topologyContext, attributes, input.getSourceTask(),
 					input.getSourceStreamId());

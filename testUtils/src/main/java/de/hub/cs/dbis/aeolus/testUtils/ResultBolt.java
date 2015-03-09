@@ -46,7 +46,7 @@ import backtype.storm.tuple.Tuple;
 public class ResultBolt implements IRichBolt {
 	private static final long serialVersionUID = 7985730498618052164L;
 	
-	private final Logger logger = LoggerFactory.getLogger(ResultBolt.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(ResultBolt.class);
 	
 	
 	
@@ -62,7 +62,7 @@ public class ResultBolt implements IRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
-		this.logger.trace("Buffering result tuple: {}", input);
+		LOGGER.trace("Buffering result tuple: {}", input);
 		this.receivedTuples.add(input.getValues());
 		this.collector.ack(input);
 	}
