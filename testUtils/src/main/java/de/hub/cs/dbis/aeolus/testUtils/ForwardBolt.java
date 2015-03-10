@@ -49,7 +49,7 @@ import backtype.storm.utils.Utils;
 // TODO add .emitDirect(...) support
 public class ForwardBolt implements IRichBolt {
 	private static final long serialVersionUID = -2047329782139913124L;
-	private final static Logger LOGGER = LoggerFactory.getLogger(ForwardBolt.class);
+	private final static Logger logger = LoggerFactory.getLogger(ForwardBolt.class);
 	
 	private final Fields tupleSchema;
 	private final String[] outputStreams;
@@ -97,7 +97,7 @@ public class ForwardBolt implements IRichBolt {
 	public void execute(Tuple input) {
 		for(String streamId : this.outputStreams) {
 			List<Integer> receiverIds = this.collector.emit(streamId, input.getValues());
-			LOGGER.trace("forwarded tuple {} to output stream {} to receiver tasks with IDs {}", input, streamId,
+			logger.trace("forwarded tuple {} to output stream {} to receiver tasks with IDs {}", input, streamId,
 				receiverIds);
 		}
 		
