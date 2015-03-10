@@ -25,6 +25,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,39 +67,34 @@ import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LoggerFactory.class})
 public class TimestampOrderCheckerTest {
-	private static final Map<String, Object> boltConfig = new HashMap<String, Object>();
-	
-	private static TimestampOrderChecker checkerFake;
-	private static ForwardBolt forwarder = new ForwardBolt(new Fields("dummy"));
+	private static final Map<String, Object> boltConfigStatic = new HashMap<String, Object>();
 	private static IRichBolt boltMockStatic;
+	private static Logger loggerMockStatic;
+	
+	private TimestampOrderChecker checker;
+	private ForwardBolt forwarder = new ForwardBolt(new Fields("dummy"));
 	
 	private long seed;
 	private Random r;
-	private static int tsIndex;
-	private static boolean duplicates;
+	private int tsIndex;
+	private boolean duplicates;
 	
-	@Mock private Logger loggerMock;
 	@Mock private GeneralTopologyContext contextMock;
 	
 	
 	
 	@BeforeClass
-	public static void prepareStatic() {
-		long seed = System.currentTimeMillis();
-		Random r = new Random(seed);
-		System.out.println("Static test seed: " + seed);
+	public static void prepareTestStatic() {
+		PowerMockito.mockStatic(LoggerFactory.class);
+		when(LoggerFactory.getLogger(any(Class.class))).thenReturn(loggerMockStatic);
 		
-		tsIndex = r.nextInt();
-		if(tsIndex < 0) {
-			tsIndex *= -1;
-		}
+		loggerMockStatic = mock(Logger.class);
 		
-		duplicates = r.nextBoolean();
+		PowerMockito.mockStatic(LoggerFactory.class);
+		when(LoggerFactory.getLogger(any(Class.class))).thenReturn(loggerMockStatic);
 		
 		boltMockStatic = mock(IRichBolt.class);
-		when(boltMockStatic.getComponentConfiguration()).thenReturn(boltConfig);
-		
-		checkerFake = new TimestampOrderChecker(boltMockStatic, tsIndex, duplicates);
+		when(boltMockStatic.getComponentConfiguration()).thenReturn(boltConfigStatic);
 	}
 	
 	@Before
@@ -107,8 +103,14 @@ public class TimestampOrderCheckerTest {
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 		
-		PowerMockito.mockStatic(LoggerFactory.class);
-		when(LoggerFactory.getLogger(any(Class.class))).thenReturn(this.loggerMock);
+		this.tsIndex = this.r.nextInt();
+		if(this.tsIndex < 0) {
+			this.tsIndex *= -1;
+		}
+		
+		this.duplicates = this.r.nextBoolean();
+		
+		reset(loggerMockStatic);
 	}
 	
 	@Test
@@ -116,36 +118,35 @@ public class TimestampOrderCheckerTest {
 		boolean indexVsName = this.r.nextBoolean();
 		
 		TestOutputCollector collector = new TestOutputCollector();
-		forwarder.prepare(boltConfig, null, new OutputCollector(collector));
+		this.forwarder.prepare(boltConfigStatic, null, new OutputCollector(collector));
 		
-		TimestampOrderChecker checker;
 		if(indexVsName) {
-			checker = new TimestampOrderChecker(forwarder, 0, false);
+			this.checker = new TimestampOrderChecker(this.forwarder, 0, false);
 			when(this.contextMock.getComponentOutputFields(this.contextMock.getComponentId(0), null)).thenReturn(
 				new Fields("ts", "dummy"));
 		} else {
-			checker = new TimestampOrderChecker(forwarder, "ts", false);
+			this.checker = new TimestampOrderChecker(this.forwarder, "ts", false);
 			when(this.contextMock.getComponentOutputFields(this.contextMock.getComponentId(0), null)).thenReturn(
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 0, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(0), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		verify(loggerMockStatic, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
-		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(2)));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		verify(loggerMockStatic, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
+		verify(loggerMockStatic).error(anyString(), eq(new Long(2)), eq(new Long(2)));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		verify(this.loggerMock, atMost(2)).error(anyString(), any(Class.class), any(Class.class));
-		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		verify(loggerMockStatic, atMost(2)).error(anyString(), any(Class.class), any(Class.class));
+		verify(loggerMockStatic).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
 		Assert.assertEquals(5, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 		Assert.assertEquals(5, collector.acked.size());
@@ -157,31 +158,30 @@ public class TimestampOrderCheckerTest {
 		boolean indexVsName = this.r.nextBoolean();
 		
 		TestOutputCollector collector = new TestOutputCollector();
-		forwarder.prepare(boltConfig, null, new OutputCollector(collector));
+		this.forwarder.prepare(boltConfigStatic, null, new OutputCollector(collector));
 		
-		TimestampOrderChecker checker;
 		if(indexVsName) {
-			checker = new TimestampOrderChecker(forwarder, 0, true);
+			this.checker = new TimestampOrderChecker(this.forwarder, 0, true);
 			when(this.contextMock.getComponentOutputFields(this.contextMock.getComponentId(0), null)).thenReturn(
 				new Fields("ts", "dummy"));
 		} else {
-			checker = new TimestampOrderChecker(forwarder, "ts", true);
+			this.checker = new TimestampOrderChecker(this.forwarder, "ts", true);
 			when(this.contextMock.getComponentOutputFields(this.contextMock.getComponentId(0), null)).thenReturn(
 				new Fields("ts", "dummy"));
 		}
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 2, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		verify(this.loggerMock, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(2), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		verify(loggerMockStatic, atMost(0)).error(anyString(), any(Class.class), any(Class.class));
 		
-		checker.execute(new TupleImpl(this.contextMock, new Values((long) 1, (char)(32 + this.r
-                        .nextInt(95))), 0, null));
-		verify(this.loggerMock, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
-		verify(this.loggerMock).error(anyString(), eq(new Long(2)), eq(new Long(1)));
+		this.checker.execute(new TupleImpl(this.contextMock, new Values(new Long(1), new Character((char)(32 + this.r
+			.nextInt(95)))), 0, null));
+		verify(loggerMockStatic, atMost(1)).error(anyString(), any(Class.class), any(Class.class));
+		verify(loggerMockStatic).error(anyString(), eq(new Long(2)), eq(new Long(1)));
 		
 		Assert.assertEquals(4, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 		Assert.assertEquals(4, collector.acked.size());
@@ -190,30 +190,38 @@ public class TimestampOrderCheckerTest {
 	
 	@Test
 	public void testCleanup() {
-		checkerFake.cleanup();
+		this.checker = new TimestampOrderChecker(boltMockStatic, this.tsIndex, this.duplicates);
+		
+		this.checker.cleanup();
 		verify(boltMockStatic).cleanup();
 		verify(boltMockStatic, atMost(1)).cleanup();
 	}
 	
 	@Test
 	public void testDeclareOutputFields() {
+		this.checker = new TimestampOrderChecker(boltMockStatic, this.tsIndex, this.duplicates);
+		
 		OutputFieldsDeclarer declarerMock = mock(OutputFieldsDeclarer.class);
-		checkerFake.declareOutputFields(declarerMock);
+		this.checker.declareOutputFields(declarerMock);
 		verify(boltMockStatic).declareOutputFields(declarerMock);
 		verify(boltMockStatic, atMost(1)).declareOutputFields(any(OutputFieldsDeclarer.class));
 	}
 	
 	@Test
 	public void testGetComponentConfiguration() {
-		Assert.assertSame(boltConfig, checkerFake.getComponentConfiguration());
+		this.checker = new TimestampOrderChecker(boltMockStatic, this.tsIndex, this.duplicates);
+		
+		Assert.assertSame(boltConfigStatic, this.checker.getComponentConfiguration());
 	}
 	
 	@Test
 	public void testPrepare() {
+		this.checker = new TimestampOrderChecker(boltMockStatic, this.tsIndex, this.duplicates);
+		
 		Map<?, ?> config = new HashMap<Object, Object>();
 		TopologyContext context = mock(TopologyContext.class);
 		OutputCollector collector = mock(OutputCollector.class);
-		checkerFake.prepare(config, context, collector);
+		this.checker.prepare(config, context, collector);
 		verify(boltMockStatic).prepare(config, context, collector);
 		verify(boltMockStatic, atMost(1)).prepare(config, context, collector);
 	}
