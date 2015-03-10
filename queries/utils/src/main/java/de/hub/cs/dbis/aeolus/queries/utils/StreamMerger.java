@@ -195,8 +195,8 @@ class StreamMerger<T> {
 	 * prevents {@link #getNextTuple()} to return tuples from the remaining (non-empty) partition buffers, because it
 	 * assumes that new data is inserted into the currently empty partition buffer later on. Hence, if it is guaranteed,
 	 * that a partition does not yield any more data, it must be removed for further processing of the remaining
-	 * partitions.<br />
-	 * <br />
+	 * partitions.<br/>
+	 * <br/>
 	 * <strong>Only empty partitions can be removed.</strong>
 	 * 
 	 * @param partitionId
