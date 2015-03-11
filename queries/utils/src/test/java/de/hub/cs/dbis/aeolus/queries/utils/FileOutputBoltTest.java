@@ -44,6 +44,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 
 
@@ -118,8 +119,7 @@ public class FileOutputBoltTest {
 		TestOutputCollector collector = new TestOutputCollector();
 		bolt.prepare(conf, null, new OutputCollector(collector));
 		
-		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
-		when(context.getComponentOutputFields(null, null)).thenReturn(new Fields("dummy"));
+		GeneralTopologyContext context = MockHelper.createTopologyContextMock();
 		
 		final int numberOfLines = 20;
 		for(int i = 0; i < numberOfLines; ++i) {
