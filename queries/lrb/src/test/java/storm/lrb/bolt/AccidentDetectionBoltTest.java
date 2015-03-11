@@ -21,7 +21,6 @@ package storm.lrb.bolt;
  */
 
  import backtype.storm.Config;
- import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.GeneralTopologyContext;
  import backtype.storm.task.OutputCollector;
  import backtype.storm.task.TopologyContext;
@@ -32,12 +31,6 @@ import backtype.storm.task.GeneralTopologyContext;
  import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
  import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
- import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
- import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
- import java.util.Arrays;
- import java.util.LinkedList;
- import java.util.List;
- import java.util.Map;
  import org.junit.After;
  import org.junit.AfterClass;
  import org.junit.Before;
@@ -47,11 +40,8 @@ import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
  import org.junit.Ignore;
  import org.junit.runner.RunWith;
  import static org.mockito.Matchers.anyString;
- import static org.mockito.Mockito.mock;
  import static org.mockito.Mockito.when;
- import org.powermock.core.classloader.annotations.PrepareForTest;
  import org.powermock.modules.junit4.PowerMockRunner;
-import storm.lrb.bolt.AccidentDetectionBolt;
 
  /**
  *
