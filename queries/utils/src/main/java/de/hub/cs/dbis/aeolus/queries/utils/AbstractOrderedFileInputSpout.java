@@ -47,9 +47,9 @@ import backtype.storm.tuple.Values;
  * from multiple files (ie, each line must contain exactly one tuple). Each file is an <em>input partition</em> in
  * {@link AbstractOrderedInputSpout} terminology. The default file is {@code input}. Use {@link #INPUT_FILE_NAME} and
  * {@link #INPUT_FILE_SUFFIXES} to specify different file name(s) in the topology configuration (see
- * {@link backtype.storm.Config}).<br />
- * <br />
- * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:}{@link String}{@code >}<br />
+ * {@link backtype.storm.Config}).<br/>
+ * <br/>
+ * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:}{@link String}{@code >}<br/>
  * 
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
  * @author Roberto Baldoni (Sapienza Università di Roma, Roma, Italy)

@@ -36,8 +36,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 
 /**
  * {@link SpoutOutputBatcher} wraps a spout, buffers the spout's output tuples, and emits those tuples in batches. All
- * receiving bolts must be wrapped by an {@link InputDebatcher}.<br />
- * <br />
+ * receiving bolts must be wrapped by an {@link InputDebatcher}.<br/>
+ * <br/>
  * <strong>CAUTION:</strong>The task IDs returned by {@code .emit(...)} of the used {@link SpoutOutputCollector} reflect
  * the task IDs the tuple <em>will</em> be sent to. The tuples might still be in the output buffer and not transfered
  * yet.

@@ -33,16 +33,16 @@ import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
 
 /**
  * {@link FileReaderSpout} reads LRB stream data from multiple files. See {@link AbstractOrderedFileInputSpout} for
- * configuring information of input files. Per default, a single file named {@code xway} is used.<br />
- * <br />
+ * configuring information of input files. Per default, a single file named {@code xway} is used.<br/>
+ * <br/>
  * Each file is expected to contain data of a single express way, including position records, and historical query
  * request (ie, account balance, daily expenditure, and travel time query request). Each line must contain a single
- * record and all records in each file must be in ascending timestamp order.<br />
- * <br />
- * <strong>Expected file format:</strong>{@code <Type,Time,remaining-attributes>}<br />
+ * record and all records in each file must be in ascending timestamp order.<br/>
+ * <br/>
+ * <strong>Expected file format:</strong>{@code <Type,Time,remaining-attributes>}<br/>
  * where {@code Type} specifies the record type (valid values are 0, 2, 3, or 4) and {@code Time} is the timestamp
  * attribute of the record. The number of remaining attributes depends on the record type. The type attribute and the
- * remaining attributes are ignored while parsing an input record.<br />
+ * remaining attributes are ignored while parsing an input record.<br/>
  * 
  * @author Matthias J. Sax
  */
@@ -87,8 +87,8 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	}
 	
 	/**
-	 * {@inheritDoc} <br />
-	 * <br />
+	 * {@inheritDoc} <br/>
+	 * <br/>
 	 * Each {@code line} is expected to be in CSV format having the timestamp attribute at the second position.
 	 */
 	@Override

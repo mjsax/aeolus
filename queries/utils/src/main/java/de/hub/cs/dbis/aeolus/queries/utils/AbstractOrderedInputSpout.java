@@ -43,15 +43,15 @@ import backtype.storm.tuple.Values;
 /**
  * {@link AbstractOrderedInputSpout} reads input tuples (of type {@code T}) from multiple sources (called
  * <em>partitions</em>) and pushes raw data into the topology. The default number of used partitions is one but can be
- * configured using {@link #NUMBER_OF_PARTITIONS}. The IDs of the partitions are {@code 0,...,NUMBER_OF_PARTITIONS-1}.<br />
- * <br />
+ * configured using {@link #NUMBER_OF_PARTITIONS}. The IDs of the partitions are {@code 0,...,NUMBER_OF_PARTITIONS-1}.<br/>
+ * <br/>
  * Input data must be sorted in ascending timestamp order in each partition. For each successfully processed input
- * tuple, a single output tuple is emitted.<br />
- * <br />
- * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:T>}<br />
+ * tuple, a single output tuple is emitted.<br/>
+ * <br/>
+ * <strong>Output schema:</strong> {@code <ts:}{@link Long}{@code ,rawTuple:T>}<br/>
  * Attribute {@code ts} contains the extracted timestamp value of the processed input tuple and {@code rawTuple}
- * contains the <em>complete</em> input tuple.<br />
- * <br />
+ * contains the <em>complete</em> input tuple.<br/>
+ * <br/>
  * {@link AbstractOrderedInputSpout} is parallelizable. If multiple input partitions are assigned to a single task,
  * {@link AbstractOrderedInputSpout} ensures that tuples are emitted in ascending timestamp order. In case of timestamp
  * duplicates, no ordering guarantee for all tuples having the same timestamp is given.
