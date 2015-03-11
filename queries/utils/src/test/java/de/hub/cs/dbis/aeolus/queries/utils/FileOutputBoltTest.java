@@ -119,7 +119,7 @@ public class FileOutputBoltTest {
 		TestOutputCollector collector = new TestOutputCollector();
 		bolt.prepare(conf, null, new OutputCollector(collector));
 		
-		GeneralTopologyContext context = MockHelper.createTopologyContextMock();
+		GeneralTopologyContext context = MockHelper.createGeneralTopologyContextMock();
 		
 		final int numberOfLines = 20;
 		for(int i = 0; i < numberOfLines; ++i) {

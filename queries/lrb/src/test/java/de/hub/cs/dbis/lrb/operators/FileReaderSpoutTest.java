@@ -20,15 +20,11 @@ package de.hub.cs.dbis.lrb.operators;
  * #L%
  */
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +37,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 
@@ -67,11 +64,7 @@ public class FileReaderSpoutTest {
 		
 		FileReaderSpout spout = new FileReaderSpout();
 		
-		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(0);
-		TopologyContext contextMock = mock(TopologyContext.class);
-		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(contextMock.getThisTaskIndex()).thenReturn(0);
+		TopologyContext contextMock = MockHelper.createTopologyContextMock();
 		
 		HashMap<Object, Object> dummyConf = new HashMap<Object, Object>();
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
