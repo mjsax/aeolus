@@ -55,11 +55,12 @@ public class AccidentDetectionBolt extends BaseRichBolt {
     private static final long serialVersionUID = 5537727428628598519L;
     private static final Logger LOG = LoggerFactory
             .getLogger(AccidentDetectionBolt.class);
-	public static final Fields FIELDS = new Fields(TopologyControl.XWAY_FIELD_NAME,
+	public static final Fields FIELDS_OUTGOING = new Fields(TopologyControl.XWAY_FIELD_NAME,
                 TopologyControl.DIRECTION_FIELD_NAME,
                 TopologyControl.SEGMENT_FIELD_NAME,
                 TopologyControl.ACCIDENT_INFO_FIELD_NAME,
                 TopologyControl.VEHICLE_ID_FIELD_NAME);
+	public static final Fields FIELDS_INCOMING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME);
 
     /**
      * holds vids of stoppedcars (keyed on position)
@@ -235,7 +236,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(FIELDS);
+        declarer.declare(FIELDS_OUTGOING);
     }
 
     @Override
@@ -253,7 +254,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
                 + "]";
     }
 
-	public Map<Integer, StoppedVehicle> getStoppedCars() {
-		return stoppedCars;
+	public Map<Integer, Integer> getAllAccidentCars() {
+		return allAccidentCars;
 	}
 }

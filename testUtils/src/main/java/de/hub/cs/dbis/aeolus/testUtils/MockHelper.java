@@ -37,8 +37,10 @@ package de.hub.cs.dbis.aeolus.testUtils;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.TupleImpl;
 import java.util.LinkedList;
 import java.util.List;
+import org.mockito.Matchers;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,9 +51,14 @@ import static org.mockito.Mockito.when;
  */
 public class MockHelper {
 
+	/**
+	 * generates a mock of {@link GeneralTopologyContext} with appropriate behavior for unit testing. Those include responding to {@link GeneralTopologyContext#getComponentOutputFields(java.lang.String, java.lang.String) } called any value and to {@link GeneralTopologyContext#getComponentId(int) } called with any value. This implies that the values for {@code streamID} passed to {@link TupleImpl#TupleImpl(backtype.storm.task.GeneralTopologyContext, java.util.List, int, java.lang.String) } and {@link TupleImpl#TupleImpl(backtype.storm.task.GeneralTopologyContext, java.util.List, int, java.lang.String, backtype.storm.tuple.MessageId) } don't have any effect (and therefore can be {@code null} or any {@code String}).
+	 * @return 
+	 */
 	public static GeneralTopologyContext createGeneralTopologyContextMock() {
 		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
-		when(context.getComponentOutputFields(null, null)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
+		when(context.getComponentId(Matchers.anyInt())).thenReturn("componentID");
 		return context;
 	}
 	

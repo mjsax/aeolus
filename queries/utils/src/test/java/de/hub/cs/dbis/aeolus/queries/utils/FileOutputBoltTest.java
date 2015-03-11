@@ -20,8 +20,6 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,7 +38,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.OutputCollector;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;

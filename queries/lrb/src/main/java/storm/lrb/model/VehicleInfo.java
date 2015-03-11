@@ -63,7 +63,7 @@ public class VehicleInfo implements Serializable {
 		this.vid = vid;
 	}
 	
-	public VehicleInfo() {
+	protected VehicleInfo() {
 		
 	}
 	

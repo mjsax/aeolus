@@ -39,7 +39,7 @@ public class VehicleAccount implements Serializable {
 	private final int day = 70;
 	private Integer xWay;
 	
-	public VehicleAccount() {}
+	protected VehicleAccount() {}
 	
 	public VehicleAccount(Integer vid, Integer xWay) {
 		this.vid = vid;

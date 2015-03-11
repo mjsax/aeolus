@@ -21,6 +21,7 @@ package storm.lrb.model;
  */
 
 import java.io.Serializable;
+import storm.lrb.bolt.SegmentIdentifier;
 
 import storm.lrb.tools.StopWatch;
 
@@ -40,9 +41,30 @@ import storm.lrb.tools.StopWatch;
 public class PosReport extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	public static final int TYPE = 0;
 	
-	public PosReport() {
+	protected PosReport() {
 		super();
+	}
+
+	/**
+	 * Creates a {@code PosReport} with a creation timestamp taken from {@link StopWatch#getElapsedTime() } of the {@code timer} argument.
+	 * @param time
+	 * @param vehicleIdentifier
+	 * @param currentSpeed
+	 * @param lane
+	 * @param segmentIdentifier
+	 * @param position
+	 * @param queryIdentifier
+	 * @param sinit
+	 * @param send
+	 * @param dow
+	 * @param tod
+	 * @param day
+	 * @param timer 
+	 */
+	public PosReport(int time, Integer vehicleIdentifier, int currentSpeed, Integer lane, SegmentIdentifier segmentIdentifier, Integer position, Integer queryIdentifier, Integer sinit, Integer send, Integer dow, Integer tod, Integer day, StopWatch timer) {
+		super(TYPE, timer.getElapsedTime(), time, vehicleIdentifier, currentSpeed, lane, segmentIdentifier, position, queryIdentifier, sinit, send, dow, tod, day, timer);
 	}
 	
 	/**

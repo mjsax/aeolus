@@ -52,8 +52,7 @@ public class Accident implements Serializable {
 	// private int maxPos = -1;
 	// private int minPos = -1;
 	
-	public Accident() {
-		
+	protected Accident() {
 	}
 	
 	public Accident(PosReport report) {

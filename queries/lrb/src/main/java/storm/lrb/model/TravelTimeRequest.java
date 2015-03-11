@@ -38,14 +38,15 @@ import storm.lrb.tools.StopWatch;
 public class TravelTimeRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	public static final int TYPE = 4;
 	
-	public TravelTimeRequest() {
+	protected TravelTimeRequest() {
 		super();
 		
 	}
 	
 	public TravelTimeRequest(String tupel, StopWatch time) {
-		super(tupel, time);
+		super(TYPE, tupel, time);
 		
 	}
 	

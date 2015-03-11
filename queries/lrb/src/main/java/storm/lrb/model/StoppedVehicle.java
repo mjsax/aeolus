@@ -44,7 +44,7 @@ public class StoppedVehicle implements Serializable {
 	private int position;
 	
 	// for serialization only
-	public StoppedVehicle() {
+	protected StoppedVehicle() {
 		this.time = -1;
 		this.vid = -1;
 		this.firstReport = null;

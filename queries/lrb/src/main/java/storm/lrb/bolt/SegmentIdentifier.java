@@ -25,6 +25,8 @@ package storm.lrb.bolt;
  * @author richter
  */
 public class SegmentIdentifier {
+	public static final int DIRECTION_EASTBOUND = 0;
+	public static final int DIRECTION_WESTBOUND = 1;
 	
 	/**
 	 * XWay (0. . . L−1) identifies the expressway from which the position report is emitted
