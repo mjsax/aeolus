@@ -41,7 +41,7 @@ import backtype.storm.tuple.Values;
 class Batch extends ArrayList<BatchColumn> {
 	private static final long serialVersionUID = 4904732830895959975L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(Batch.class);
+	private final static Logger logger = LoggerFactory.getLogger(Batch.class);
 	
 	/**
 	 * The capacity of this {@link Batch}
@@ -80,10 +80,10 @@ class Batch extends ArrayList<BatchColumn> {
 		assert (batchSize > 0);
 		assert (numberOfAttributes > 0);
 		
-		LOGGER.debug("batchSize: {}; numberOfAttributes: {}", batchSize, numberOfAttributes);
+		logger.debug("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(numberOfAttributes));
 		
-		if(batchSize == 1 && LOGGER.isWarnEnabled()) {
-			LOGGER.warn("Instantiating a Batch of size 1.");
+		if(batchSize == 1 && logger.isWarnEnabled()) {
+			logger.warn("Instantiating a Batch of size 1.");
 		}
 		this.batchSize = batchSize;
 		this.numberOfAttributes = numberOfAttributes;
@@ -108,7 +108,7 @@ class Batch extends ArrayList<BatchColumn> {
 		assert (tuple.size() == this.numberOfAttributes);
 		assert (this.size < this.batchSize);
 		
-		LOGGER.trace("tuple: {}; size before insert: {}", tuple, this.size);
+		logger.trace("tuple: {}; size before insert: {}", tuple, new Integer(this.size));
 		
 		for(int i = 0; i < this.numberOfAttributes; ++i) {
 			this.get(i).add(tuple.get(i));

@@ -68,10 +68,10 @@ public class FileReaderSpoutTest {
 		FileReaderSpout spout = new FileReaderSpout();
 		
 		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(0);
+		taskMock.add(new Integer(0));
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
-		when(contextMock.getThisTaskIndex()).thenReturn(0);
+		when(new Integer(contextMock.getThisTaskIndex())).thenReturn(new Integer(0));
 		
 		HashMap<Object, Object> dummyConf = new HashMap<Object, Object>();
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
@@ -82,7 +82,7 @@ public class FileReaderSpoutTest {
 		spout.nextTuple();
 		
 		Assert.assertEquals(1, collector.output.size());
-		Assert.assertEquals(new Values((long) 73647, line), collector.output.get(Utils.DEFAULT_STREAM_ID)
+		Assert.assertEquals(new Values(new Long(73647), line), collector.output.get(Utils.DEFAULT_STREAM_ID)
 			.removeFirst());
 		Assert.assertEquals(0, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 		

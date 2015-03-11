@@ -23,11 +23,13 @@ package de.hub.cs.dbis.aeolus.batching;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.storm.guava.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +46,15 @@ import backtype.storm.tuple.Tuple;
  * {@link AbstractBatchCollector} buffers emitted tuples in batches and emits full batches. It is used by
  * {@link SpoutBatchCollector} and {@link BoltBatchCollector}.
  * 
- * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as jar-file. This
- * jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
+ * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as
+ * jar-file. This jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
  * 
  * 
  * @author Matthias J. Sax
  */
 // TODO: what about batches of different sizes (for different output streams? or for different consumers?)
 abstract class AbstractBatchCollector {
-	protected final static Logger LOGGER = LoggerFactory.getLogger(AbstractBatchCollector.class);
+	protected final static Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);
 	
 	/**
 	 * The size of the output batches.
@@ -98,15 +100,17 @@ abstract class AbstractBatchCollector {
 	 *            The size of the output batches to be built.
 	 */
 	AbstractBatchCollector(TopologyContext context, int batchSize) {
-		LOGGER.trace("batchSize: {}", batchSize);
+		logger.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.batchSize = batchSize;
 		this.topologyContext = context;
 		this.componentId = context.getThisComponentId();
+		logger.trace("this-id: {}", this.componentId);
 		
 		// StreamId -> ComponentId -> Grouping
 		for(Entry<String, Map<String, Grouping>> outputStream : context.getThisTargets().entrySet()) {
 			final String streamId = outputStream.getKey();
+			logger.trace("output-stream: {}", streamId);
 			final Map<String, Grouping> streamReceivers = outputStream.getValue();
 			
 			final int numberOfAttributes = context.getComponentOutputFields(this.componentId, streamId).size();
@@ -121,15 +125,16 @@ abstract class AbstractBatchCollector {
 				receiverIds.add(receiverId);
 				final List<Integer> taskIds = context.getComponentTasks(receiverId);
 				this.receiverTasks.put(receiverId, taskIds);
+				logger.trace("receiver and tasks: {} - {}", receiverId, taskIds);
 				if(receiver.getValue().is_set_fields()) {
 					this.groupFields.put(receiverId, new Fields(receiver.getValue().get_fields()));
+					logger.trace("fieldsGrouping", this.groupFields.get(receiverId));
 				}
 				for(Integer taskId : taskIds) {
 					taskBuffers.put(taskId, new Batch(batchSize, numberOfAttributes));
 				}
 				
 			}
-			
 		}
 		
 	}
@@ -146,7 +151,7 @@ abstract class AbstractBatchCollector {
 	 * @return
 	 */
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
-		final List<Integer> computedTaskIds = new LinkedList<Integer>();
+		final Set<Integer> computedTaskIds = new HashSet<Integer>();
 		for(String receiverComponentId : this.receivers.get(streamId)) {
 			
 			// if(this.groupFields.get(receiverComponentId) != null) {
@@ -154,7 +159,7 @@ abstract class AbstractBatchCollector {
 				streamId, receiverComponentId, tuple));
 			// }
 		}
-		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, computedTaskIds);
+		logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, computedTaskIds);
 		
 		for(Integer taskId : computedTaskIds) {
 			final Batch buffer = this.outputBuffers.get(streamId).get(taskId);
@@ -169,7 +174,7 @@ abstract class AbstractBatchCollector {
 			}
 		}
 		
-		return computedTaskIds;
+		return Lists.newLinkedList(computedTaskIds);
 	}
 	
 	/**
@@ -186,7 +191,7 @@ abstract class AbstractBatchCollector {
 		buffer.addTuple(tuple);
 		
 		this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
-		LOGGER.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, taskId);
+		logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
 	}
 	
 	/**

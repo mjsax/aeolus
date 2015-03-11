@@ -43,7 +43,7 @@ import backtype.storm.tuple.Tuple;
 public class VerifyBolt implements IRichBolt {
 	private static final long serialVersionUID = -2047329782139913124L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(VerifyBolt.class);
+	private static final Logger logger = LoggerFactory.getLogger(VerifyBolt.class);
 	
 	public static final String SPOUT_ID = "noBatchingSpout";
 	public static final String BATCHING_SPOUT_ID = "batchingSpout";
@@ -67,13 +67,13 @@ public class VerifyBolt implements IRichBolt {
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
 		this.collector = collector;
-		this.taskId = context.getThisTaskId();
+		this.taskId = new Integer(context.getThisTaskId());
 	}
 	
 	
 	@Override
 	public void execute(Tuple input) {
-		LOGGER.debug("received {}: {}", this.taskId, input.getValues());
+		logger.debug("received {}: {}", this.taskId, input.getValues());
 		
 		String spoutId = input.getSourceComponent();
 		if(spoutId.equals(SPOUT_ID)) {

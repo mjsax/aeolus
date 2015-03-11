@@ -25,10 +25,7 @@ import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
-import storm.lrb.TopologyControl;
 
 
 
@@ -46,8 +43,6 @@ import storm.lrb.TopologyControl;
  * where {@code Type} specifies the record type (valid values are 0, 2, 3, or 4) and {@code Time} is the timestamp
  * attribute of the record. The number of remaining attributes depends on the record type. The type attribute and the
  * remaining attributes are ignored while parsing an input record.<br />
- * <br />
- * The output is emitted to the default output stream.
  * 
  * @author Matthias J. Sax
  */
@@ -60,14 +55,28 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	 * The prefix of all input file names.
 	 */
 	private final String defaultPrefix = "xway";
-
-    public FileReaderSpout() {
-    }
-
-    public FileReaderSpout(String streamID) {
-        super(streamID);
-    }
-
+	
+	
+	
+	/**
+	 * Instantiates a new {@link FileReaderSpout} that emits to the default output stream.
+	 */
+	public FileReaderSpout() {
+		super();
+	}
+	
+	/**
+	 * Instantiates a new {@link FileReaderSpout} that emits to the specified output stream.
+	 * 
+	 * @param streamID
+	 *            The name of the used output stream.
+	 */
+	public FileReaderSpout(String streamID) {
+		super(streamID);
+	}
+	
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
@@ -76,7 +85,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 		}
 		super.open(conf, context, collector);
 	}
-
+	
 	/**
 	 * {@inheritDoc} <br />
 	 * <br />

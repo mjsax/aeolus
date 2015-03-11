@@ -43,55 +43,66 @@ import backtype.storm.utils.Utils;
  * @author Matthias J. Sax
  */
 class SpoutBatchCollector extends SpoutOutputCollector {
-	private final static Logger LOGGER = LoggerFactory.getLogger(SpoutBatchCollector.class);
+	private final static Logger logger = LoggerFactory.getLogger(SpoutBatchCollector.class);
 	
 	/**
-	 * TODO
+	 * The originally provided collector object.
 	 */
 	private final ISpoutOutputCollector collector;
 	/**
-	 * TODO
+	 * The internally used BatchCollector.
 	 */
 	private final AbstractBatchCollector batcher;
 	
 	
 	
 	/**
-	 * TODO
+	 * Instantiates a new {@link SpoutBatchCollector} for the given batch size.
 	 * 
 	 * @param context
+	 *            The current runtime environment.
 	 * @param collector
+	 *            The original collector object.
 	 * @param batchSize
+	 *            The size of the output batches to be built.
 	 */
 	SpoutBatchCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
 		super(collector);
-		LOGGER.trace("batchSize: {}", batchSize);
+		logger.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.collector = collector;
 		this.batcher = new AbstractBatchCollector(context, batchSize) {
+			@SuppressWarnings({"unchecked", "rawtypes"})
 			@Override
 			protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 				assert (anchors == null);
-				LOGGER.trace("streamId: {}; batch: {}; messageId: {}", streamId, batch, messageId);
+				logger.trace("streamId: {}; batch: {}; messageId: {}", streamId, batch, messageId);
 				return SpoutBatchCollector.this.collector.emit(streamId, (List)batch, messageId);
 			}
 			
+			@SuppressWarnings({"unchecked", "rawtypes"})
 			@Override
 			protected void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 				assert (anchors == null);
-				LOGGER.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", taskId, streamId,
+				logger.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", new Integer(taskId), streamId,
 					batch, messageId);
 				SpoutBatchCollector.this.collector.emitDirect(taskId, streamId, (List)batch, messageId);
 			}
 		};
 	}
 	
+	/**
+	 * TODO
+	 */
 	@Override
 	public List<Integer> emit(String streamId, List<Object> tuple, Object messageId) {
-		LOGGER.trace("streamId: {}; tuple: {}; messageId: {}", streamId, tuple, messageId);
+		logger.trace("streamId: {}; tuple: {}; messageId: {}", streamId, tuple, messageId);
 		return this.batcher.tupleEmit(streamId, null, tuple, messageId);
 	}
 	
+	/**
+	 * TODO
+	 */
 	// need to copy and override to redirect call to SpoutBatchCollector.emit(String streamId, List<Object> tuple,
 	// Object messageId)
 	@Override
@@ -105,6 +116,9 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		return this.emit(tuple, null);
 	}
 	
+	/**
+	 * TODO
+	 */
 	// need to copy and override to redirect call to SpoutBatchCollector.emit(String streamId, List<Object> tuple,
 	// Object messageId)
 	@Override
@@ -112,13 +126,19 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		return this.emit(streamId, tuple, null);
 	}
 	
+	/**
+	 * TODO
+	 */
 	@Override
 	public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
-		LOGGER.trace("taskId: {}; streamId: {}; tuple: {}; messageId: {}", taskId, streamId, tuple,
+		logger.trace("taskId: {}; streamId: {}; tuple: {}; messageId: {}", new Integer(taskId), streamId, tuple,
 			messageId);
 		this.batcher.tupleEmitDirect(taskId, streamId, null, tuple, messageId);
 	}
 	
+	/**
+	 * TODO
+	 */
 	// need to copy and override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId,
 	// List<Object> tuple, Object messageId)
 	@Override
@@ -126,6 +146,9 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		this.emitDirect(taskId, Utils.DEFAULT_STREAM_ID, tuple, messageId);
 	}
 	
+	/**
+	 * TODO
+	 */
 	// need to copy and override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId,
 	// List<Object> tuple, Object messageId)
 	@Override
@@ -133,6 +156,9 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		this.emitDirect(taskId, streamId, tuple, null);
 	}
 	
+	/**
+	 * TODO
+	 */
 	// need to copy and override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId,
 	// List<Object> tuple, Object messageId)
 	@Override
