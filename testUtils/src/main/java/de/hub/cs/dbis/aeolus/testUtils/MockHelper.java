@@ -35,7 +35,11 @@ package de.hub.cs.dbis.aeolus.testUtils;
  * #L%
  */
 import backtype.storm.task.GeneralTopologyContext;
+import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Fields;
+import java.util.LinkedList;
+import java.util.List;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,10 +49,19 @@ import static org.mockito.Mockito.when;
  */
 public class MockHelper {
 
-	public static GeneralTopologyContext createTopologyContextMock() {
+	public static GeneralTopologyContext createGeneralTopologyContextMock() {
 		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
 		when(context.getComponentOutputFields(null, null)).thenReturn(new Fields("dummy"));
 		return context;
+	}
+	
+	public static TopologyContext createTopologyContextMock() {
+		List<Integer> taskMock = new LinkedList<Integer>();
+		taskMock.add(0);
+		TopologyContext contextMock = mock(TopologyContext.class);
+		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
+		return contextMock;
 	}
 
 	private MockHelper() {
