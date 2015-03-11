@@ -30,7 +30,7 @@ import storm.lrb.model.AccBalRequest;
 import storm.lrb.model.DaiExpRequest;
 import storm.lrb.model.LRBtuple;
 import storm.lrb.model.PosReport;
-import storm.lrb.model.TTEstRequest;
+import storm.lrb.model.TravelTimeRequest;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -102,7 +102,7 @@ public class DispatcherBolt extends BaseRichBolt {
 				this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple, exp);
 				break;
 			case LRBtuple.TYPE_TRAVEL_TIME_REQUEST:
-				TTEstRequest est = new TTEstRequest(line, this.timer);
+				TravelTimeRequest est = new TravelTimeRequest(line, this.timer);
 				this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple, est);
 				break;
 			default:

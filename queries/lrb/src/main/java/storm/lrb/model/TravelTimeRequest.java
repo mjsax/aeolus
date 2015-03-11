@@ -35,16 +35,16 @@ import storm.lrb.tools.StopWatch;
  * internal implementation notes: - does not implement clone because Values doesn't
  */
 @SuppressWarnings("CloneableImplementsClone")
-public class TTEstRequest extends LRBtuple implements Serializable {
+public class TravelTimeRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public TTEstRequest() {
+	public TravelTimeRequest() {
 		super();
 		
 	}
 	
-	public TTEstRequest(String tupel, StopWatch time) {
+	public TravelTimeRequest(String tupel, StopWatch time) {
 		super(tupel, time);
 		
 	}

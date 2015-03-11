@@ -37,7 +37,7 @@ import storm.lrb.TopologyControl;
 import storm.lrb.model.AccBalRequest;
 import storm.lrb.model.DaiExpRequest;
 import storm.lrb.model.PosReport;
-import storm.lrb.model.TTEstRequest;
+import storm.lrb.model.TravelTimeRequest;
 import storm.lrb.tools.StopWatch;
 
 /**
@@ -120,7 +120,7 @@ public class DispatcherSplitBolt extends BaseRichBolt {
                             tuple, new Values(exp.getVehicleIdentifier(), exp));
                     break;
                 case 4:
-                    TTEstRequest est = new TTEstRequest(line, timer);
+                    TravelTimeRequest est = new TravelTimeRequest(line, timer);
                     collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID,
                             tuple, new Values(est.getVehicleIdentifier(), est));
                     break;

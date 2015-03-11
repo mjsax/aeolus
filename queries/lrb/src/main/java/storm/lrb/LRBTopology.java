@@ -138,7 +138,7 @@ public class LRBTopology {
 		this.stormConfig.registerSerialization(storm.lrb.model.PosReport.class);
 		this.stormConfig.registerSerialization(storm.lrb.model.AccBalRequest.class);
 		this.stormConfig.registerSerialization(storm.lrb.model.DaiExpRequest.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.TTEstRequest.class);
+		this.stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
 		this.stormConfig.registerSerialization(storm.lrb.model.Accident.class);
 		this.stormConfig.registerSerialization(storm.lrb.model.VehicleInfo.class);
 		this.stormConfig.registerSerialization(storm.lrb.model.LRBtuple.class);
