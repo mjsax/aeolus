@@ -1,3 +1,5 @@
+package storm.lrb.bolt;
+
 /*
  * #%L
  * lrb
@@ -20,6 +22,7 @@
 
  import backtype.storm.Config;
  import backtype.storm.spout.SpoutOutputCollector;
+import backtype.storm.task.GeneralTopologyContext;
  import backtype.storm.task.OutputCollector;
  import backtype.storm.task.TopologyContext;
  import backtype.storm.topology.OutputFieldsDeclarer;
@@ -27,6 +30,7 @@
  import backtype.storm.tuple.Tuple;
  import backtype.storm.tuple.TupleImpl;
  import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
  import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
  import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
  import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
@@ -54,7 +58,6 @@ import storm.lrb.bolt.AccidentDetectionBolt;
  * @author richter
  */
  @RunWith(PowerMockRunner.class)
- @PrepareForTest(FileReaderSpout.class)
  public class AccidentDetectionBoltTest {
 
 	public AccidentDetectionBoltTest() {
@@ -83,16 +86,14 @@ import storm.lrb.bolt.AccidentDetectionBolt;
 	@Ignore
 	public void testExecute() {
 		// test recording of stopped car (with speed 0)
-		List<Integer> taskMock = new LinkedList<Integer>();
-		taskMock.add(0);
-		TopologyContext contextMock = mock(TopologyContext.class);
+		GeneralTopologyContext generalContextMock = MockHelper.createGeneralTopologyContextMock();
 
 		Fields schema = AccidentDetectionBolt.FIELDS;
 
-		when(contextMock.getComponentOutputFields(anyString(),
+		when(generalContextMock.getComponentOutputFields(anyString(),
  anyString()))
 				.thenReturn(schema);
-		Tuple tuple = new TupleImpl(contextMock, new Values(0, // type position
+		Tuple tuple = new TupleImpl(generalContextMock, new Values(0, // type position
 																// report = 0
 				5, // time
 				172, // vehicle id
@@ -108,6 +109,7 @@ import storm.lrb.bolt.AccidentDetectionBolt;
 				0 // xway
 		);
 		TestOutputCollector collector = new TestOutputCollector();
+		TopologyContext contextMock = MockHelper.createTopologyContextMock();
 		instance.prepare(new Config(), contextMock, new OutputCollector(
 				collector));
 		assertEquals(0, instance.getStoppedCars().size());
