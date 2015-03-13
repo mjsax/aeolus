@@ -133,7 +133,7 @@ public class RandomSpout implements IRichSpout {
 		assert (outputStreams != null);
 		assert (outputStreams.length > 0);
 		
-		LOGGER.debug("seed: {}", seed);
+		LOGGER.debug("seed: {}", new Long(seed));
 		
 		this.numberOfAttributes = numberOfAttributes;
 		this.maxValue = maxValue;
@@ -168,7 +168,7 @@ public class RandomSpout implements IRichSpout {
 	@Override
 	public void nextTuple() {
 		for(int i = 0; i < this.numberOfAttributes; ++i) {
-			this.values[i] = 1 + this.r.nextInt(this.maxValue);
+			this.values[i] = new Integer(1 + this.r.nextInt(this.maxValue));
 		}
 		Values tuple = new Values(this.values);
 		

@@ -113,13 +113,13 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		int numberOfPartitons = 1;
 		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
 		if(numPartitions != null) {
-			numberOfPartitons = numPartitions;
+			numberOfPartitons = numPartitions.intValue();
 		}
-		LOGGER.debug("Number of configured partitions: {}", numberOfPartitons);
+		LOGGER.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
 		
 		Integer[] partitionIds = new Integer[numberOfPartitons];
 		for(int i = 0; i < numberOfPartitons; ++i) {
-			partitionIds[i] = i;
+			partitionIds[i] = new Integer(i);
 		}
 		this.merger = new StreamMerger<Values>(Arrays.asList(partitionIds), 0);
 		this.collector = collector;

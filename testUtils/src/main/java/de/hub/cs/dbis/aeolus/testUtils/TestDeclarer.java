@@ -31,36 +31,36 @@ import backtype.storm.tuple.Fields;
  * @author Matthias J. Sax
  */
 public class TestDeclarer implements OutputFieldsDeclarer {
-	public ArrayList<Fields> schema = new ArrayList<Fields>();
-	public ArrayList<String> streamId = new ArrayList<String>();
-	public ArrayList<Boolean> direct = new ArrayList<Boolean>();
+	public ArrayList<Fields> schemaBuffer = new ArrayList<Fields>();
+	public ArrayList<String> streamIdBuffer = new ArrayList<String>();
+	public ArrayList<Boolean> directBuffer = new ArrayList<Boolean>();
 	
 	@Override
 	public void declare(Fields fields) {
-		this.schema.add(fields);
-		this.streamId.add(null);
-		this.direct.add(false);
+		this.schemaBuffer.add(fields);
+		this.streamIdBuffer.add(null);
+		this.directBuffer.add(new Boolean(false));
 	}
 	
 	@Override
 	public void declare(boolean direct, Fields fields) {
-		this.schema.add(fields);
-		this.streamId.add(null);
-		this.direct.add(direct);
+		this.schemaBuffer.add(fields);
+		this.streamIdBuffer.add(null);
+		this.directBuffer.add(new Boolean(direct));
 	}
 	
 	@Override
 	public void declareStream(String streamId, Fields fields) {
-		this.schema.add(fields);
-		this.streamId.add(streamId);
-		this.direct.add(false);
+		this.schemaBuffer.add(fields);
+		this.streamIdBuffer.add(streamId);
+		this.directBuffer.add(new Boolean(false));
 	}
 	
 	@Override
 	public void declareStream(String streamId, boolean direct, Fields fields) {
-		this.schema.add(fields);
-		this.streamId.add(streamId);
-		this.direct.add(direct);
+		this.schemaBuffer.add(fields);
+		this.streamIdBuffer.add(streamId);
+		this.directBuffer.add(new Boolean(direct));
 	}
 	
 }

@@ -55,13 +55,13 @@ public class RandomSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.schema.size());
-		Assert.assertEquals(1, declarer.schema.get(0).size());
-		Assert.assertEquals("a", declarer.schema.get(0).get(0));
-		Assert.assertEquals(1, declarer.streamId.size());
-		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
-		Assert.assertEquals(1, declarer.direct.size());
-		Assert.assertEquals(false, declarer.direct.get(0));
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.get(0).size());
+		Assert.assertEquals("a", declarer.schemaBuffer.get(0).get(0));
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
 	}
 	
 	@Test
@@ -72,15 +72,15 @@ public class RandomSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.schema.size());
-		Assert.assertEquals(numberOfAttributes, declarer.schema.get(0).size());
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(numberOfAttributes, declarer.schemaBuffer.get(0).size());
 		for(int i = 0; i < numberOfAttributes; ++i) {
-			Assert.assertEquals("" + (char)(97 + i), declarer.schema.get(0).get(i));
+			Assert.assertEquals("" + (char)(97 + i), declarer.schemaBuffer.get(0).get(i));
 		}
-		Assert.assertEquals(1, declarer.streamId.size());
-		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
-		Assert.assertEquals(1, declarer.direct.size());
-		Assert.assertEquals(false, declarer.direct.get(0));
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
 	}
 	
 	@Test
@@ -92,17 +92,17 @@ public class RandomSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(streamIds.length, declarer.schema.size());
-		Assert.assertEquals(streamIds.length, declarer.streamId.size());
-		Assert.assertEquals(streamIds.length, declarer.direct.size());
+		Assert.assertEquals(streamIds.length, declarer.schemaBuffer.size());
+		Assert.assertEquals(streamIds.length, declarer.streamIdBuffer.size());
+		Assert.assertEquals(streamIds.length, declarer.directBuffer.size());
 		
 		for(int i = 0; i < streamIds.length; ++i) {
-			Assert.assertEquals(numberOfAttributes, declarer.schema.get(i).size());
+			Assert.assertEquals(numberOfAttributes, declarer.schemaBuffer.get(i).size());
 			for(int j = 0; j < numberOfAttributes; ++j) {
-				Assert.assertEquals("" + (char)(97 + j), declarer.schema.get(i).get(j));
+				Assert.assertEquals("" + (char)(97 + j), declarer.schemaBuffer.get(i).get(j));
 			}
-			Assert.assertEquals(streamIds[i], declarer.streamId.get(i));
-			Assert.assertEquals(false, declarer.direct.get(i));
+			Assert.assertEquals(streamIds[i], declarer.streamIdBuffer.get(i));
+			Assert.assertFalse(declarer.directBuffer.get(i).booleanValue());
 		}
 	}
 	
@@ -117,8 +117,8 @@ public class RandomSpoutTest {
 			spout.nextTuple();
 			Assert.assertEquals(i + 1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 			Assert.assertEquals(1, collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size());
-			Assert.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)));
-			Assert.assertTrue(100 >= ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)));
+			Assert.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)).intValue());
+			Assert.assertTrue(100 >= ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(0)).intValue());
 		}
 		
 	}
@@ -136,8 +136,10 @@ public class RandomSpoutTest {
 			Assert.assertEquals(i + 1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 			Assert.assertEquals(numberOfAttributes, collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).size());
 			for(int j = 0; j < numberOfAttributes; ++j) {
-				Assert.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(j)));
-				Assert.assertTrue(100 >= ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(j)));
+				Assert
+					.assertTrue(0 < ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(j)).intValue());
+				Assert.assertTrue(100 >= ((Integer)collector.output.get(Utils.DEFAULT_STREAM_ID).get(i).get(j))
+					.intValue());
 			}
 		}
 		
@@ -158,8 +160,8 @@ public class RandomSpoutTest {
 				Assert.assertTrue(collector.output.get(stream).size() == i + 1); // size of result
 				Assert.assertTrue(collector.output.get(stream).get(i).size() == numberOfAttributes);
 				for(int j = 0; j < numberOfAttributes; ++j) {
-					Assert.assertTrue(0 < ((Integer)collector.output.get(stream).get(i).get(j)));
-					Assert.assertTrue(100 >= ((Integer)collector.output.get(stream).get(i).get(j)));
+					Assert.assertTrue(0 < ((Integer)collector.output.get(stream).get(i).get(j)).intValue());
+					Assert.assertTrue(100 >= ((Integer)collector.output.get(stream).get(i).get(j)).intValue());
 				}
 			}
 		}

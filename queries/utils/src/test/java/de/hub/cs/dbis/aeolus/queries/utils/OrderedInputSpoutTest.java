@@ -137,15 +137,15 @@ public class OrderedInputSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.direct.size());
-		Assert.assertEquals(1, declarer.schema.size());
-		Assert.assertEquals(1, declarer.streamId.size());
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
 		
-		Assert.assertFalse(declarer.direct.get(0).booleanValue());
-		Assert.assertEquals(2, declarer.schema.get(0).size());
-		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
-		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
-		Assert.assertNull(declarer.streamId.get(0));
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
+		Assert.assertEquals(2, declarer.schemaBuffer.get(0).size());
+		Assert.assertEquals("ts", declarer.schemaBuffer.get(0).get(0));
+		Assert.assertEquals("rawTuple", declarer.schemaBuffer.get(0).get(1));
+		Assert.assertNull(declarer.streamIdBuffer.get(0));
 		
 		// test with explicit stream ID
 		String streamID = "streamID";
@@ -154,15 +154,15 @@ public class OrderedInputSpoutTest {
 		declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.direct.size());
-		Assert.assertEquals(1, declarer.schema.size());
-		Assert.assertEquals(1, declarer.streamId.size());
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
 		
-		Assert.assertFalse(declarer.direct.get(0).booleanValue());
-		Assert.assertEquals(2, declarer.schema.get(0).size());
-		Assert.assertEquals("ts", declarer.schema.get(0).get(0));
-		Assert.assertEquals("rawTuple", declarer.schema.get(0).get(1));
-		Assert.assertEquals(streamID, declarer.streamId.get(0));
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
+		Assert.assertEquals(2, declarer.schemaBuffer.get(0).size());
+		Assert.assertEquals("ts", declarer.schemaBuffer.get(0).get(0));
+		Assert.assertEquals("rawTuple", declarer.schemaBuffer.get(0).get(1));
+		Assert.assertEquals(streamID, declarer.streamIdBuffer.get(0));
 	}
 	
 	@Test

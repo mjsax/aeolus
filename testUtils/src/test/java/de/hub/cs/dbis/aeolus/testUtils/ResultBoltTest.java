@@ -66,7 +66,7 @@ public class ResultBoltTest {
 		
 		for(int i = 0; i < 10; ++i) {
 			Values attributes = new Values();
-			attributes.add(i);
+			attributes.add(new Integer(i));
 			
 			tuples.add(mock(Tuple.class));
 			when(tuples.get(i).getValues()).thenReturn(attributes);

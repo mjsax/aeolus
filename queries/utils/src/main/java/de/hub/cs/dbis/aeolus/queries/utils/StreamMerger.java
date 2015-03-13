@@ -75,7 +75,7 @@ class StreamMerger<T> {
 		assert (partitionIds != null);
 		assert (tsIndex >= 0);
 		
-		LOGGER.debug("Initializing with timestamp index: {}", tsIndex);
+		LOGGER.debug("Initializing with timestamp index: {}", new Integer(tsIndex));
 		
 		this.tsIndex = tsIndex;
 		this.tsAttributeName = null;
@@ -163,7 +163,7 @@ class StreamMerger<T> {
 		}
 		
 		if(eachBufferFilled && minTsPartitionNumber != null) {
-			LOGGER.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}", minTsFound,
+			LOGGER.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}", new Long(minTsFound),
 				minTsPartitionNumber, this.mergeBuffer.get(minTsPartitionNumber).getFirst());
 			this.latestTs = minTsFound;
 			return this.mergeBuffer.get(minTsPartitionNumber).removeFirst();
@@ -176,14 +176,14 @@ class StreamMerger<T> {
 	private long getTsValue(T tuple) {
 		if(this.tsIndex != -1) {
 			if(tuple instanceof Tuple) {
-				return ((Tuple)tuple).getLong(this.tsIndex);
+				return ((Tuple)tuple).getLong(this.tsIndex).longValue();
 			}
 			assert (tuple instanceof Values);
-			return ((Long)((Values)tuple).get(this.tsIndex));
+			return ((Long)((Values)tuple).get(this.tsIndex)).longValue();
 			
 		}
 		
-		return ((Tuple)tuple).getLongByField(this.tsAttributeName);
+		return ((Tuple)tuple).getLongByField(this.tsAttributeName).longValue();
 	}
 	
 	/**

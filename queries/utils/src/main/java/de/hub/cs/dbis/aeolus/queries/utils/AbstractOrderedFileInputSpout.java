@@ -127,7 +127,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 		
 		@SuppressWarnings("rawtypes")
 		Map newConfig = new HashMap(conf); // need to copy into new HashMap because given one is read-only
-		newConfig.put(NUMBER_OF_PARTITIONS, this.inputFiles.size());
+		newConfig.put(NUMBER_OF_PARTITIONS, new Integer(this.inputFiles.size()));
 		super.open(newConfig, context, collector);
 	}
 	
@@ -147,15 +147,16 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 				continue;
 			}
 			String line = null;
+			Integer emitIndexAsObject = new Integer(this.emitIndex);
 			try {
-				LOGGER.trace("Read from partition {}", this.emitIndex);
+				LOGGER.trace("Read from partition {}", emitIndexAsObject);
 				line = this.inputFiles.get(this.emitIndex).readLine();
 			} catch(IOException e) {
 				LOGGER.error(e.toString());
 			}
 			if(line != null) {
 				try {
-					this.emitted = super.emitNextTuple(this.emitIndex, this.extractTimestamp(line), line);
+					this.emitted = super.emitNextTuple(emitIndexAsObject, new Long(this.extractTimestamp(line)), line);
 					
 					LOGGER.trace("Emitted the following tuples {}", this.emitted);
 					if(this.emitted.size() != 0) {
@@ -165,8 +166,8 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 					LOGGER.error(e.toString());
 				}
 			} else {
-				LOGGER.debug("Try to close empty partition {}", this.emitIndex);
-				if(super.closePartition(this.emitIndex)) {
+				LOGGER.debug("Try to close empty partition {}", emitIndexAsObject);
+				if(super.closePartition(emitIndexAsObject)) {
 					try {
 						this.inputFiles.get(this.emitIndex).close();
 					} catch(IOException e) {

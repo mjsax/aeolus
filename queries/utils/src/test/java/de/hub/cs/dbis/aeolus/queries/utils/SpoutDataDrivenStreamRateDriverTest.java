@@ -177,7 +177,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 		}
 		long stop = System.nanoTime();
 		
-		long lastTS = ((Long)collector.output.get(Utils.DEFAULT_STREAM_ID).getLast().get(0));
+		long lastTS = ((Long)collector.output.get(Utils.DEFAULT_STREAM_ID).getLast().get(0)).longValue();
 		Assert.assertEquals(lastTS / (1000000000 / units.factor()), (stop - start) / units.factor()
 			/ (1000000000 / units.factor()), 1);
 	}

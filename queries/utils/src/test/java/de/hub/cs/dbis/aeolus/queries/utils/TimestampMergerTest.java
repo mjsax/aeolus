@@ -141,7 +141,7 @@ public class TimestampMergerTest {
 			
 			List<Integer> taskList = new LinkedList<Integer>();
 			for(int j = createdTasks; j < createdTasks + n; ++j) {
-				taskList.add(j);
+				taskList.add(new Integer(j));
 			}
 			createdTasks += n;
 			
@@ -271,9 +271,9 @@ public class TimestampMergerTest {
 			int numberOfAttributes = schema.size();
 			List<Object> value = new ArrayList<Object>(numberOfAttributes);
 			for(int i = 0; i < numberOfAttributes; ++i) {
-				value.add((char)(32 + this.r.nextInt(95)));
+				value.add(new Character((char)(32 + this.r.nextInt(95))));
 			}
-			Long ts = (long)numberDistinctValues - 1;
+			Long ts = new Long(numberDistinctValues - 1);
 			value.set(schema.fieldIndex("ts"), ts);
 			
 			this.result.add(value);
@@ -308,7 +308,7 @@ public class TimestampMergerTest {
 		
 		
 		int stillBuffered = numberOfTuples;
-		int smallestMax = Collections.min(Arrays.asList(ArrayUtils.toObject(max)));
+		int smallestMax = Collections.min(Arrays.asList(ArrayUtils.toObject(max))).intValue();
 		for(int i = 0; i < createdTasks; ++i) {
 			for(int j = 0; j <= smallestMax; ++j) {
 				stillBuffered -= bucketSums[i][j];

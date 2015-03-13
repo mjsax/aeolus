@@ -31,8 +31,8 @@ import java.util.List;
 class Comp implements Comparator<List<Object>> {
 	@Override
 	public int compare(List<Object> o1, List<Object> o2) {
-		long first = ((Long)o1.get(0));
-		long second = ((Long)o2.get(0));
+		long first = ((Long)o1.get(0)).longValue();
+		long second = ((Long)o2.get(0)).longValue();
 		if(first < second) {
 			return -1;
 		}

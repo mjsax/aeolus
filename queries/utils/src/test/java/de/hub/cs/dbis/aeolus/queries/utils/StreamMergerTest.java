@@ -80,7 +80,7 @@ public class StreamMergerTest {
 	
 	@Test
 	public void testTuple() {
-		StreamMerger<Tuple> merger = new StreamMerger<Tuple>(Arrays.asList(0), "ts");
+		StreamMerger<Tuple> merger = new StreamMerger<Tuple>(Arrays.asList(new Integer(0)), "ts");
 		
 		when(this.contextMock.getComponentId(0)).thenReturn("bolt1");
 		when(this.contextMock.getComponentId(1)).thenReturn("bolt2");
@@ -92,16 +92,16 @@ public class StreamMergerTest {
 			.thenReturn(new Fields("a", "b", "ts"));
 		
 		Tuple t = new TupleImpl(this.contextMock, new Values(new Long(0)), 0, null);
-		merger.addTuple(0, t);
+		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t, merger.getNextTuple());
 		Assert.assertNull(merger.getNextTuple());
 		
 		Tuple t2 = new TupleImpl(this.contextMock, new Values(mock(Object.class), new Long(0), mock(Object.class)), 1,
 			null);
-		merger.addTuple(0, t2);
-		t = new TupleImpl(this.contextMock, new Values(mock(Object.class), mock(Object.class), (long)0), 2, null);
-		merger.addTuple(0, t);
+		merger.addTuple(new Integer(0), t2);
+		t = new TupleImpl(this.contextMock, new Values(mock(Object.class), mock(Object.class), new Long(0)), 2, null);
+		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t2, merger.getNextTuple());
 		Assert.assertSame(t, merger.getNextTuple());
@@ -110,18 +110,18 @@ public class StreamMergerTest {
 	
 	@Test
 	public void testValues() {
-		StreamMerger<Values> merger = new StreamMerger<Values>(Arrays.asList(0), 0);
+		StreamMerger<Values> merger = new StreamMerger<Values>(Arrays.asList(new Integer(0)), 0);
 		
 		Values t = new Values(new Long(0));
-		merger.addTuple(0, t);
+		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t, merger.getNextTuple());
 		Assert.assertNull(merger.getNextTuple());
 		
 		Values t2 = new Values(new Long(0), mock(Object.class), mock(Object.class));
-		merger.addTuple(0, t2);
-		t = new Values((long)0, mock(Object.class), mock(Object.class));
-		merger.addTuple(0, t);
+		merger.addTuple(new Integer(0), t2);
+		t = new Values(new Long(0), mock(Object.class), mock(Object.class));
+		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t2, merger.getNextTuple());
 		Assert.assertSame(t, merger.getNextTuple());
@@ -130,15 +130,15 @@ public class StreamMergerTest {
 	
 	@Test
 	public void testMultiplePartitions() {
-		StreamMerger<Values> merger = new StreamMerger<Values>(Arrays.asList(0, 1), 0);
+		StreamMerger<Values> merger = new StreamMerger<Values>(Arrays.asList(new Integer(0), new Integer(1)), 0);
 		
 		Values t1 = new Values(new Long(0));
-		merger.addTuple(0, t1);
+		merger.addTuple(new Integer(0), t1);
 		
 		Assert.assertNull(merger.getNextTuple());
 		
 		Values t2 = new Values(new Long(0), mock(Object.class), mock(Object.class));
-		merger.addTuple(1, t2);
+		merger.addTuple(new Integer(1), t2);
 		Values res = merger.getNextTuple();
 		Assert.assertTrue(res.equals(t1) || res.equals(t2));
 		if(res.equals(t1)) {
@@ -150,29 +150,29 @@ public class StreamMergerTest {
 			
 		}
 		
-		t1 = new Values((long)0);
-		merger.addTuple(this.r.nextInt(1), t1);
+		t1 = new Values(new Long(0));
+		merger.addTuple(new Integer(this.r.nextInt(1)), t1);
 		Assert.assertSame(t1, merger.getNextTuple());
 		
-		t1 = new Values((long)1);
-		merger.addTuple(1, t1);
+		t1 = new Values(new Long(1));
+		merger.addTuple(new Integer(1), t1);
 		Assert.assertNull(merger.getNextTuple());
 		
-		t2 = new Values((long)2);
-		merger.addTuple(0, t2);
+		t2 = new Values(new Long(2));
+		merger.addTuple(new Integer(0), t2);
 		Assert.assertSame(t1, merger.getNextTuple());
 		Assert.assertNull(merger.getNextTuple());
 		
-		t1 = new Values((long)2);
-		merger.addTuple(0, t1);
+		t1 = new Values(new Long(2));
+		merger.addTuple(new Integer(0), t1);
 		Assert.assertNull(merger.getNextTuple());
 		
 		Values t3 = new Values(new Long(2));
-		merger.addTuple(1, t3);
+		merger.addTuple(new Integer(1), t3);
 		Values t4 = new Values(new Long(3));
-		merger.addTuple(0, t4);
+		merger.addTuple(new Integer(0), t4);
 		Values t5 = new Values(new Long(3));
-		merger.addTuple(1, t5);
+		merger.addTuple(new Integer(1), t5);
 		
 		res = merger.getNextTuple();
 		Assert.assertTrue(res.equals(t2) || res.equals(t3));
@@ -210,7 +210,7 @@ public class StreamMergerTest {
 		ArrayList<Integer> partitionIds = new ArrayList<Integer>(numberOfPartitions);
 		int[] currentTs = new int[numberOfPartitions];
 		for(int i = 0; i < numberOfPartitions; ++i) {
-			partitionIds.add(i);
+			partitionIds.add(new Integer(i));
 			currentTs[i] = 1;
 		}
 		StreamMerger<Values> merger = new StreamMerger<Values>(partitionIds, 0);
@@ -226,16 +226,16 @@ public class StreamMergerTest {
 			int inserts = this.r.nextInt(2 * numberOfPartitions);
 			
 			for(int i = 0; i < inserts; ++i) {
-				int partitionId = partitionIds.get(this.r.nextInt(numberOfPartitions));
+				int partitionId = partitionIds.get(this.r.nextInt(numberOfPartitions)).intValue();
 				
 				Values t = new Values();
-				Long ts = (long)currentTs[partitionId] - 1;
+				Long ts = new Long(currentTs[partitionId] - 1);
 				t.add(ts);
 				for(int j = 0; j < 9; ++j) {
-					t.add((char)(32 + this.r.nextInt(95)));
+					t.add(new Character((char)(32 + this.r.nextInt(95))));
 				}
 				expectedResult.add(t);
-				merger.addTuple(partitionId, t);
+				merger.addTuple(new Integer(partitionId), t);
 				
 				if(++counter == numberOfTuples) {
 					break;
@@ -263,7 +263,8 @@ public class StreamMergerTest {
 			lastRemoved = expectedResult.removeLast();
 		}
 		if(lastRemoved != null) {
-			while(expectedResult.size() > 0 && ((Long)lastRemoved.get(0)) == ((Long)expectedResult.getLast().get(0))) {
+			while(expectedResult.size() > 0
+				&& ((Long)lastRemoved.get(0)).longValue() == ((Long)expectedResult.getLast().get(0)).longValue()) {
 				expectedResult.removeLast();
 			}
 		}
@@ -280,7 +281,7 @@ public class StreamMergerTest {
 				if(expectedResult.size() == 0) {
 					break;
 				}
-			} while(((Long)expectedResult.getFirst().get(0)) == ((Long)first.get(0)));
+			} while(((Long)expectedResult.getFirst().get(0)).longValue() == ((Long)first.get(0)).longValue());
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}

@@ -58,13 +58,13 @@ public class IncSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.schema.size());
-		Assert.assertEquals(1, declarer.schema.get(0).size());
-		Assert.assertEquals("id", declarer.schema.get(0).get(0));
-		Assert.assertEquals(1, declarer.streamId.size());
-		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamId.get(0));
-		Assert.assertEquals(1, declarer.direct.size());
-		Assert.assertEquals(false, declarer.direct.get(0));
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.get(0).size());
+		Assert.assertEquals("id", declarer.schemaBuffer.get(0).get(0));
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
+		Assert.assertEquals(Utils.DEFAULT_STREAM_ID, declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
 	}
 	
 	@Test
@@ -75,15 +75,15 @@ public class IncSpoutTest {
 		TestDeclarer declarer = new TestDeclarer();
 		spout.declareOutputFields(declarer);
 		
-		Assert.assertEquals(streamIds.length, declarer.schema.size());
-		Assert.assertEquals(streamIds.length, declarer.streamId.size());
-		Assert.assertEquals(streamIds.length, declarer.direct.size());
+		Assert.assertEquals(streamIds.length, declarer.schemaBuffer.size());
+		Assert.assertEquals(streamIds.length, declarer.streamIdBuffer.size());
+		Assert.assertEquals(streamIds.length, declarer.directBuffer.size());
 		
 		for(int i = 0; i < streamIds.length; ++i) {
-			Assert.assertEquals(1, declarer.schema.get(i).size());
-			Assert.assertEquals("id", declarer.schema.get(i).get(0));
-			Assert.assertEquals(streamIds[i], declarer.streamId.get(i));
-			Assert.assertEquals(false, declarer.direct.get(i));
+			Assert.assertEquals(1, declarer.schemaBuffer.get(i).size());
+			Assert.assertEquals("id", declarer.schemaBuffer.get(i).get(0));
+			Assert.assertEquals(streamIds[i], declarer.streamIdBuffer.get(i));
+			Assert.assertFalse(declarer.directBuffer.get(i).booleanValue());
 		}
 	}
 	
@@ -98,7 +98,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long)i);
+			attributes.add(new Long(i));
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -119,7 +119,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long)i * stepSize);
+			attributes.add(new Long(i * stepSize));
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -140,7 +140,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long)i);
+			attributes.add(new Long(i));
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -162,7 +162,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long)0);
+			attributes.add(new Long(0));
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -183,7 +183,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long)0);
+			attributes.add(new Long(0));
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -207,7 +207,7 @@ public class IncSpoutTest {
 		
 		List<Object> first = collector.output.get(Utils.DEFAULT_STREAM_ID).removeFirst();
 		for(List<Object> second : collector.output.get(Utils.DEFAULT_STREAM_ID)) {
-			Assert.assertTrue(((Long)first.get(0)) <= ((Long)second.get(0)));
+			Assert.assertTrue(((Long)first.get(0)).longValue() <= ((Long)second.get(0)).longValue());
 			first = second;
 		}
 	}
@@ -220,20 +220,14 @@ public class IncSpoutTest {
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
 		spout.open(null, null, new SpoutOutputCollector(collector));
 		
-		List<List<Object>> result = new LinkedList<List<Object>>();
-		
 		for(int i = 0; i < 50; ++i) {
-			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add(0);
-			result.add(attributes);
-			
 			spout.nextTuple();
 		}
 		
 		for(String stream : streamIds) {
 			List<Object> first = collector.output.get(stream).removeFirst();
 			for(List<Object> second : collector.output.get(stream)) {
-				Assert.assertTrue(((Long)first.get(0)) <= ((Long)second.get(0)));
+				Assert.assertTrue(((Long)first.get(0)).longValue() <= ((Long)second.get(0)).longValue());
 				first = second;
 			}
 		}

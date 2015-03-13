@@ -87,7 +87,7 @@ public class ForwardBoltTest {
 		
 		for(int i = 0; i < 3; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add(i);
+			attributes.add(new Integer(i));
 			
 			tuples.add(mock(Tuple.class));
 			when(tuples.get(i).getValues()).thenReturn(attributes);
@@ -113,7 +113,7 @@ public class ForwardBoltTest {
 		
 		for(int i = 0; i < 3; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add(i);
+			attributes.add(new Integer(i));
 			
 			tuples.add(mock(Tuple.class));
 			when(tuples.get(i).getValues()).thenReturn(attributes);

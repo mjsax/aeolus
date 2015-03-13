@@ -49,24 +49,25 @@ public class TestDeclarerTest {
 		declarer.declareStream(stream[0], schema[2]);
 		declarer.declareStream(stream[1], true, schema[3]);
 		
-		Assert.assertEquals(4, declarer.schema.size());
-		Assert.assertEquals(4, declarer.streamId.size());
-		Assert.assertEquals(4, declarer.direct.size());
+		Assert.assertEquals(4, declarer.schemaBuffer.size());
+		Assert.assertEquals(4, declarer.streamIdBuffer.size());
+		Assert.assertEquals(4, declarer.directBuffer.size());
 		
-		Assert.assertSame(schema[0], declarer.schema.get(0));
-		Assert.assertEquals(null, declarer.streamId.get(0));
-		Assert.assertEquals(false, declarer.direct.get(0));
+		Assert.assertSame(schema[0], declarer.schemaBuffer.get(0));
+		Assert.assertNull(declarer.streamIdBuffer.get(0));
+		Assert.assertFalse(declarer.directBuffer.get(0).booleanValue());
 		
-		Assert.assertSame(schema[1], declarer.schema.get(1));
-		Assert.assertEquals(null, declarer.streamId.get(1));
-		Assert.assertEquals(true, declarer.direct.get(1));
+		Assert.assertSame(schema[1], declarer.schemaBuffer.get(1));
+		Assert.assertNull(declarer.streamIdBuffer.get(1));
+		Assert.assertTrue(declarer.directBuffer.get(1).booleanValue());
 		
-		Assert.assertSame(schema[2], declarer.schema.get(2));
-		Assert.assertEquals(stream[0], declarer.streamId.get(2));
-		Assert.assertEquals(false, declarer.direct.get(2));
+		Assert.assertSame(schema[2], declarer.schemaBuffer.get(2));
+		Assert.assertEquals(stream[0], declarer.streamIdBuffer.get(2));
+		Assert.assertFalse(declarer.directBuffer.get(2).booleanValue());
 		
-		Assert.assertSame(schema[3], declarer.schema.get(3));
-		Assert.assertEquals(stream[1], declarer.streamId.get(3));
-		Assert.assertEquals(true, declarer.direct.get(3));
+		Assert.assertSame(schema[3], declarer.schemaBuffer.get(3));
+		Assert.assertEquals(stream[1], declarer.streamIdBuffer.get(3));
+		Assert.assertTrue(declarer.directBuffer.get(3).booleanValue());
 	}
+	
 }
