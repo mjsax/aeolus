@@ -73,8 +73,8 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 		super(streamID);
 	}
 	
-
-
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {

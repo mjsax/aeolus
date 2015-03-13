@@ -13,6 +13,13 @@
   <artifactId>aeolus-storm-connector</artifactId>
   <packaging>clojure</packaging>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype-forge</id>
+      <url>https://repository.sonatype.org/content/groups/forge</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
     <plugins>
       <plugin>

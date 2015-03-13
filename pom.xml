@@ -79,6 +79,7 @@
           <!-- Storm 0.9.3 is not compatible with Java 1.7; need to stick with Java 1.6 -->
           <source>1.6</source>
           <target>1.6</target>
+          <compilerArgument>-Xlint:all</compilerArgument>
         </configuration>
       </plugin>
 
@@ -212,10 +213,10 @@
     <module>build-tools</module>
     <module>testUtils</module>
     <module>aeolus-storm-connector</module>
+    <module>queries</module>
     <module>batching</module>
     <module>monitoring</module>
     <module>optimization</module>
-    <module>queries</module>
   </modules>
 
 </project>
