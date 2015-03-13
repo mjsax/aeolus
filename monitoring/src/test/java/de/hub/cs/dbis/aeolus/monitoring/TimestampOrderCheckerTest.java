@@ -1,11 +1,8 @@
-package de.hub.cs.dbis.aeolus.monitoring;
-
 /*
- * #%L
- * monitoring
- * %%
+ * #!
+ * %
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
+ * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +14,9 @@ package de.hub.cs.dbis.aeolus.monitoring;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
+ * #_
  */
+package de.hub.cs.dbis.aeolus.monitoring;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

@@ -1,11 +1,8 @@
-package de.hub.cs.dbis.aeolus.testUtils;
-
 /*
- * #%L
- * testUtils
- * %%
+ * #!
+ * %
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
+ * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +14,9 @@ package de.hub.cs.dbis.aeolus.testUtils;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
+ * #_
  */
+package de.hub.cs.dbis.aeolus.testUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -100,7 +98,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long) i);
+			attributes.add((long)i);
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -121,7 +119,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long) i * stepSize);
+			attributes.add((long)i * stepSize);
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -142,7 +140,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long) i);
+			attributes.add((long)i);
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -164,7 +162,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long) 0);
+			attributes.add((long)0);
 			result.add(attributes);
 			
 			spout.nextTuple();
@@ -185,7 +183,7 @@ public class IncSpoutTest {
 		
 		for(int i = 0; i < 5; ++i) {
 			ArrayList<Object> attributes = new ArrayList<Object>();
-			attributes.add((long) 0);
+			attributes.add((long)0);
 			result.add(attributes);
 			
 			spout.nextTuple();

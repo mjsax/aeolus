@@ -1,11 +1,8 @@
-package de.hub.cs.dbis.aeolus.queries.utils;
-
 /*
- * #%L
- * utils
- * %%
+ * #!
+ * %
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
+ * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,8 +14,9 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
+ * #_
  */
+package de.hub.cs.dbis.aeolus.queries.utils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -147,8 +145,8 @@ class StreamMerger<T> {
 				assert (ts >= this.latestTs);
 				
 				if(ts == this.latestTs) {
-					LOGGER.trace("Extract tuple with same timestamp (partition, tuple): {}, {}",
-						partition.getKey(), partitionBuffer.getFirst());
+					LOGGER.trace("Extract tuple with same timestamp (partition, tuple): {}, {}", partition.getKey(),
+						partitionBuffer.getFirst());
 					return partitionBuffer.removeFirst();
 				}
 				

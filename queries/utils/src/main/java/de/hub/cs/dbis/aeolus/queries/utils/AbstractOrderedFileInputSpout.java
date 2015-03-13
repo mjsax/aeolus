@@ -1,11 +1,8 @@
-package de.hub.cs.dbis.aeolus.queries.utils;
-
 /*
- * #%L
- * utils
- * %%
+ * #!
+ * %
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
+ * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +14,9 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
+ * #_
  */
-
+package de.hub.cs.dbis.aeolus.queries.utils;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -91,14 +88,13 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 * including the task IDs each tuple was sent to.
 	 */
 	protected Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
-
-    public AbstractOrderedFileInputSpout() {
-    }
-
-    public AbstractOrderedFileInputSpout(String streamID) {
-        super(streamID);
-    }
-
+	
+	public AbstractOrderedFileInputSpout() {}
+	
+	public AbstractOrderedFileInputSpout(String streamID) {
+		super(streamID);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {

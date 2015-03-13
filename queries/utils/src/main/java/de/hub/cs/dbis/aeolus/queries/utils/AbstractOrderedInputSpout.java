@@ -1,11 +1,8 @@
-package de.hub.cs.dbis.aeolus.queries.utils;
-
 /*
- * #%L
- * utils
- * %%
+ * #!
+ * %
  * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
+ * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,9 +14,9 @@ package de.hub.cs.dbis.aeolus.queries.utils;
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
+ * #_
  */
-
+package de.hub.cs.dbis.aeolus.queries.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -65,9 +62,9 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private static final long serialVersionUID = 6224448887936832190L;
 	
 	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
-
-
-
+	
+	
+	
 	/**
 	 * Can be used to specify the number of input partitions that are available (default value is one). The
 	 * configuration value is expected to be of type {@link Integer}.
@@ -81,31 +78,29 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 * The output collector to be used.
 	 */
 	private SpoutOutputCollector collector;
-        /**
-         * The stream ID to be used for declaration of timestamp and raw tuple
-         * fields. Can be {@code null} which causes the fields to be declared
-         * only.
-         */
-        private final String streamID;
-
-        /**
-         * Creates a {@code AbstractOrderedInputSpout} which declares fields
-         * without explicit stream ID.
-         */
-    public AbstractOrderedInputSpout() {
-        this(null);
-    }
-
-        /**
-         * Creates a {@code AbstractOrderedInputSpout} which declares fields on
-         * stream with ID {@code streamID}.
-         * @param streamID the ID of the stream the fields ought to be declared
-         * on
-         */
-    public AbstractOrderedInputSpout(String streamID) {
-        this.streamID = streamID;
-    }
-
+	/**
+	 * The stream ID to be used for declaration of timestamp and raw tuple fields. Can be {@code null} which causes the
+	 * fields to be declared only.
+	 */
+	private final String streamID;
+	
+	/**
+	 * Creates a {@code AbstractOrderedInputSpout} which declares fields without explicit stream ID.
+	 */
+	public AbstractOrderedInputSpout() {
+		this(null);
+	}
+	
+	/**
+	 * Creates a {@code AbstractOrderedInputSpout} which declares fields on stream with ID {@code streamID}.
+	 * 
+	 * @param streamID
+	 *            the ID of the stream the fields ought to be declared on
+	 */
+	public AbstractOrderedInputSpout(String streamID) {
+		this.streamID = streamID;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -129,7 +124,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		this.merger = new StreamMerger<Values>(Arrays.asList(partitionIds), 0);
 		this.collector = collector;
 	}
-
+	
 	/**
 	 * Makes a new output tuple available.
 	 * 
@@ -162,7 +157,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		
 		return emitted;
 	}
-
+	
 	/**
 	 * Closes an input partition. Closing a partition is only successful, if no tuples belonging to the partition are
 	 * buffered internally any more. No more data can be emitted by this partition if closing was successful.
@@ -175,21 +170,21 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	protected boolean closePartition(Integer partitionId) {
 		return this.merger.closePartition(partitionId);
 	}
-
-        /**
-         * Declares the two fields necessary for transmitting tuples with a
-         * timestamp. Calling {@code super.declareOutputFields} in overriding
-         * methods is strongly recommended.
-         * @param declarer 
-         */
+	
+	/**
+	 * Declares the two fields necessary for transmitting tuples with a timestamp. Calling
+	 * {@code super.declareOutputFields} in overriding methods is strongly recommended.
+	 * 
+	 * @param declarer
+	 */
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-            Fields fields = new Fields("ts", "rawTuple");
-            if(streamID == null) {
-		declarer.declare(fields);
-            } else {
-                declarer.declareStream(streamID, fields);
-            }
+		Fields fields = new Fields("ts", "rawTuple");
+		if(this.streamID == null) {
+			declarer.declare(fields);
+		} else {
+			declarer.declareStream(this.streamID, fields);
+		}
 	}
 	
 }
