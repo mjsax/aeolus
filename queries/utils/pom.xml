@@ -11,8 +11,6 @@
   </parent>
 
   <artifactId>utils</artifactId>
-  <name>utils</name>
-  <packaging>jar</packaging>
 
   <dependencies>
     <dependency>
