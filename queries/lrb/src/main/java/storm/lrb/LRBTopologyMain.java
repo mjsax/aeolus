@@ -1,25 +1,5 @@
 package storm.lrb;
 
-/*
- * #%L
- * lrb
- * %%
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +20,10 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
 import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
+
+
+
+
 
 //import storm.lrb.spout.SocketClientSpout;
 /**
@@ -83,10 +67,10 @@ public class LRBTopologyMain {
 	 * @param stormConfigDebug
 	 * @param workers
 	 * @param nameext
-     * @param runtimeMillis
+	 * @param runtimeMillis
 	 * @throws AlreadyAliveException
 	 * @throws InvalidTopologyException
-     * @throws java.io.FileNotFoundException
+	 * @throws java.io.FileNotFoundException
 	 */
 	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, List<String> fields, boolean submit, boolean stormConfigDebug, int workers, String nameext, int runtimeMillis)
 		throws AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
@@ -94,12 +78,16 @@ public class LRBTopologyMain {
 		String topologyNamePrefix = nameext + "_lrbNormal_" + Helper.readable(fields) + "_L" + xways + "_" + workers
 			+ "W_T" + tasks + "_" + executors + "E_O" + offset;
 		LRBTopology lRBTopology = new LRBTopology(nameext, fields, xways, workers, tasks, executors, offset,
-			new FileReaderSpout(TopologyControl.SPOUT_STREAM_ID), //add AbstractOrderedFileInputSpout.INPUT_FILE_NAME and AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES in Config below
-                        stormTimer, submit, histFile, topologyNamePrefix);
+			new FileReaderSpout(TopologyControl.SPOUT_STREAM_ID), // add AbstractOrderedFileInputSpout.INPUT_FILE_NAME
+																	// and
+																	// AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES
+																	// in Config below
+			stormTimer, submit, histFile, topologyNamePrefix);
 		StormTopology topology = lRBTopology.getStormTopology();
 		Config conf = lRBTopology.getStormConfig();
 		conf.setDebug(stormConfigDebug);
-                conf.put(AbstractOrderedFileInputSpout.INPUT_FILE_NAME, LRBTopologyMain.class.getResource("/datafile20seconds.dat").getFile());
+		conf.put(AbstractOrderedFileInputSpout.INPUT_FILE_NAME,
+			LRBTopologyMain.class.getResource("/datafile20seconds.dat").getFile());
 		
 		Locale newLocale = new Locale("en", "US");
 		LOGGER.debug(String.format("setting locale to %s", newLocale));

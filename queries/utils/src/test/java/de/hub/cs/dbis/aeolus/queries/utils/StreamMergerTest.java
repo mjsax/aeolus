@@ -1,25 +1,5 @@
 package de.hub.cs.dbis.aeolus.queries.utils;
 
-/*
- * #%L
- * utils
- * %%
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -102,7 +82,7 @@ public class StreamMergerTest {
 		Tuple t2 = new TupleImpl(this.contextMock, new Values(mock(Object.class), new Long(0), mock(Object.class)), 1,
 			null);
 		merger.addTuple(0, t2);
-		t = new TupleImpl(this.contextMock, new Values(mock(Object.class), mock(Object.class), (long) 0), 2, null);
+		t = new TupleImpl(this.contextMock, new Values(mock(Object.class), mock(Object.class), (long)0), 2, null);
 		merger.addTuple(0, t);
 		
 		Assert.assertSame(t2, merger.getNextTuple());
@@ -122,7 +102,7 @@ public class StreamMergerTest {
 		
 		Values t2 = new Values(new Long(0), mock(Object.class), mock(Object.class));
 		merger.addTuple(0, t2);
-		t = new Values((long) 0, mock(Object.class), mock(Object.class));
+		t = new Values((long)0, mock(Object.class), mock(Object.class));
 		merger.addTuple(0, t);
 		
 		Assert.assertSame(t2, merger.getNextTuple());
@@ -152,20 +132,20 @@ public class StreamMergerTest {
 			
 		}
 		
-		t1 = new Values((long) 0);
+		t1 = new Values((long)0);
 		merger.addTuple(this.r.nextInt(1), t1);
 		Assert.assertSame(t1, merger.getNextTuple());
 		
-		t1 = new Values((long) 1);
+		t1 = new Values((long)1);
 		merger.addTuple(1, t1);
 		Assert.assertNull(merger.getNextTuple());
 		
-		t2 = new Values((long) 2);
+		t2 = new Values((long)2);
 		merger.addTuple(0, t2);
 		Assert.assertSame(t1, merger.getNextTuple());
 		Assert.assertNull(merger.getNextTuple());
 		
-		t1 = new Values((long) 2);
+		t1 = new Values((long)2);
 		merger.addTuple(0, t1);
 		Assert.assertNull(merger.getNextTuple());
 		
@@ -231,7 +211,7 @@ public class StreamMergerTest {
 				int partitionId = partitionIds.get(this.r.nextInt(numberOfPartitions));
 				
 				Values t = new Values();
-				Long ts = (long) currentTs[partitionId] - 1;
+				Long ts = (long)currentTs[partitionId] - 1;
 				t.add(ts);
 				for(int j = 0; j < 9; ++j) {
 					t.add((char)(32 + this.r.nextInt(95)));
@@ -265,8 +245,7 @@ public class StreamMergerTest {
 			lastRemoved = expectedResult.removeLast();
 		}
 		if(lastRemoved != null) {
-			while(expectedResult.size() > 0
-				&& ((Long)lastRemoved.get(0)) == ((Long)expectedResult.getLast().get(0))) {
+			while(expectedResult.size() > 0 && ((Long)lastRemoved.get(0)) == ((Long)expectedResult.getLast().get(0))) {
 				expectedResult.removeLast();
 			}
 		}
