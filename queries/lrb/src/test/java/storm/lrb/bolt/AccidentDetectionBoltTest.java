@@ -29,8 +29,9 @@ import backtype.storm.task.GeneralTopologyContext;
  import backtype.storm.tuple.Tuple;
  import backtype.storm.tuple.TupleImpl;
  import backtype.storm.tuple.Values;
-import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
  import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
  import org.junit.After;
  import org.junit.AfterClass;
@@ -40,9 +41,11 @@ import java.util.Random;
  import static org.junit.Assert.*;
  import org.junit.Ignore;
  import org.junit.runner.RunWith;
+import static org.mockito.Matchers.anyInt;
  import static org.mockito.Matchers.anyString;
 import org.mockito.Mockito;
  import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
  import org.powermock.modules.junit4.PowerMockRunner;
 import storm.lrb.model.PosReport;
 import storm.lrb.tools.EntityHelper;
@@ -81,7 +84,9 @@ import storm.lrb.tools.EntityHelper;
 	@Ignore
 	public void testExecute() {
 		// test recording of stopped car (with speed 0)
-		GeneralTopologyContext generalContextMock = MockHelper.createGeneralTopologyContextMock();
+		GeneralTopologyContext generalContextMock = mock(GeneralTopologyContext.class);
+		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
+		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
 
 		Fields schema = AccidentDetectionBolt.FIELDS_INCOMING;
 
@@ -102,26 +107,35 @@ import storm.lrb.tools.EntityHelper;
 				0 // xway
 		);
 		TestOutputCollector collector = new TestOutputCollector();
-		TopologyContext contextMock = MockHelper.createTopologyContextMock();
+		List<Integer> taskMock = new LinkedList<Integer>();
+		taskMock.add(0);
+		TopologyContext contextMock = mock(TopologyContext.class);
+		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
+		when(contextMock.getThisTaskIndex()).thenReturn(0);		
+		
+		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
+		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
+		when(context.getComponentId(anyInt())).thenReturn("componentID");
+
 		instance.prepare(new Config(), contextMock, new OutputCollector(
 				collector));
 		OutputFieldsDeclarer outputFieldsDeclarer = Mockito.mock(OutputFieldsDeclarer.class);
 		instance.declareOutputFields(outputFieldsDeclarer);
-		assertEquals(0, instance.getAllAccidentCars().size());
+		assertEquals(0, instance.getAccidentsPerPosition().size());
 		instance.execute(tuple);
-		assertEquals(1, instance.getAllAccidentCars().size());
+		assertEquals(1, instance.getAccidentsPerPosition().size());
 		// test that a running car (with speed > 1) is not recorded (different vehicleID)
 		int vehicleID1 = (int) (random.nextDouble()*10000); //set max. value to increase readability
 		PosReport posReport1Running = EntityHelper.createPosReport(random, vehicleID1);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Running), vehicleID1, null //streamID
 		);
 		instance.execute(tuple);
-		assertEquals(1, instance.getAllAccidentCars().size());
+		assertEquals(1, instance.getAccidentsPerPosition().size());
 		// test that stopped car is removed from accident status collection when resumes driving
 		PosReport posReport0Running = EntityHelper.createPosReport(random, vehicleID0);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Running), vehicleID0, null);
 		instance.execute(tuple);
-		assertEquals(0, instance.getAllAccidentCars().size());
+		assertEquals(0, instance.getAccidentsPerPosition().size());
 	}
 
 	/**

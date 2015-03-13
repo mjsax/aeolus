@@ -32,7 +32,10 @@ import storm.lrb.tools.Constants;
 
 
 
-
+/**
+ * The {@code Accident} class serves to record both current and historical data about accidents.
+ * @author richter
+ */
 public class Accident implements Serializable {
 	
 	private static final long serialVersionUID = 1L;

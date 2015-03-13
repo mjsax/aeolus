@@ -37,8 +37,11 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
+import java.util.LinkedList;
+import java.util.List;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 
 
@@ -63,8 +66,12 @@ public class FileReaderSpoutTest {
 		when(bufferedReaderMock.readLine()).thenReturn(line).thenReturn(null);
 		
 		FileReaderSpout spout = new FileReaderSpout();
-		
-		TopologyContext contextMock = MockHelper.createTopologyContextMock();
+				
+		List<Integer> taskMock = new LinkedList<Integer>();
+		taskMock.add(0);
+		TopologyContext contextMock = mock(TopologyContext.class);
+		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
+		when(contextMock.getThisTaskIndex()).thenReturn(0);
 		
 		HashMap<Object, Object> dummyConf = new HashMap<Object, Object>();
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();

@@ -38,7 +38,6 @@ import storm.lrb.TopologyControl;
 import storm.lrb.model.Accident;
 import storm.lrb.model.AccidentImmutable;
 import storm.lrb.model.PosReport;
-import storm.lrb.model.StoppedVehicle;
 import storm.lrb.tools.TupleHelpers;
 
 /**
@@ -47,9 +46,19 @@ import storm.lrb.tools.TupleHelpers;
  *
  * Each AccidentDetectionBolt is responsible to check one assigned xway.
  *
- * The accident detection is based on
- *
- */
+ * The description in the LRB paper isn't very helpful as the accident section doesn't describe accidents completely:<blockquote>
+ * An accident occurs when two vehicles are "stopped"
+at the same position at the same time. A vehicle is stopped
+when it reports the same position in 4 consecutive position
+reports. Once an accident occurs in a given segment, traf-
+fic proceeds in that segment at a reduced speed determined
+by the traffic spacing model.
+* </blockquote>
+* Below in the streaming description for accidents it gets clear what an accident involves:
+* <blockquote>A stream processing system should detect an accident on a
+given segment whenever two or more vehicles are stopped
+in that segment at the same lane and position</blockquote>
+*/
 public class AccidentDetectionBolt extends BaseRichBolt {
 
     private static final long serialVersionUID = 5537727428628598519L;
@@ -63,21 +72,17 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	public static final Fields FIELDS_INCOMING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME);
 
     /**
-     * holds vids of stoppedcars (keyed on position)
+     * Holds information about which car has been detected to be stopped how many times (>1) at each segment (identified by its id). An accident is defined to have occured after two vehicles has been detected to be stopped in 4 consequtive position reports at the same position.
      */
-    private final Map<Integer, HashSet<Integer>> stoppedCarsPerPosition = new HashMap<Integer, HashSet<Integer>>();
-    /**
-     * holds all accident infos keyed on postion
-     */
-    private final Map<Integer, Accident> allAccidentPositions = new HashMap<Integer, Accident>();
-    /**
-     * holds cnts of stops for each vehicle
-     */
-    private final Map<Integer, StoppedVehicle> stoppedCars = new HashMap<Integer, StoppedVehicle>();
-    /**
-     * map of all accident cars and the position of the accident
-     */
-    private final Map<Integer, Integer> allAccidentCars = new HashMap<Integer, Integer>();
+	/*
+	internal implementation notes:
+	- keep one complex (but not necessarily slow) collection rather than be obliged to keep multiple collections in sync
+	*/
+    private final Map<Integer, Map<Integer, Integer>> stopInformationPerPosition = new HashMap<Integer, Map<Integer, Integer>>();
+	/**
+	 * Due to the fact that the {@link Accident} class manages a lot of information, it is necessary to reference it in a proper collection. This one holds {@cde Position x (Lane x Accicent)}.
+	 */
+	private final Map<Integer, Map<Integer, Accident>> accidentsPerPosition = new HashMap<Integer, Map<Integer, Accident>>();
 
     private final int processed_xway;
 
@@ -106,16 +111,23 @@ public class AccidentDetectionBolt extends BaseRichBolt {
         PosReport report = (PosReport) tuple.getValueByField(
                 TopologyControl.POS_REPORT_FIELD_NAME);
 
-        if (report != null && report.getCurrentSpeed() == 0) {
-
-            recordStoppedCar(report);
-
-        } else if (report != null && allAccidentCars.containsKey(report.getVehicleIdentifier())) {
-            // stopped car is moving again so check if you can clear accident
-            LOG.debug("car is moving again; position report: %s", report);
-            checkIfAccidentIsOver(report);
-
-        }
+		//first process the tuple and put values into the collection, ...
+		if (report == null) {
+			LOG.warn("report is null, ackknowledging tuple and skipping");
+		}else {
+			if (report.getCurrentSpeed() == 0) {
+				recordStoppedCar(report);
+			} else {
+				Map<Integer,Integer> vehicleStopInformationMap = this.stopInformationPerPosition.get(report.getPosition());
+				if (vehicleStopInformationMap.containsKey(report.getVehicleIdentifier())) {
+					// stopped car is moving again so check if you can clear accident
+					LOG.debug("car is moving again; position report: %s", report);
+					checkIfAccidentIsOver(report);
+				}
+			}
+		}
+		
+		//...then evaluate the collection
 
         collector.ack(tuple);
 
@@ -123,88 +135,96 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 
     private void checkIfAccidentIsOver(PosReport report) {
         //remove car from accidentcars
-        int accposition = allAccidentCars.remove(report.getVehicleIdentifier());
+		Integer accidentPosition = report.getPosition();
+		Map<Integer, Integer> vehicleStopInformationMap = this.stopInformationPerPosition.get(accidentPosition);
+        int accposition = vehicleStopInformationMap.remove(report.getVehicleIdentifier());
 
-        HashSet<Integer> cntstoppedCars = stoppedCarsPerPosition.get(accposition);
+        Set<Integer> stoppedCarsAtPosition = vehicleStopInformationMap.keySet();
 
-        cntstoppedCars.remove(report.getVehicleIdentifier());
+        stoppedCarsAtPosition.remove(report.getVehicleIdentifier());
 
-        if (cntstoppedCars.size() == 1) {
+        if (stoppedCarsAtPosition.size() == 1
+				//case < 1 handled below
+				) {
             //only one accident car -> accident is over 
-            Accident accidentinfo = allAccidentPositions.get(accposition);
+			Map<Integer, Accident> laneAccidentMap = this.accidentsPerPosition.get(accidentPosition);
+            Accident accidentinfo = laneAccidentMap.get(report.getLane());
             accidentinfo.setOver(report.getTime());
 
             LOG.info("accident is over: %s", accidentinfo);
 
-            emitCurrentAccident(accposition);
-            allAccidentPositions.remove(accposition);
-        }
-
-        if (cntstoppedCars.isEmpty()) {
+            emitAccidentAtPosition(accposition);
+            laneAccidentMap.remove(report.getLane());
+        }else if (stoppedCarsAtPosition.isEmpty()) {
             //no stopped car left, remove position from stop watch list
-            stoppedCarsPerPosition.remove(accposition);
+			this.accidentsPerPosition.remove(accidentPosition);
         }
     }
 
     private void recordStoppedCar(PosReport report) {
 
-        StoppedVehicle stopVehicle = stoppedCars.get(report.getVehicleIdentifier());
+        Map<Integer, Integer> vehicleStopMap = stopInformationPerPosition.get(report.getPosition());
 
-        int cnt;
-        if (stopVehicle == null) {
-            stopVehicle = new StoppedVehicle(report);
-            cnt = 1;
-            stoppedCars.put(report.getVehicleIdentifier(), stopVehicle);
-        } else {
-            cnt = stopVehicle.recordStop(report);
-        }
+		if (vehicleStopMap == null) {
+			vehicleStopMap = new HashMap<Integer, Integer>();
+			stopInformationPerPosition.put(report.getPosition(), vehicleStopMap);
+		}
+		int cnt = 0;
+		Integer vehicleStopCount = vehicleStopMap.get(report.getVehicleIdentifier());
+		if(vehicleStopCount == null) {
+			cnt = 1;
+			vehicleStopMap.put(report.getVehicleIdentifier(), cnt);
+		}else {
+			vehicleStopCount += 1;
+			vehicleStopMap.put(report.getVehicleIdentifier(), cnt);
+		}
 
         if (cnt >= 4) {// 4 consecutive stops => accident car 
-            allAccidentCars.put(report.getVehicleIdentifier(), report.getPosition());
             //add or update accident
-            updateAccident(report, stopVehicle);
+            updateAccident(report);
 
         }
 
     }
 
-    private void updateAccident(PosReport report, StoppedVehicle stopVehicle) {
-        HashSet<Integer> accCarCnt = stoppedCarsPerPosition.get(stopVehicle.getPosition());
-
-        if (accCarCnt == null) {
-            accCarCnt = new HashSet<Integer>();
-            stoppedCarsPerPosition.put(stopVehicle.getPosition(), accCarCnt);
-        }
-        accCarCnt.add(stopVehicle.getVid());
-
-        if (accCarCnt.size() >= 2) { // accident at position
-            Accident accidentinfo = allAccidentPositions.get(stopVehicle.getPosition());
-            if (accidentinfo == null) {// new accident emit!!
-                accidentinfo = new Accident(report);
-                allAccidentPositions.put(stopVehicle.getPosition(), accidentinfo);
-                accidentinfo.addAccVehicles(accCarCnt);
-                LOG.info("new accident: %s", accidentinfo);
-                emitCurrentAccident(stopVehicle.getPosition());
-            } else {
-                LOG.debug("update accident: %s", accidentinfo);
-                accidentinfo.updateAccident(report);
-            }
-        }
+    private void updateAccident(PosReport report) {
+		Map<Integer, Integer> vehicleStopMap = stopInformationPerPosition.get(report.getPosition());
+		
+		Set<Integer> accidentVehicleIdentifiers = new HashSet<Integer>();
+		for(Integer vehicleIdentifier : vehicleStopMap.keySet()) {
+			Integer vehicleStopCount = vehicleStopMap.get(vehicleIdentifier); // should be never null
+			if(vehicleStopCount >= 4) {
+				accidentVehicleIdentifiers.add(vehicleIdentifier);
+			}
+		}
+		
+		if(accidentVehicleIdentifiers.size()> 2) {
+			// accident at position
+			Map<Integer, Accident> laneAccidentMap = accidentsPerPosition.get(report.getPosition());
+			if(laneAccidentMap == null) {
+				laneAccidentMap = new HashMap<Integer, Accident>();
+                accidentsPerPosition.put(report.getPosition(), laneAccidentMap);
+			}
+			Accident laneAccident = laneAccidentMap.get(report.getLane());
+			if(laneAccident == null) {
+				laneAccident = new Accident(report);
+				laneAccidentMap.put(report.getLane(), laneAccident);
+                LOG.debug("emitting new accident: %s", laneAccident);
+				laneAccident.getInvolvedCars().addAll(accidentVehicleIdentifiers);
+			}else {
+                LOG.debug("update accident: %s", laneAccident);
+				laneAccident.getInvolvedCars().add(report.getVehicleIdentifier());
+			}
+		}
     }
 
     //emit all current accidents
     private void emitCurrentAccidents() {
-
-        if (allAccidentPositions.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<Integer, Accident> e : allAccidentPositions.entrySet()) {
-
-            Accident accident = e.getValue();
-            emitAccident(accident);
-        }
-
+		for(Map<Integer, Accident> laneAccidentMap : accidentsPerPosition.values()) {			
+			for (Accident accident : laneAccidentMap.values()) {
+				emitAccident(accident);
+			}
+		}		
     }
 
     private void emitAccident(Accident accident) {
@@ -220,18 +240,19 @@ public class AccidentDetectionBolt extends BaseRichBolt {
         }
     }
 
-    //emit newly detected accident
-    private void emitCurrentAccident(Integer position) {
+    /**
+	 * emit newly detected accident at {@code position}
+	 * @param position 
+	 */
+    private void emitAccidentAtPosition(Integer position) {
         LOG.debug("emmitting new or over accident on position %s", position);
-
-        if (allAccidentPositions.isEmpty()) {
+        if (accidentsPerPosition.isEmpty()) {
             return;
         }
-        Accident accident = allAccidentPositions.get(position);
-        if (accident == null) {
-            return;
-        }
-        emitAccident(accident);
+		Map<Integer, Accident> laneAccidentMap = accidentsPerPosition.get(position);
+		for(Accident accident : laneAccidentMap.values()) {
+			emitAccident(accident);
+		}
     }
 
     @Override
@@ -249,12 +270,11 @@ public class AccidentDetectionBolt extends BaseRichBolt {
     @Override
     public String toString() {
         return "AccidentDetectionBolt \n [stoppedCarsPerXSegDir="
-                + stoppedCarsPerPosition + ",\n allAccidentPositions="
-                + allAccidentPositions + ", \n allAccidentCars=" + allAccidentCars
-                + "]";
+                + this.stopInformationPerPosition + ",\n allAccidentPositions="
+                + accidentsPerPosition + "]";
     }
 
-	public Map<Integer, Integer> getAllAccidentCars() {
-		return allAccidentCars;
+	public Map<Integer, Map<Integer, Accident>> getAccidentsPerPosition() {
+		return accidentsPerPosition;
 	}
 }

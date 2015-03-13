@@ -38,11 +38,15 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.OutputCollector;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
-import de.hub.cs.dbis.aeolus.testUtils.MockHelper;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 
 
@@ -116,7 +120,9 @@ public class FileOutputBoltTest {
 		TestOutputCollector collector = new TestOutputCollector();
 		bolt.prepare(conf, null, new OutputCollector(collector));
 		
-		GeneralTopologyContext context = MockHelper.createGeneralTopologyContextMock();
+		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
+		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
+		when(context.getComponentId(anyInt())).thenReturn("componentID");
 		
 		final int numberOfLines = 20;
 		for(int i = 0; i < numberOfLines; ++i) {
