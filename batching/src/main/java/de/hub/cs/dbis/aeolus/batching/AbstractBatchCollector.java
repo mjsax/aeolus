@@ -27,13 +27,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.storm.guava.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import backtype.storm.generated.Grouping;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 
 
@@ -59,6 +57,10 @@ abstract class AbstractBatchCollector {
 	 */
 	private final int batchSize;
 	/**
+	 * The number of the attributes of the output schema.
+	 */
+	private final Map<String, Integer> numberOfAttributes = new HashMap<String, Integer>();
+	/**
 	 * The current runtime environment.
 	 */
 	private final TopologyContext topologyContext;
@@ -71,21 +73,20 @@ abstract class AbstractBatchCollector {
 	 */
 	private final Map<String, List<String>> receivers = new HashMap<String, List<String>>(9);
 	/**
-	 * Maps receiver components to their tasks.
+	 * Contains all receivers, that use fields-grouping.
 	 */
-	private final Map<String, List<Integer>> receiverTasks = new HashMap<String, List<Integer>>();
+	private final Set<String> fieldsGroupingReceivers = new HashSet<String>();
 	/**
-	 * Maps receiver components to their fieldsGrouping attributes.
+	 * TODO
 	 */
-	private final Map<String, Fields> groupFields = new HashMap<String, Fields>();
+	private final Map<String, Map<Integer, Integer>> streamBatchIndexMapping = new HashMap<String, Map<Integer, Integer>>();
 	/**
-	 * Maps output streams to receiver tasks to corresponding output buffers.
+	 * Maps output streams to corresponding output buffers.
+	 * 
+	 * The number of outputBuffers depends on the number of logical receivers as well as each logical receiver's
+	 * distribution pattern and parallelism.
 	 */
-	// TODO: right now, we get an output buffer for each receiver task -> fully transparent
-	// we could trade "full transparency" for less latency and use single output buffer in some cases (-> no
-	// fieldsGrouping) [remember: for each output stream, a single receiver can only subscribe to the stream a single
-	// time]
-	private final Map<String, Map<Integer, Batch>> outputBuffers = new HashMap<String, Map<Integer, Batch>>();
+	private final Map<String, Batch[]> outputBuffers = new HashMap<String, Batch[]>();
 	
 	
 	
@@ -111,29 +112,45 @@ abstract class AbstractBatchCollector {
 			logger.trace("output-stream: {}", streamId);
 			final Map<String, Grouping> streamReceivers = outputStream.getValue();
 			
-			final int numberOfAttributes = context.getComponentOutputFields(this.componentId, streamId).size();
+			final int numAttributes = context.getComponentOutputFields(this.componentId, streamId).size();
+			this.numberOfAttributes.put(streamId, new Integer(numAttributes));
 			
+			int numberOfBatches = 1;
 			final ArrayList<String> receiverIds = new ArrayList<String>(streamReceivers.size());
 			this.receivers.put(streamId, receiverIds);
-			final HashMap<Integer, Batch> taskBuffers = new HashMap<Integer, Batch>();
-			this.outputBuffers.put(streamId, taskBuffers);
 			
 			for(Entry<String, Grouping> receiver : streamReceivers.entrySet()) {
 				final String receiverId = receiver.getKey();
 				receiverIds.add(receiverId);
 				final List<Integer> taskIds = context.getComponentTasks(receiverId);
-				this.receiverTasks.put(receiverId, taskIds);
 				logger.trace("receiver and tasks: {} - {}", receiverId, taskIds);
 				if(receiver.getValue().is_set_fields()) {
-					this.groupFields.put(receiverId, new Fields(receiver.getValue().get_fields()));
-					logger.trace("fieldsGrouping", this.groupFields.get(receiverId));
+					this.fieldsGroupingReceivers.add(receiverId);
+					logger.trace("fieldsGrouping");
+					numberOfBatches *= taskIds.size(); // we could reduce number of output buffers, if two logical
+														// consumers use the same output field for partitioning AND have
+														// the same dop
+					Map<Integer, Integer> taskToIndex = this.streamBatchIndexMapping.get(streamId);
+					if(taskToIndex == null) {
+						taskToIndex = new HashMap<Integer, Integer>();
+						this.streamBatchIndexMapping.put(streamId, taskToIndex);
+					}
+					int i = 1;
+					for(Integer tId : taskIds) {
+						taskToIndex.put(tId, new Integer(i));
+						++i;
+					}
 				}
-				for(Integer taskId : taskIds) {
-					taskBuffers.put(taskId, new Batch(batchSize, numberOfAttributes));
-				}
-				
 			}
+			
+			
+			Batch[] batches = new Batch[numberOfBatches];
+			for(int i = 0; i < numberOfBatches; ++i) {
+				batches[i] = new Batch(batchSize, numAttributes);
+			}
+			this.outputBuffers.put(streamId, batches);
 		}
+		
 		
 	}
 	
@@ -149,30 +166,30 @@ abstract class AbstractBatchCollector {
 	 * @return
 	 */
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
-		final Set<Integer> computedTaskIds = new HashSet<Integer>();
-		for(String receiverComponentId : this.receivers.get(streamId)) {
-			
-			// if(this.groupFields.get(receiverComponentId) != null) {
-			computedTaskIds.add(StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext, this.componentId,
-				streamId, receiverComponentId, tuple));
-			// }
-		}
-		logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, computedTaskIds);
+		int bufferIndex = 1;
 		
-		for(Integer taskId : computedTaskIds) {
-			final Batch buffer = this.outputBuffers.get(streamId).get(taskId);
-			buffer.addTuple(tuple);
-			
-			if(buffer.isFull()) {
-				this.batchEmit(streamId, null, buffer, messageId);
-				this.outputBuffers.get(streamId).put(
-					taskId,
-					new Batch(this.batchSize, this.topologyContext.getComponentOutputFields(this.componentId, streamId)
-						.size()));
+		if(this.streamBatchIndexMapping.get(streamId) != null) {
+			for(String receiverComponentId : this.receivers.get(streamId)) {
+				if(this.fieldsGroupingReceivers.contains(receiverComponentId)) {
+					Integer taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext,
+						this.componentId, streamId, receiverComponentId, tuple);
+					
+					bufferIndex *= this.streamBatchIndexMapping.get(streamId).get(taskId).intValue();
+				}
 			}
 		}
+		--bufferIndex;
 		
-		return Lists.newLinkedList(computedTaskIds);
+		final Batch buffer = this.outputBuffers.get(streamId)[bufferIndex];
+		buffer.addTuple(tuple);
+		
+		if(buffer.isFull()) {
+			this.batchEmit(streamId, null, buffer, null);
+			this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSize, this.numberOfAttributes.get(
+				streamId).intValue());
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -185,11 +202,11 @@ abstract class AbstractBatchCollector {
 	 * @param messageId
 	 */
 	public void tupleEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
-		final Batch buffer = this.outputBuffers.get(streamId).get(new Integer(taskId));
-		buffer.addTuple(tuple);
-		
-		this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
-		logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
+		// final Batch buffer = this.outputBuffers.get(streamId).get(new Integer(taskId));
+		// buffer.addTuple(tuple);
+		//
+		// this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
+		// logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
 	}
 	
 	/**
