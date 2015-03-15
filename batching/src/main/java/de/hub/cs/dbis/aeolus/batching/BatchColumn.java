@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * {@link BatchColum} represent an attribute column of a {@link Batch}.
+ * {@link BatchColumn} represent an attribute column of a {@link Batch}.
  * 
  * @author Matthias J. Sax
  */
-public class BatchColumn extends ArrayList<Object> {
+class BatchColumn extends ArrayList<Object> {
 	private static final long serialVersionUID = -2215147192473477343L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(BatchColumn.class);
