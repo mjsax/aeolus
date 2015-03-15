@@ -84,7 +84,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 */
 	private int emitIndex = -1;
 	/**
-	 * Map containing all tuples emitted by the last call of {@link #emitNextTuple(Integer, Long, String)}. The map
+	 * Map containing all tuples emitted by the last call of {@link #emitNextTuple(Integer, Long, Object)}. The map
 	 * including the task IDs each tuple was sent to.
 	 */
 	protected Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();

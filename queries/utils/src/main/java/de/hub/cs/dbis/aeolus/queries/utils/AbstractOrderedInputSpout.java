@@ -104,9 +104,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Sets up internal data structures according to the number of used partitions {@link #NUMBER_OF_PARTITIONS}. Calls
-	 * {@link #openSimple(Map, TopologyContext)} in the beginning and forwards parameters {@code Map} and
-	 * {@code TopologyContext}.
+	 * Sets up internal data structures according to the number of used partitions {@link #NUMBER_OF_PARTITIONS}.
 	 */
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
