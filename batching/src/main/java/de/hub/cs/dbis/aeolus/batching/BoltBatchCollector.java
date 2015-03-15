@@ -192,25 +192,16 @@ class BoltBatchCollector extends OutputCollector {
 		this.batcher.tupleEmitDirect(taskId, streamId, anchors, tuple, null);
 	}
 	
-	/**
-	 * TODO
-	 */
 	@Override
 	public void ack(Tuple input) {
 		this.collector.ack(input);
 	}
 	
-	/**
-	 * TODO
-	 */
 	@Override
 	public void fail(Tuple input) {
 		this.collector.fail(input);
 	}
 	
-	/**
-	 * TODO
-	 */
 	@Override
 	public void reportError(Throwable error) {
 		this.collector.reportError(error);

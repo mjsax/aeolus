@@ -36,7 +36,12 @@ import backtype.storm.tuple.TupleImpl;
 
 
 /**
- * TODO
+ * {@link InputDebatcher} enables a bolt to receives input from a producer spout or bolt that emits batches via
+ * {@link SpoutOutputBatcher} or {@link BoltOutputBatcher}, respectively. {@link InputDebatcher} extracts each tuple of
+ * a batch and forwards it to its wrapped bolt for processing. {@link InputDebatcher} can handle and combination of
+ * batched and non-batched input and works with any batch size.<br />
+ * <br />
+ * <strong>CAUTION:</strong>Tuple acking, failing, and anchoring is currently not supported.
  * 
  * @author Matthias J. Sax
  */
@@ -46,19 +51,21 @@ public class InputDebatcher implements IRichBolt {
 	private final static Logger logger = LoggerFactory.getLogger(InputDebatcher.class);
 	
 	/**
-	 * TODO
+	 * The bolt that is wrapped.
 	 */
 	private final IRichBolt wrappedBolt;
 	/**
-	 * TODO
+	 * The current runtime environment.
 	 */
 	private TopologyContext topologyContext;
 	
 	
+	
 	/**
-	 * TODO
+	 * Instantiates a new {@link InputDebatcher} that wraps the given bolt.
 	 * 
 	 * @param bolt
+	 *            The bolt to be wrapped.
 	 */
 	InputDebatcher(IRichBolt bolt) {
 		this.wrappedBolt = bolt;
@@ -72,6 +79,11 @@ public class InputDebatcher implements IRichBolt {
 		this.wrappedBolt.prepare(stormConf, context, collector);
 	}
 	
+	/**
+	 * Processes a single input tuple or batch. In case of an regular input tuple, the input tuple is simply forwarded
+	 * to the wrapped bolt for processing. In case of an input batch, all tuples are extracted from the batch and
+	 * forwarded to the wrapped bolt one by one. The batch metadata is recreated for each extracted tuple.
+	 */
 	@Override
 	public void execute(Tuple input) {
 		logger.trace("input: {}", input);
@@ -110,20 +122,17 @@ public class InputDebatcher implements IRichBolt {
 	
 	@Override
 	public void cleanup() {
-		// TODO Auto-generated method stub
-		
+		this.wrappedBolt.cleanup();
 	}
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		// TODO Auto-generated method stub
-		
+		this.wrappedBolt.declareOutputFields(declarer);
 	}
 	
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.wrappedBolt.getComponentConfiguration();
 	}
 	
 }

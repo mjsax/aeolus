@@ -70,6 +70,8 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		this.batcher = new SpoutBatchCollectorImpl(this, context, batchSize);
 	}
 	
+	
+	
 	/**
 	 * TODO
 	 */

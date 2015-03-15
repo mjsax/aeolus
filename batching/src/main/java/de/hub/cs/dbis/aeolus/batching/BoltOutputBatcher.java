@@ -38,7 +38,9 @@ import backtype.storm.tuple.Tuple;
  * receiving bolts must be wrapped by an {@link InputDebatcher}.<br/>
  * <br/>
  * <strong>CAUTION:</strong>Calls to {@code .emit(...)} will return {@code null}, because the tuples might still be in
- * the output buffer and not transfered yet.
+ * the output buffer and not transfered yet.<br />
+ * <br />
+ * <strong>CAUTION:</strong>Tuple acking, failing, and anchoring is currently not supported.
  * 
  * @author Matthias J. Sax
  */
