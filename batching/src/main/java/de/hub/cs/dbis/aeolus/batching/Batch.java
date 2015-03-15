@@ -78,7 +78,7 @@ class Batch extends ArrayList<BatchColumn> {
 		assert (batchSize > 0);
 		assert (numberOfAttributes > 0);
 		
-		logger.debug("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(numberOfAttributes));
+		logger.trace("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(numberOfAttributes));
 		
 		if(batchSize == 1 && logger.isWarnEnabled()) {
 			logger.warn("Instantiating a Batch of size 1.");

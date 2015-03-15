@@ -71,13 +71,16 @@ abstract class AbstractBatchCollector {
 	/**
 	 * Maps output streams to their receivers.
 	 */
-	private final Map<String, List<String>> receivers = new HashMap<String, List<String>>(9);
+	private final Map<String, List<String>> receivers = new HashMap<String, List<String>>();
 	/**
 	 * Contains all receivers, that use fields-grouping.
 	 */
 	private final Set<String> fieldsGroupingReceivers = new HashSet<String>();
 	/**
-	 * TODO
+	 * Maps each output stream to a task-id-to-batch-index map.
+	 * 
+	 * Task-IDs can have arbitrary values but we need values from 0 to number-of-batches. Thus, we assign an appropriate
+	 * index value to each task-ID.
 	 */
 	private final Map<String, Map<Integer, Integer>> streamBatchIndexMapping = new HashMap<String, Map<Integer, Integer>>();
 	/**
@@ -87,6 +90,11 @@ abstract class AbstractBatchCollector {
 	 * distribution pattern and parallelism.
 	 */
 	private final Map<String, Batch[]> outputBuffers = new HashMap<String, Batch[]>();
+	/**
+	 * Assigns a "weight" to each receiver the used fields-grouping. This weight is necessary to compute the correct
+	 * index within the list of output buffers.
+	 */
+	private final Map<String, Integer> weights = new HashMap<String, Integer>();
 	
 	
 	
@@ -125,17 +133,20 @@ abstract class AbstractBatchCollector {
 				final List<Integer> taskIds = context.getComponentTasks(receiverId);
 				logger.trace("receiver and tasks: {} - {}", receiverId, taskIds);
 				if(receiver.getValue().is_set_fields()) {
+					// TODO we could reduce number of output buffers, if two logical consumers use the same output field
+					// for partitioning AND have the same dop
 					this.fieldsGroupingReceivers.add(receiverId);
 					logger.trace("fieldsGrouping");
-					numberOfBatches *= taskIds.size(); // we could reduce number of output buffers, if two logical
-														// consumers use the same output field for partitioning AND have
-														// the same dop
+					
+					this.weights.put(receiverId, new Integer(numberOfBatches));
+					numberOfBatches *= taskIds.size();
+					
 					Map<Integer, Integer> taskToIndex = this.streamBatchIndexMapping.get(streamId);
 					if(taskToIndex == null) {
 						taskToIndex = new HashMap<Integer, Integer>();
 						this.streamBatchIndexMapping.put(streamId, taskToIndex);
 					}
-					int i = 1;
+					int i = 0;
 					for(Integer tId : taskIds) {
 						taskToIndex.put(tId, new Integer(i));
 						++i;
@@ -150,8 +161,6 @@ abstract class AbstractBatchCollector {
 			}
 			this.outputBuffers.put(streamId, batches);
 		}
-		
-		
 	}
 	
 	/**
@@ -166,19 +175,18 @@ abstract class AbstractBatchCollector {
 	 * @return
 	 */
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
-		int bufferIndex = 1;
+		int bufferIndex = 0;
 		
 		if(this.streamBatchIndexMapping.get(streamId) != null) {
+			Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
 			for(String receiverComponentId : this.receivers.get(streamId)) {
 				if(this.fieldsGroupingReceivers.contains(receiverComponentId)) {
 					Integer taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext,
 						this.componentId, streamId, receiverComponentId, tuple);
-					
-					bufferIndex *= this.streamBatchIndexMapping.get(streamId).get(taskId).intValue();
+					bufferIndex += (this.weights.get(receiverComponentId).intValue() * taskIndex.get(taskId).intValue());
 				}
 			}
 		}
-		--bufferIndex;
 		
 		final Batch buffer = this.outputBuffers.get(streamId)[bufferIndex];
 		buffer.addTuple(tuple);
