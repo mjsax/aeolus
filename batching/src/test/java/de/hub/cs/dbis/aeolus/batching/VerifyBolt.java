@@ -18,8 +18,13 @@
  */
 package de.hub.cs.dbis.aeolus.batching;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +52,22 @@ public class VerifyBolt implements IRichBolt {
 	public static final String BATCHING_SPOUT_ID = "batchingSpout";
 	
 	private final Fields tupleSchema;
+	private final Fields partitions;
+	
 	
 	private OutputCollector collector;
 	private Integer taskId;
 	
-	LinkedList<Tuple> noBatching = new LinkedList<Tuple>();
-	LinkedList<Tuple> batching = new LinkedList<Tuple>();
+	Map<Set<Integer>, LinkedList<Tuple>> noBatching = new HashMap<Set<Integer>, LinkedList<Tuple>>();
+	Map<Set<Integer>, LinkedList<Tuple>> batching = new HashMap<Set<Integer>, LinkedList<Tuple>>();
+	
+	public static List<String> errorMessages = new LinkedList<String>();
 	
 	
 	
-	public VerifyBolt(Fields schema) {
+	public VerifyBolt(Fields schema, Fields partitions) {
 		this.tupleSchema = schema;
+		this.partitions = partitions;
 	}
 	
 	
@@ -69,23 +79,47 @@ public class VerifyBolt implements IRichBolt {
 	}
 	
 	
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public void execute(Tuple input) {
-		logger.debug("received {}: {}", this.taskId, input.getValues());
+		logger.trace("received {}: {}", this.taskId, input.getValues());
+		
+		Set<Integer> key = null;
+		if(this.partitions != null) {
+			key = new HashSet<Integer>((Collection)input.select(this.partitions));
+		}
+		LinkedList<Tuple> noBatchingBuffer = this.noBatching.get(key);
+		if(noBatchingBuffer == null) {
+			noBatchingBuffer = new LinkedList<Tuple>();
+			this.noBatching.put(key, noBatchingBuffer);
+		}
+		LinkedList<Tuple> batchingBuffer = this.batching.get(key);
+		if(batchingBuffer == null) {
+			batchingBuffer = new LinkedList<Tuple>();
+			this.batching.put(key, batchingBuffer);
+		}
 		
 		String spoutId = input.getSourceComponent();
 		if(spoutId.equals(SPOUT_ID)) {
-			if(this.batching.size() == 0) {
-				this.noBatching.add(input);
+			if(batchingBuffer.size() == 0) {
+				noBatchingBuffer.add(input);
 			} else {
-				assert (input.getValues().equals(this.batching.pop().getValues()));
+				Tuple t = batchingBuffer.pop();
+				if(!input.getValues().equals(t.getValues())) {
+					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
+					logger.error("received tuple does not match expected one: {} vs. {}", input, t);
+				}
 			}
 		} else {
 			assert (spoutId.equals(BATCHING_SPOUT_ID));
-			if(this.noBatching.size() == 0) {
-				this.batching.add(input);
+			if(noBatchingBuffer.size() == 0) {
+				batchingBuffer.add(input);
 			} else {
-				assert (input.getValues().equals(this.noBatching.pop().getValues()));
+				Tuple t = noBatchingBuffer.pop();
+				if(!input.getValues().equals(t.getValues())) {
+					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
+					logger.error("received tuple does not match expected one: {} vs. {}", input, t);
+				}
 			}
 		}
 		

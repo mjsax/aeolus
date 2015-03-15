@@ -80,9 +80,6 @@ class Batch extends ArrayList<BatchColumn> {
 		
 		logger.trace("batchSize: {}; numberOfAttributes: {}", new Integer(batchSize), new Integer(numberOfAttributes));
 		
-		if(batchSize == 1 && logger.isWarnEnabled()) {
-			logger.warn("Instantiating a Batch of size 1.");
-		}
 		this.batchSize = batchSize;
 		this.numberOfAttributes = numberOfAttributes;
 		this.size = 0;

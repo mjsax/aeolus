@@ -56,9 +56,7 @@ class BatchColumn extends ArrayList<Object> {
 		super(batchSize);
 		assert (batchSize > 0);
 		
-		if(batchSize == 1 && logger.isWarnEnabled()) {
-			logger.warn("Instantiating a BatchColumn of size 1.");
-		}
+		logger.trace("Instantiating a BatchColumn of size {}.", new Integer(batchSize));
 	}
 	
 	/**
