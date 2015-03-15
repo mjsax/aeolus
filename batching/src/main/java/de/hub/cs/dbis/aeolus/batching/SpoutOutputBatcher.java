@@ -36,9 +36,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * {@link SpoutOutputBatcher} wraps a spout, buffers the spout's output tuples, and emits those tuples in batches. All
  * receiving bolts must be wrapped by an {@link InputDebatcher}.<br/>
  * <br/>
- * <strong>CAUTION:</strong>The task IDs returned by {@code .emit(...)} of the used {@link SpoutOutputCollector} reflect
- * the task IDs the tuple <em>will</em> be sent to. The tuples might still be in the output buffer and not transfered
- * yet.
+ * <strong>CAUTION:</strong>Calls to {@code .emit(...)} will return {@code null}, because the tuples might still be in
+ * the output buffer and not transfered yet.
  * 
  * @author Matthias J. Sax
  */
@@ -63,10 +62,13 @@ public class SpoutOutputBatcher implements IRichSpout {
 	
 	
 	/**
-	 * TODO
+	 * Instantiates a new {@link SpoutOutputBatcher} the emits the output of the given {@link IRichSpout} in batches of
+	 * size {@code batchSize}.
 	 * 
 	 * @param spout
+	 *            The original spout to be wrapped.
 	 * @param batchSize
+	 *            The size of the output batches to be built.
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, int batchSize) {
 		logger.debug("batchSize: {}", new Integer(batchSize));
@@ -84,7 +86,6 @@ public class SpoutOutputBatcher implements IRichSpout {
 	
 	@Override
 	public void close() {
-		// TODO: flush partial batches
 		this.wrappedSpout.close();
 	}
 	

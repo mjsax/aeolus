@@ -33,8 +33,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.IRichSpout;
+import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Tuple;
 
 
 
@@ -43,9 +44,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 /**
  * @author Matthias J. Sax
  */
-public class SpoutOutputBatcherTest {
-	private IRichSpout spoutMock;
-	private SpoutOutputBatcher spout;
+public class BoltOutputBatcherTest {
+	private IRichBolt boltMock;
+	private BoltOutputBatcher bolt;
 	
 	private long seed;
 	private Random r;
@@ -58,8 +59,8 @@ public class SpoutOutputBatcherTest {
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 		
-		this.spoutMock = mock(IRichSpout.class);
-		this.spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(8));
+		this.boltMock = mock(IRichBolt.class);
+		this.bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
 	}
 	
 	
@@ -69,58 +70,39 @@ public class SpoutOutputBatcherTest {
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
 		TopologyContext context = mock(TopologyContext.class);
-		this.spout.open(conf, context, null);
+		this.bolt.prepare(conf, context, null);
 		
-		verify(this.spoutMock).open(same(conf), same(context), any(SpoutBatchCollector.class));
+		verify(this.boltMock).prepare(same(conf), same(context), any(BoltBatchCollector.class));
 	}
 	
 	@Test
-	public void testClose() {
-		this.spout.close();
-		verify(this.spoutMock).close();
+	public void testExecute() {
+		Tuple input = mock(Tuple.class);
+		this.bolt.execute(input);
+		verify(this.boltMock).execute(input);
 	}
 	
 	@Test
-	public void testActivate() {
-		this.spout.activate();
-		verify(this.spoutMock).activate();
-	}
-	
-	@Test
-	public void testDeactivate() {
-		this.spout.deactivate();
-		verify(this.spoutMock).deactivate();
-	}
-	
-	@Test
-	public void testAck() {
-		Object messageId = mock(Object.class);
-		this.spout.ack(messageId);
-		verify(this.spoutMock).ack(messageId);
-	}
-	
-	@Test
-	public void testFail() {
-		Object messageId = mock(Object.class);
-		this.spout.fail(messageId);
-		verify(this.spoutMock).fail(messageId);
+	public void testCleanup() {
+		this.bolt.cleanup();
+		verify(this.boltMock).cleanup();
 	}
 	
 	@Test
 	public void testDeclareOutputFields() {
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
-		this.spout.declareOutputFields(declarer);
-		verify(this.spoutMock).declareOutputFields(declarer);
+		this.bolt.declareOutputFields(declarer);
+		verify(this.boltMock).declareOutputFields(declarer);
 	}
 	
 	@Test
 	public void testGetComponentConfiguration() {
 		final Map<String, Object> conf = new HashMap<String, Object>();
-		when(this.spout.getComponentConfiguration()).thenReturn(conf);
+		when(this.bolt.getComponentConfiguration()).thenReturn(conf);
 		
-		Map<String, Object> result = this.spout.getComponentConfiguration();
+		Map<String, Object> result = this.bolt.getComponentConfiguration();
 		
-		verify(this.spoutMock).getComponentConfiguration();
+		verify(this.boltMock).getComponentConfiguration();
 		Assert.assertSame(result, conf);
 	}
 	
