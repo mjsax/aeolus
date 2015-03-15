@@ -130,4 +130,5 @@ public class SpoutOutputBatcher implements IRichSpout {
 	public Map<String, Object> getComponentConfiguration() {
 		return this.wrappedSpout.getComponentConfiguration();
 	}
+	
 }

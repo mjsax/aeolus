@@ -76,7 +76,13 @@ class BoltBatchCollector extends OutputCollector {
 	
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchor is ignored right now because anchoring is not yet supported.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to BoltBatchCollector.emit(String streamId, Collection<Tuple> anchors,
 	// List<Object> tuple)
@@ -86,7 +92,12 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to BoltBatchCollector.emit(String streamId, Collection<Tuple> anchors,
 	// List<Object> tuple)
@@ -96,7 +107,13 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchors are ignored right now because anchoring is not yet supported.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to BoltBatchCollector.emit(String streamId, Collection<Tuple> anchors,
 	// List<Object> tuple)
@@ -106,7 +123,13 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchor is ignored right now because anchoring is not yet supported.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to BoltBatchCollector.emit(String streamId, Collection<Tuple> anchors,
 	// List<Object> tuple)
@@ -116,7 +139,12 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to BoltBatchCollector.emit(String streamId, List<Object> tuple)
 	@Override
@@ -125,7 +153,8 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchor is ignored right now because anchoring is not yet supported.
 	 */
 	// need to override to redirect call to BoltBatchCollector.emitDirect(int taskId, String streamId, Collection<Tuple>
 	// anchors, List<Object> tuple)
@@ -135,7 +164,7 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
 	 */
 	// need to override to redirect call to BoltBatchCollector.emitDirect(int taskId, String streamId, Collection<Tuple>
 	// anchors, List<Object> tuple)
@@ -145,7 +174,8 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchors are ignored right now because anchoring is not yet supported.
 	 */
 	// need to override to redirect call to BoltBatchCollector.emitDirect(int taskId, String streamId, Collection<Tuple>
 	// anchors, List<Object> tuple)
@@ -155,7 +185,8 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchor is ignored right now because anchoring is not yet supported.
 	 */
 	// need to override to redirect call to BoltBatchCollector.emitDirect(int taskId, String streamId, Collection<Tuple>
 	// anchors, List<Object> tuple)
@@ -165,7 +196,7 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
 	 */
 	// need to override to redirect call to BoltBatchCollector.emitDirect(int taskId, String streamId, List<Object>
 	// tuple)
@@ -175,7 +206,8 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchors are ignored right now because anchoring is not yet supported.
 	 */
 	@Override
 	public List<Integer> emit(String streamId, Collection<Tuple> anchors, List<Object> tuple) {
@@ -184,7 +216,8 @@ class BoltBatchCollector extends OutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given anchors are ignored right now because anchoring is not yet supported.
 	 */
 	@Override
 	public void emitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple) {

@@ -45,7 +45,6 @@ import backtype.storm.tuple.Tuple;
  * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as
  * jar-file. This jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
  * 
- * 
  * @author Matthias J. Sax
  */
 // TODO: what about batches of different sizes (for different output streams? or for different consumers?)
@@ -164,15 +163,20 @@ abstract class AbstractBatchCollector {
 	}
 	
 	/**
-	 * Captures an regular emit call of an operator, adds the output tuple to the corresponding output buffers, and
-	 * emits all buffers that get filled completely during this call.
+	 * Captures an regular emit call of an operator, adds the output tuple to the corresponding output buffer, and emits
+	 * the buffer if it gets filled completely during this call.
 	 * 
 	 * @param streamId
+	 *            The name of the output stream the tuple is appended.
 	 * @param anchors
+	 *            The anchor tuples of the emitted tuple (bolts only).
 	 * @param tuple
+	 *            The output tuple to be emitted.
 	 * @param messageId
+	 *            The ID of the output tuple (spouts only).
 	 * 
-	 * @return
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
 		int bufferIndex = 0;
@@ -201,13 +205,21 @@ abstract class AbstractBatchCollector {
 	}
 	
 	/**
-	 * TODO
+	 * Not implemented yet.
+	 */
+	/*
+	 * Captures an regular direct-emit call of an operator, adds the output tuple to the corresponding output buffer,
+	 * and emits the buffer if it gets filled completely during this call.
 	 * 
-	 * @param taskId
-	 * @param streamId
-	 * @param anchors
-	 * @param tuple
-	 * @param messageId
+	 * @param taskId The ID of the receiver task.
+	 * 
+	 * @param streamId The name of the output stream the tuple is appended.
+	 * 
+	 * @param anchors The anchor tuples of the emitted tuple (bolts only).
+	 * 
+	 * @param tuple The output tuple to be emitted.
+	 * 
+	 * @param messageId The ID of the output tuple (spouts only).
 	 */
 	public void tupleEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
 		// final Batch buffer = this.outputBuffers.get(streamId).get(new Integer(taskId));
@@ -218,25 +230,35 @@ abstract class AbstractBatchCollector {
 	}
 	
 	/**
-	 * TODO
+	 * Is called each time a batch is full and should be emitted.
 	 * 
 	 * @param streamId
+	 *            The name of the output stream the batch is appended.
 	 * @param anchors
-	 * @param batch
+	 *            The anchor tuples of the emitted batch (bolts only).
+	 * @param tuple
+	 *            The output batch to be emitted.
 	 * @param messageId
+	 *            The ID of the output batch (spouts only).
 	 * 
-	 * @return
+	 * @return the task IDs that received the batch
 	 */
 	protected abstract List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId);
 	
 	/**
-	 * TODO
+	 * Is called each time a batch is full and should be emitted.
 	 * 
 	 * @param taskId
+	 *            The ID of the receiver task.
 	 * @param streamId
+	 *            The name of the output stream the batch is appended.
 	 * @param anchors
-	 * @param batch
+	 *            The anchor tuples of the emitted batch (bolts only).
+	 * @param tuple
+	 *            The output batch to be emitted.
 	 * @param messageId
+	 *            The ID of the output batch (spouts only).
 	 */
 	protected abstract void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId);
+	
 }

@@ -73,7 +73,13 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given message ID is ignored right now because acking and failing is not yet supported.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	@Override
 	public List<Integer> emit(String streamId, List<Object> tuple, Object messageId) {
@@ -82,7 +88,13 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given message ID is ignored right now because acking and failing is not yet supported.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emit(String streamId, List<Object> tuple, Object
 	// messageId)
@@ -92,7 +104,12 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emit(List<Object> tuple, Object messageId)
 	@Override
@@ -101,7 +118,12 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * 
+	 * @return currently {@code null} is returned, because the receiver task IDs cannot be determined if it is only
+	 *         inserted into an output batch but not actual emit happens
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emit(String streamId, List<Object> tuple, Object
 	// messageId)
@@ -111,7 +133,10 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given message ID is ignored right now because acking and failing is not yet supported.
 	 */
 	@Override
 	public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
@@ -121,7 +146,10 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
+	 * The given message ID is ignored right now because acking and failing is not yet supported.
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId, List<Object>
 	// tuple, Object messageId)
@@ -131,7 +159,9 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId, List<Object>
 	// tuple, Object messageId)
@@ -141,7 +171,9 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	}
 	
 	/**
-	 * TODO
+	 * {@inheritDoc}
+	 * 
+	 * The tuple is not emitted directly, but is added to an output batch. Output batches are emitted if they are full.
 	 */
 	// need to override to redirect call to SpoutBatchCollector.emitDirect(int taskId, String streamId, List<Object>
 	// tuple, Object messageId)
