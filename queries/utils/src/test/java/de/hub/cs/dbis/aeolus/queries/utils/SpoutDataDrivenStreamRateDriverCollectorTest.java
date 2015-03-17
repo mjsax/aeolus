@@ -60,7 +60,7 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 		int index = (int)(this.r.nextDouble() * numberOfAttributes);
 		
 		SpoutOutputCollector collector = mock(SpoutOutputCollector.class);
-		SpoutDataDrivenStreamRateDriverCollector<Long> driverCollector = new SpoutDataDrivenStreamRateDriverCollector<Long>(
+		DataDrivenStreamRateDriverCollector<Long> driverCollector = new DataDrivenStreamRateDriverCollector<Long>(
 			collector, index);
 		
 		ArrayList<Object> tuple = new ArrayList<Object>(numberOfAttributes);
@@ -136,7 +136,7 @@ public class SpoutDataDrivenStreamRateDriverCollectorTest {
 		int index = this.r.nextInt(numberOfAttributes);
 		
 		SpoutOutputCollector collector = mock(SpoutOutputCollector.class);
-		SpoutDataDrivenStreamRateDriverCollector<Integer> driverCollector = new SpoutDataDrivenStreamRateDriverCollector<Integer>(
+		DataDrivenStreamRateDriverCollector<Integer> driverCollector = new DataDrivenStreamRateDriverCollector<Integer>(
 			collector, index);
 		
 		ArrayList<Object> tuple = new ArrayList<Object>(numberOfAttributes);

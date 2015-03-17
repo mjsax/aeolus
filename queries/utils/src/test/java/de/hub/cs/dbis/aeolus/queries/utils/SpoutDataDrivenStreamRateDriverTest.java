@@ -37,7 +37,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.queries.utils.SpoutDataDrivenStreamRateDriver.TIME_UNIT;
+import de.hub.cs.dbis.aeolus.queries.utils.DataDrivenStreamRateDriverSpout.TIME_UNIT;
 import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
@@ -68,15 +68,14 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	public void testForwardCalls() {
 		IRichSpout worker = mock(IRichSpout.class);
 		@SuppressWarnings("rawtypes")
-		SpoutDataDrivenStreamRateDriver driver = new SpoutDataDrivenStreamRateDriver(worker, 0, TIME_UNIT.SECONDS);
+		DataDrivenStreamRateDriverSpout driver = new DataDrivenStreamRateDriverSpout(worker, 0, TIME_UNIT.SECONDS);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
 		SpoutOutputCollector col = mock(SpoutOutputCollector.class);
 		
 		driver.open(cfg, c, col);
-		verify(worker).open(Matchers.eq(cfg), Matchers.eq(c),
-			Matchers.isA(SpoutDataDrivenStreamRateDriverCollector.class));
+		verify(worker).open(Matchers.eq(cfg), Matchers.eq(c), Matchers.isA(DataDrivenStreamRateDriverCollector.class));
 		
 		driver.close();
 		verify(worker).close();
@@ -108,7 +107,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	@Test
 	public void testNextTupleFixedSecond() {
 		IRichSpout worker = new IncSpout();
-		SpoutDataDrivenStreamRateDriver<Integer> driver = new SpoutDataDrivenStreamRateDriver<Integer>(worker, 0,
+		DataDrivenStreamRateDriverSpout<Integer> driver = new DataDrivenStreamRateDriverSpout<Integer>(worker, 0,
 			TIME_UNIT.SECONDS);
 		
 		Config cfg = mock(Config.class);
@@ -160,7 +159,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 		
 		
 		IRichSpout worker = new IncSpout(prob, stepSize);
-		SpoutDataDrivenStreamRateDriver<Integer> driver = new SpoutDataDrivenStreamRateDriver<Integer>(worker, 0, units);
+		DataDrivenStreamRateDriverSpout<Integer> driver = new DataDrivenStreamRateDriverSpout<Integer>(worker, 0, units);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
