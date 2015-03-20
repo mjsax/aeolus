@@ -104,7 +104,21 @@ public class SpoutOutputBatcher implements IRichSpout {
 	
 	@Override
 	public void nextTuple() {
-		this.wrappedSpout.nextTuple();
+		/*
+		 * In order to avoid a waiting penalty (because of a missing emit), we try to fill up a complete batch before
+		 * returning. If the wrapped spout does not add a new tuple to an output batch we return as well in order to
+		 * avoid busy waiting within the while-true-loop.
+		 */
+		while(true) {
+			this.batchCollector.tupleEmitted = false;
+			this.batchCollector.batchEmitted = false;
+			
+			this.wrappedSpout.nextTuple();
+			
+			if(!this.batchCollector.tupleEmitted || this.batchCollector.batchEmitted) {
+				break;
+			}
+		}
 	}
 	
 	@Override

@@ -41,7 +41,8 @@ import backtype.storm.utils.Utils;
 /**
  * {@link IncSpout} emits tuples with increasing values to one or multiple output streams (ie, data is replicated to all
  * output streams). The output schema has a single {@link Long} attribute with name {@code id}. The first emitted tuple
- * has value {@code 0}.
+ * has value {@code 0}. Additionally, {@link IncSpout} can skip the emit step in regular intervals (by default, skipping
+ * is disabled).
  * 
  * @author Matthias J. Sax
  */
@@ -57,14 +58,27 @@ public class IncSpout implements IRichSpout {
 	private long currentValue = 0;
 	private final double duplicatesProbability;
 	private final int stepSize;
-	
+	private final int skipInterval;
+	private int counter = 0;
 	
 	
 	/**
 	 * Instantiates a new {@link IncSpout} that emits unique values with step size one to the default output stream.
 	 */
 	public IncSpout() {
-		this(new String[] {Utils.DEFAULT_STREAM_ID}, 0.0, 1, System.currentTimeMillis());
+		this(new String[] {Utils.DEFAULT_STREAM_ID}, 0.0, 1, 0, System.currentTimeMillis());
+	}
+	
+	/**
+	 * Instantiates a new {@link IncSpout} that emits unique values with step size one to the default output stream.
+	 * Each {@code skipInterval} {@link #nextTuple()} call will not emit a tuple. If {@code skipInterval} is smaller
+	 * than 2, skipping is disabled.
+	 * 
+	 * @param skipInterval
+	 *            The interval between two {@link #nextTuple()} calls that do not emit.
+	 */
+	public IncSpout(int skipInterval) {
+		this(new String[] {Utils.DEFAULT_STREAM_ID}, 0.0, 1, skipInterval, System.currentTimeMillis());
 	}
 	
 	/**
@@ -79,7 +93,7 @@ public class IncSpout implements IRichSpout {
 	 *            The step size for increasing values.
 	 */
 	public IncSpout(double probability, int stepSize) {
-		this(new String[] {Utils.DEFAULT_STREAM_ID}, probability, stepSize, System.currentTimeMillis());
+		this(new String[] {Utils.DEFAULT_STREAM_ID}, probability, stepSize, 0, System.currentTimeMillis());
 	}
 	
 	/**
@@ -89,7 +103,7 @@ public class IncSpout implements IRichSpout {
 	 *            The IDs of the output stream to use.
 	 */
 	public IncSpout(String[] outputStreamIds) {
-		this(outputStreamIds, 0, 1, System.currentTimeMillis());
+		this(outputStreamIds, 0, 1, 0, System.currentTimeMillis());
 	}
 	
 	/**
@@ -106,7 +120,7 @@ public class IncSpout implements IRichSpout {
 	 *            The step size for increasing values.
 	 */
 	public IncSpout(String[] outputStreamIds, double probability, int stepSize) {
-		this(outputStreamIds, probability, stepSize, System.currentTimeMillis());
+		this(outputStreamIds, probability, stepSize, 0, System.currentTimeMillis());
 	}
 	
 	/**
@@ -121,10 +135,14 @@ public class IncSpout implements IRichSpout {
 	 *            The probability that duplicates occur.
 	 * @param stepSize
 	 *            The step size for increasing values.
+	 * @param skipInterval
+	 *            The interval between two {@link #nextTuple()} calls that do not emit. If {@code skipInterval} is
+	 *            smaller than 2, skipping is disabled.
 	 * @param seed
 	 *            Initial seed for randomly generating duplicates.
 	 */
-	public IncSpout(String[] outputStreamIds, double probability, int stepSize, long seed) {
+	public IncSpout(String[] outputStreamIds, double probability, int stepSize, int skipInterval, long seed)
+		throws IllegalArgumentException {
 		assert (outputStreamIds != null);
 		assert (outputStreamIds.length > 0);
 		assert (stepSize > 0);
@@ -132,6 +150,7 @@ public class IncSpout implements IRichSpout {
 		this.outputStreams = Arrays.copyOf(outputStreamIds, outputStreamIds.length);
 		this.duplicatesProbability = probability;
 		this.stepSize = stepSize;
+		this.skipInterval = skipInterval;
 		this.r = new Random(seed);
 	}
 	
@@ -159,16 +178,20 @@ public class IncSpout implements IRichSpout {
 	
 	@Override
 	public void nextTuple() {
-		Values tuple = new Values(new Long(this.currentValue));
-		
-		for(String stream : this.outputStreams) {
-			List<Integer> receiverIds = this.collector.emit(stream, tuple);
-			LOGGER.trace("emitted tuple {} to output stream {} to receiver tasks with IDs {}", tuple, stream,
-				receiverIds);
-		}
-		
-		if(this.r.nextDouble() >= this.duplicatesProbability) {
-			this.currentValue += this.stepSize;
+		if(this.skipInterval < 2 || ++this.counter % this.skipInterval != 0) {
+			Values tuple = new Values(new Long(this.currentValue));
+			
+			for(String stream : this.outputStreams) {
+				List<Integer> receiverIds = this.collector.emit(stream, tuple);
+				LOGGER.trace("emitted tuple {} to output stream {} to receiver tasks with IDs {}", tuple, stream,
+					receiverIds);
+			}
+			
+			if(this.r.nextDouble() >= this.duplicatesProbability) {
+				this.currentValue += this.stepSize;
+			}
+		} else {
+			this.counter = 0;
 		}
 	}
 	

@@ -70,6 +70,7 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 		assert (anchors == null);
 		logger.trace("streamId: {}; batch: {}; messageId: {}", streamId, batch, messageId);
+		this.spoutBatchCollector.batchEmitted = true;
 		return this.spoutBatchCollector.collector.emit(streamId, (List)batch, messageId);
 	}
 	
@@ -79,6 +80,7 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 		assert (anchors == null);
 		logger.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", new Integer(taskId), streamId, batch,
 			messageId);
+		this.spoutBatchCollector.batchEmitted = true;
 		this.spoutBatchCollector.collector.emitDirect(taskId, streamId, (List)batch, messageId);
 	}
 	
