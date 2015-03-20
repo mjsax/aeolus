@@ -16,10 +16,12 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.utils;
+package de.hub.cs.dbis.aeolus.monitoring.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
 
 
 

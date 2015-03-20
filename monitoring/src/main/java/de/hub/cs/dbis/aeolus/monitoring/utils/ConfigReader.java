@@ -16,9 +16,10 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.utils;
+package de.hub.cs.dbis.aeolus.monitoring.utils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -64,8 +65,15 @@ public class ConfigReader {
 	 * @throws IOException
 	 *             if the configuration file could not be processed successfully
 	 */
-	public static AeolusConfig readConfig(final String configFile) throws IOException {
+	public static AeolusConfig readConfig(String configFile) throws IOException {
 		AeolusConfig config = new AeolusConfig();
+		
+		if(new File(configFile).isDirectory()) {
+			if(!configFile.endsWith(File.separator)) {
+				configFile += File.separator;
+			}
+			configFile += defaultConfigFile;
+		}
 		
 		BufferedReader reader = new BufferedReader(new FileReader(configFile));
 		String line = null;
