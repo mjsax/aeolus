@@ -123,4 +123,11 @@ public class SpoutBatchCollectorTest {
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
+	@Test
+	public void testFlush() {
+		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		collector.flush();
+		verify(collectorMock).flush();
+	}
+	
 }

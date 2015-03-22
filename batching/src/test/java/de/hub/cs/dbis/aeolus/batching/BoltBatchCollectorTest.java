@@ -161,4 +161,11 @@ public class BoltBatchCollectorTest {
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
+	@Test
+	public void testFlush() {
+		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		collector.flush();
+		verify(collectorMock).flush();
+	}
+	
 }

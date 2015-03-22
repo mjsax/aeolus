@@ -239,4 +239,11 @@ class BoltBatchCollector extends OutputCollector {
 	public void reportError(Throwable error) {
 		this.collector.reportError(error);
 	}
+	
+	/**
+	 * Emits all incomplete batches from the output buffer.
+	 */
+	public void flush() {
+		this.batcher.flush();
+	}
 }

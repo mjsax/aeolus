@@ -508,4 +508,50 @@ public class AbstractBatchCollectorTest {
 			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.batchBuffer.get(outputStreams[i]));
 		}
 	}
+	
+	@Test
+	public void testFlush() {
+		final String secondStream = "stream-2";
+		final String thirdStream = "stream-3";
+		
+		HashMap<String, Grouping> consumer = new HashMap<String, Grouping>();
+		consumer.put("receiver", mock(Grouping.class));
+		
+		Map<String, Map<String, Grouping>> targets = new HashMap<String, Map<String, Grouping>>();
+		targets.put(Utils.DEFAULT_STREAM_ID, consumer);
+		targets.put(secondStream, consumer);
+		targets.put(thirdStream, consumer);
+		
+		TopologyContext context = mock(TopologyContext.class);
+		when(context.getThisTargets()).thenReturn(targets);
+		when(context.getComponentOutputFields(null, Utils.DEFAULT_STREAM_ID)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, secondStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, thirdStream)).thenReturn(new Fields("dummy"));
+		
+		final int batchSize = 5;
+		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		
+		final int numberOfTuples = 42;
+		for(int i = 0; i < numberOfTuples - 2; ++i) {
+			collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(i)), null);
+			collector.tupleEmit(secondStream, null, new Values(new Integer(i)), null);
+			collector.tupleEmit(thirdStream, null, new Values(new Integer(i)), null);
+		}
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(40)), null);
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(41)), null);
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(42)), null);
+		
+		collector.tupleEmit(secondStream, null, new Values(new Integer(40)), null);
+		collector.tupleEmit(secondStream, null, new Values(new Integer(41)), null);
+		
+		Assert.assertEquals(8, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(8, collector.batchBuffer.get(secondStream).size());
+		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
+		
+		collector.flush();
+		
+		Assert.assertEquals(9, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(9, collector.batchBuffer.get(secondStream).size());
+		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
+	}
 }

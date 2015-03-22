@@ -60,6 +60,7 @@ public class BatchTest {
 		
 		Batch b = new Batch(batchSize, numberOfAttributes);
 		
+		Assert.assertTrue(b.isEmpty());
 		for(int i = 0; i < batchSize; ++i) {
 			Values tuple = new Values();
 			for(int j = 0; j < numberOfAttributes; ++j) {
@@ -80,7 +81,7 @@ public class BatchTest {
 			} else {
 				Assert.assertTrue(b.isFull());
 			}
-			
+			Assert.assertFalse(b.isEmpty());
 		}
 	}
 	

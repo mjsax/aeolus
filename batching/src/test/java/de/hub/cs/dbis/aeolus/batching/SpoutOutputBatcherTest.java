@@ -31,6 +31,10 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.generated.Grouping;
 import backtype.storm.spout.SpoutOutputCollector;
@@ -50,6 +54,8 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 /**
  * @author Matthias J. Sax
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(SpoutOutputBatcher.class)
 public class SpoutOutputBatcherTest {
 	private IRichSpout spoutMock;
 	
@@ -82,10 +88,16 @@ public class SpoutOutputBatcherTest {
 	}
 	
 	@Test
-	public void testClose() {
+	public void testClose() throws Exception {
+		SpoutBatchCollector collectorMock = mock(SpoutBatchCollector.class);
+		PowerMockito.whenNew(SpoutBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		
 		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		spout.open(null, null, null);
 		spout.close();
+		
 		verify(this.spoutMock).close();
+		verify(collectorMock).flush();
 	}
 	
 	@Test

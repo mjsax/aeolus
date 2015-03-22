@@ -100,7 +100,8 @@ public class SpoutFixedStreamRateDriverTest {
 		}
 		long stop = System.nanoTime();
 		
-		Assert.assertEquals(1900, (stop - start) / 1000 / 1000, -1);
+		long executionTime = (stop - start) / 1000 / 1000;
+		Assert.assertTrue(executionTime - 1 <= 1900 && 1900 <= executionTime + 1);
 	}
 	
 }

@@ -89,6 +89,7 @@ public class SpoutOutputBatcher implements IRichSpout {
 	@Override
 	public void close() {
 		this.wrappedSpout.close();
+		this.batchCollector.flush();
 	}
 	
 	@Override

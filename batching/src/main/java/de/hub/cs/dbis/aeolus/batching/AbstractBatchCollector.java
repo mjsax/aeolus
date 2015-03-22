@@ -207,6 +207,7 @@ abstract class AbstractBatchCollector {
 	/**
 	 * Not implemented yet.
 	 */
+	// TODO
 	/*
 	 * Captures an regular direct-emit call of an operator, adds the output tuple to the corresponding output buffer,
 	 * and emits the buffer if it gets filled completely during this call.
@@ -227,6 +228,22 @@ abstract class AbstractBatchCollector {
 		//
 		// this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
 		// logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
+	}
+	
+	/**
+	 * Emits all incomplete batches from the output buffer.
+	 */
+	public void flush() {
+		for(String streamId : this.outputBuffers.keySet()) {
+			for(int i = 0; i < this.outputBuffers.get(streamId).length; ++i) {
+				Batch batch = this.outputBuffers.get(streamId)[i];
+				if(!batch.isEmpty()) {
+					this.batchEmit(streamId, null, this.outputBuffers.get(streamId)[i], null);
+					this.outputBuffers.get(streamId)[i] = new Batch(this.batchSize, this.numberOfAttributes.get(
+						streamId).intValue());
+				}
+			}
+		}
 	}
 	
 	/**

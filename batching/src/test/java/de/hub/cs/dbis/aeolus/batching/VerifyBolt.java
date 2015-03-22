@@ -18,7 +18,6 @@
  */
 package de.hub.cs.dbis.aeolus.batching;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -54,12 +53,11 @@ public class VerifyBolt implements IRichBolt {
 	private final Fields tupleSchema;
 	private final Fields partitions;
 	
-	
 	private OutputCollector collector;
 	private Integer taskId;
 	
-	Map<Set<Integer>, LinkedList<Tuple>> noBatching = new HashMap<Set<Integer>, LinkedList<Tuple>>();
-	Map<Set<Integer>, LinkedList<Tuple>> batching = new HashMap<Set<Integer>, LinkedList<Tuple>>();
+	private final Map<Set<Object>, LinkedList<Tuple>> noBatching = new HashMap<Set<Object>, LinkedList<Tuple>>();
+	private final Map<Set<Object>, LinkedList<Tuple>> batching = new HashMap<Set<Object>, LinkedList<Tuple>>();
 	
 	public static List<String> errorMessages = new LinkedList<String>();
 	
@@ -79,14 +77,13 @@ public class VerifyBolt implements IRichBolt {
 	}
 	
 	
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public void execute(Tuple input) {
 		logger.trace("received {}: {}", this.taskId, input.getValues());
 		
-		Set<Integer> key = null;
+		Set<Object> key = null;
 		if(this.partitions != null) {
-			key = new HashSet<Integer>((Collection)input.select(this.partitions));
+			key = new HashSet<Object>(input.select(this.partitions));
 		}
 		LinkedList<Tuple> noBatchingBuffer = this.noBatching.get(key);
 		if(noBatchingBuffer == null) {
@@ -104,6 +101,7 @@ public class VerifyBolt implements IRichBolt {
 			if(batchingBuffer.size() == 0) {
 				noBatchingBuffer.add(input);
 			} else {
+				assert (noBatchingBuffer.size() == 0);
 				Tuple t = batchingBuffer.pop();
 				if(!input.getValues().equals(t.getValues())) {
 					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
@@ -115,6 +113,7 @@ public class VerifyBolt implements IRichBolt {
 			if(noBatchingBuffer.size() == 0) {
 				batchingBuffer.add(input);
 			} else {
+				assert (batchingBuffer.size() == 0);
 				Tuple t = noBatchingBuffer.pop();
 				if(!input.getValues().equals(t.getValues())) {
 					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
@@ -140,5 +139,4 @@ public class VerifyBolt implements IRichBolt {
 	public Map<String, Object> getComponentConfiguration() {
 		return null;
 	}
-	
 }

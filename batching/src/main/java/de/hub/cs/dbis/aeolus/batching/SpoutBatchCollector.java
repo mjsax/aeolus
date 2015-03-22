@@ -195,4 +195,11 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 		this.emitDirect(taskId, tuple, null);
 	}
 	
+	/**
+	 * Emits all incomplete batches from the output buffer.
+	 */
+	public void flush() {
+		this.batcher.flush();
+	}
+	
 }
