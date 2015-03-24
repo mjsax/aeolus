@@ -29,6 +29,7 @@ import org.junit.Test;
 import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 
 
@@ -88,12 +89,7 @@ public class BatchingFieldsGroupingITCase {
 		
 		cluster.submitTopology("test", new HashMap(), builder.createTopology());
 		
-		try {
-			Thread.sleep(5 * 1000);
-		} catch(InterruptedException e) {
-			e.printStackTrace();
-		}
-		
+		Utils.sleep(10 * 1000); //experienced test failure with 5 * 1000
 		cluster.killTopology("test");
 		cluster.shutdown();
 		
