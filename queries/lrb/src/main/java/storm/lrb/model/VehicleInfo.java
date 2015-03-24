@@ -61,7 +61,7 @@ public class VehicleInfo implements Serializable {
 		this.vid = vid;
 	}
 	
-	public VehicleInfo() {
+	protected VehicleInfo() {
 		
 	}
 	
@@ -148,6 +148,28 @@ public class VehicleInfo implements Serializable {
 		return "VehicleInfo [vid=" + this.vid + ", calculatedToll=" + this.calculatedToll + ", xway=" + this.getXway()
 			+ ", day=" + this.day + ", time=" + this.getLastReportTime() + ", tollHistory=" + this.tollHistory
 			+ ", segDir=" + this.getSegmentIdentifier() + "]";
+	}
+	
+	@Override
+	public int hashCode() {
+		int hash = 7;
+		hash = 67 * hash + (this.vid != null ? this.vid.hashCode() : 0);
+		return hash;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == null) {
+			return false;
+		}
+		if(getClass() != obj.getClass()) {
+			return false;
+		}
+		final VehicleInfo other = (VehicleInfo)obj;
+		if(this.vid != other.vid && (this.vid == null || !this.vid.equals(other.vid))) {
+			return false;
+		}
+		return true;
 	}
 	
 }

@@ -18,17 +18,26 @@
  */
 package storm.lrb.bolt;
 
-import java.util.Map;
+/*
+ * #%L
+ * lrb
+ * %%
+ * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import storm.lrb.TopologyControl;
-import storm.lrb.model.AccBalRequest;
-import storm.lrb.model.DaiExpRequest;
-import storm.lrb.model.PosReport;
-import storm.lrb.model.TTEstRequest;
-import storm.lrb.tools.StopWatch;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -36,6 +45,17 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import storm.lrb.TopologyControl;
+import storm.lrb.model.AccBalRequest;
+import storm.lrb.model.DaiExpRequest;
+import storm.lrb.model.PosReport;
+import storm.lrb.model.TravelTimeRequest;
+import storm.lrb.tools.StopWatch;
 
 
 
@@ -68,25 +88,25 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 	// TODO evtl buffered wschreiben
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext topologyContext, OutputCollector outputCollector) {
-		this.collector = outputCollector;
+		collector = outputCollector;
 		
 	}
 	
 	@Override
 	public void execute(Tuple tuple) {
 		
-		this.splitAndEmit(tuple);
+		splitAndEmit(tuple);
 		
-		this.collector.ack(tuple);
+		collector.ack(tuple);
 	}
 	
 	private void splitAndEmit(Tuple tuple) {
 		
 		String line = tuple.getStringByField(TopologyControl.TUPLE_FIELD_NAME);
-		if(this.firstrun) {
-			this.firstrun = false;
-			this.timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
-			LOG.info("Set timer: " + this.timer);
+		if(firstrun) {
+			firstrun = false;
+			timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
+			LOG.info("Set timer: " + timer);
 		}
 		String tmp = line.substring(0, 1);
 		if(!tmp.matches("^[0-4]")) {
@@ -97,27 +117,27 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 			
 			switch(Integer.parseInt(tmp)) {
 			case 0:
-				PosReport pos = new PosReport(line, this.timer);
+				PosReport pos = new PosReport(line, timer);
 				
-				if(this.tupleCnt <= 10) {
+				if(tupleCnt <= 10) {
 					LOG.debug(String.format("Created: %s", pos));
 				}
-				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
-				this.tupleCnt++;
+				collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
+				tupleCnt++;
 				break;
 			case 2:
-				AccBalRequest acc = new AccBalRequest(line, this.timer);
-				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple,
+				AccBalRequest acc = new AccBalRequest(line, timer);
+				collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple,
 					new Values(acc.getVehicleIdentifier(), acc));
 				break;
 			case 3:
-				DaiExpRequest exp = new DaiExpRequest(line, this.timer);
-				this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple,
+				DaiExpRequest exp = new DaiExpRequest(line, timer);
+				collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple,
 					new Values(exp.getVehicleIdentifier(), exp));
 				break;
 			case 4:
-				TTEstRequest est = new TTEstRequest(line, this.timer);
-				this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple,
+				TravelTimeRequest est = new TravelTimeRequest(line, timer);
+				collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple,
 					new Values(est.getVehicleIdentifier(), est));
 				break;
 			default:

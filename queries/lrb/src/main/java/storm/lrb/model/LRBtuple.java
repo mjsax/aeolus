@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 import storm.lrb.bolt.SegmentIdentifier;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.tuple.Values;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 
 
@@ -62,6 +65,9 @@ public class LRBtuple extends Values implements Serializable {
 		long time0 = Long.parseLong(timeString);
 		return new StopWatch(time0);
 	}
+	
+	private static final Set<Integer> ALLOWED_TYPES = Collections.unmodifiableSet(new HashSet<Integer>(Arrays.asList(
+		PosReport.TYPE, AccBalRequest.TYPE, DaiExpRequest.TYPE, TravelTimeRequest.TYPE)));
 	
 	/**
 	 * tuple type 0=Position report 2=Account balance requests 3=daily expenditure request 4=Travel time request
@@ -129,6 +135,30 @@ public class LRBtuple extends Values implements Serializable {
 	
 	public LRBtuple() {
 		// kryo needs empty constructor
+	}
+	
+	public LRBtuple(Integer type, Long created, int time, Integer vehicleIdentifier, int currentSpeed, Integer lane,
+		SegmentIdentifier segmentIdentifier, Integer position, Integer queryIdentifier, Integer sinit, Integer send,
+		Integer dow, Integer tod, Integer day, StopWatch timer) {
+		if(!ALLOWED_TYPES.contains(type)) {
+			throw new IllegalArgumentException(String.format("type '%s' is not allowed (allowed types are '%s'", type,
+				ALLOWED_TYPES));
+		}
+		this.type = type;
+		this.created = created;
+		this.time = time;
+		this.vehicleIdentifier = vehicleIdentifier;
+		this.currentSpeed = currentSpeed;
+		this.lane = lane;
+		this.segmentIdentifier = segmentIdentifier;
+		this.position = position;
+		this.queryIdentifier = queryIdentifier;
+		this.sinit = sinit;
+		this.send = send;
+		this.dow = dow;
+		this.tod = tod;
+		this.day = day;
+		this.timer = timer;
 	}
 	
 	public LRBtuple(String tuple, StopWatch systemtimer) {

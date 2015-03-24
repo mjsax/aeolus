@@ -40,7 +40,7 @@ public class NovLav implements Serializable {
 		this.minute = minute;
 	}
 	
-	public NovLav() {
+	protected NovLav() {
 		this.nov = 0;
 		this.lav = 0.0;
 		this.minute = 0;

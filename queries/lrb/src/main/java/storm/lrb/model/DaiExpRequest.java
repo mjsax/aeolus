@@ -36,14 +36,15 @@ import storm.lrb.tools.StopWatch;
 public class DaiExpRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	public static final int TYPE = 3;
 	
-	public DaiExpRequest() {
+	protected DaiExpRequest() {
 		super();
 		
 	}
 	
 	public DaiExpRequest(String tupel, StopWatch time) {
-		super(tupel, time);
+		super(TYPE, tupel, time);
 		
 	}
 	

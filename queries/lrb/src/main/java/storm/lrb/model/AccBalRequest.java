@@ -35,14 +35,15 @@ import storm.lrb.tools.StopWatch;
 public class AccBalRequest extends LRBtuple {
 	
 	private static final long serialVersionUID = 1L;
+	public static final int TYPE = 2;
 	
-	public AccBalRequest() {
+	protected AccBalRequest() {
 		super();
 		
 	}
 	
 	public AccBalRequest(String tupel, StopWatch time) {
-		super(tupel, time);
+		super(TYPE, tupel, time);
 		
 	}
 	

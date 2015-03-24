@@ -18,8 +18,6 @@
  */
 package de.hub.cs.dbis.aeolus.queries.utils;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,6 +41,10 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 
 
@@ -117,7 +119,8 @@ public class FileOutputBoltTest {
 		bolt.prepare(conf, null, new OutputCollector(collector));
 		
 		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
-		when(context.getComponentOutputFields(null, null)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
+		when(context.getComponentId(anyInt())).thenReturn("componentID");
 		
 		final int numberOfLines = 20;
 		for(int i = 0; i < numberOfLines; ++i) {
