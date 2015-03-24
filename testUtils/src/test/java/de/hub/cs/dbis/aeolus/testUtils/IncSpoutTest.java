@@ -89,7 +89,7 @@ public class IncSpoutTest {
 	
 	@Test
 	public void testExecuteUnique() {
-		IncSpout spout = new IncSpout();
+		IncSpout spout = new IncSpout(1);
 		
 		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
 		spout.open(null, null, new SpoutOutputCollector(collector));
@@ -100,6 +100,35 @@ public class IncSpoutTest {
 			ArrayList<Object> attributes = new ArrayList<Object>();
 			attributes.add(new Long(i));
 			result.add(attributes);
+			
+			spout.nextTuple();
+		}
+		
+		Assert.assertEquals(result, collector.output.get(Utils.DEFAULT_STREAM_ID));
+	}
+	
+	@Test
+	public void testExecuteSkip() {
+		final int skipInterval = 2 + this.r.nextInt(3);
+		IncSpout spout = new IncSpout(skipInterval);
+		
+		System.err.println(skipInterval);
+		
+		TestSpoutOutputCollector collector = new TestSpoutOutputCollector();
+		spout.open(null, null, new SpoutOutputCollector(collector));
+		
+		List<List<Object>> result = new LinkedList<List<Object>>();
+		
+		int value = -1;
+		for(int i = 0; i < 10; ++i) {
+			ArrayList<Object> attributes = new ArrayList<Object>();
+			attributes.add(new Long(++value));
+			
+			if(i % skipInterval != skipInterval - 1) {
+				result.add(attributes);
+			} else {
+				--value;
+			}
 			
 			spout.nextTuple();
 		}

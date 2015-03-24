@@ -31,6 +31,10 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
@@ -44,6 +48,8 @@ import backtype.storm.tuple.Tuple;
 /**
  * @author Matthias J. Sax
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(BoltOutputBatcher.class)
 public class BoltOutputBatcherTest {
 	private IRichBolt boltMock;
 	private BoltOutputBatcher bolt;
@@ -66,7 +72,7 @@ public class BoltOutputBatcherTest {
 	
 	
 	@Test
-	public void testOpen() {
+	public void testPrepare() {
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
 		TopologyContext context = mock(TopologyContext.class);
@@ -83,9 +89,15 @@ public class BoltOutputBatcherTest {
 	}
 	
 	@Test
-	public void testCleanup() {
+	public void testCleanup() throws Exception {
+		BoltBatchCollector collectorMock = mock(BoltBatchCollector.class);
+		PowerMockito.whenNew(BoltBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		
+		this.bolt.prepare(null, null, null);
 		this.bolt.cleanup();
+		
 		verify(this.boltMock).cleanup();
+		verify(collectorMock).flush();
 	}
 	
 	@Test

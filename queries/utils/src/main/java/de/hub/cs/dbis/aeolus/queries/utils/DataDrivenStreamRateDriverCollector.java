@@ -27,13 +27,13 @@ import backtype.storm.spout.SpoutOutputCollector;
 
 
 /**
- * {@link SpoutDataDrivenStreamRateDriverCollector} forward all calls to the wrapped {@link SpoutOutputCollector}.
- * Before forwarding, it extract the timestamp attribute value from the currently emitted tuple. The timestamp attribute
- * is expected to be of type {@link Number} and is stored as {@code long}.
+ * {@link DataDrivenStreamRateDriverCollector} forward all calls to the wrapped {@link SpoutOutputCollector}. Before
+ * forwarding, it extract the timestamp attribute value from the currently emitted tuple. The timestamp attribute is
+ * expected to be of type {@link Number} and is stored as {@code long}.
  * 
  * @author Matthias J. Sax
  */
-public class SpoutDataDrivenStreamRateDriverCollector<T extends Number> extends SpoutOutputCollector {
+public class DataDrivenStreamRateDriverCollector<T extends Number> extends SpoutOutputCollector {
 	/**
 	 * The original output collector.
 	 */
@@ -50,14 +50,14 @@ public class SpoutDataDrivenStreamRateDriverCollector<T extends Number> extends 
 	
 	
 	/**
-	 * Instantiates a new {@link SpoutDataDrivenStreamRateDriverCollector} for the given timestamp attribute index.
+	 * Instantiates a new {@link DataDrivenStreamRateDriverCollector} for the given timestamp attribute index.
 	 * 
 	 * @param collector
 	 *            The collector to be wrapped
 	 * @param tsIndex
 	 *            The index of the timestamp attribute.
 	 */
-	public SpoutDataDrivenStreamRateDriverCollector(SpoutOutputCollector collector, int tsIndex) {
+	public DataDrivenStreamRateDriverCollector(SpoutOutputCollector collector, int tsIndex) {
 		super(collector);
 		assert (collector != null);
 		assert (tsIndex >= 0);

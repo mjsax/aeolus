@@ -59,8 +59,7 @@ public class BatchingFieldsGroupingITCase {
 		final int maxValue = 1000;
 		final int batchSize = 1 + this.r.nextInt(5);
 		final int numberOfAttributes = 1 + this.r.nextInt(10);
-		final Integer spoutDop = new Integer(1);
-		final Integer boltDop = new Integer(5);
+		final Integer boltDop = new Integer(2 + this.r.nextInt(4));
 		
 		LinkedList<String> attributes = new LinkedList<String>();
 		for(int i = 0; i < numberOfAttributes; ++i) {
@@ -79,9 +78,9 @@ public class BatchingFieldsGroupingITCase {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout(VerifyBolt.SPOUT_ID, new RandomSpout(numberOfAttributes, maxValue, new String[] {"stream1"},
-			this.seed), spoutDop);
+			this.seed));
 		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
-			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
+			maxValue, new String[] {"stream2"}, this.seed), batchSize));
 		
 		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields(schema), groupingFiels)), boltDop)
 			.fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels)
@@ -90,7 +89,7 @@ public class BatchingFieldsGroupingITCase {
 		cluster.submitTopology("test", new HashMap(), builder.createTopology());
 		
 		try {
-			Thread.sleep(2 * 1000);
+			Thread.sleep(5 * 1000);
 		} catch(InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -100,5 +99,4 @@ public class BatchingFieldsGroupingITCase {
 		
 		Assert.assertEquals(new LinkedList<String>(), VerifyBolt.errorMessages);
 	}
-	
 }

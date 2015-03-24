@@ -121,4 +121,14 @@ class Batch extends ArrayList<BatchColumn> {
 		return this.size == this.batchSize;
 	}
 	
+	/**
+	 * Returns {@code true} if this batch is empty; {@code false} otherwise.
+	 * 
+	 * @return {@code true}, if this batch is empty; {@code false} otherwise.
+	 */
+	@Override
+	public boolean isEmpty() {
+		return this.size == 0;
+	}
+	
 }

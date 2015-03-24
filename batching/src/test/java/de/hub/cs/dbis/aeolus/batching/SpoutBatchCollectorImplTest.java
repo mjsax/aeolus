@@ -24,9 +24,9 @@ import static org.mockito.Mockito.verify;
 import java.util.Collection;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.spout.ISpoutOutputCollector;
@@ -45,19 +45,21 @@ public class SpoutBatchCollectorImplTest {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Test
 	public void testBatchEmit() throws IllegalArgumentException, IllegalAccessException {
+		TopologyContext context = mock(TopologyContext.class);
 		ISpoutOutputCollector col = mock(ISpoutOutputCollector.class);
-		SpoutBatchCollector collector = mock(SpoutBatchCollector.class);
-		PowerMockito.field(SpoutBatchCollector.class, "collector").set(collector, col);
+		SpoutBatchCollector collector = new SpoutBatchCollector(context, col, 0);
 		
-		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
+		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, context, 0);
 		
 		String streamId = new String();
 		Batch batch = mock(Batch.class);
 		Object messageId = mock(Object.class);
 		
+		collector.batchEmitted = false;
 		collectorImpl.batchEmit(streamId, null, batch, messageId);
 		
 		verify(col).emit(streamId, (List)batch, messageId);
+		Assert.assertTrue(collector.batchEmitted);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -71,20 +73,22 @@ public class SpoutBatchCollectorImplTest {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Test
 	public void batchEmitDirect() throws IllegalArgumentException, IllegalAccessException {
+		TopologyContext context = mock(TopologyContext.class);
 		ISpoutOutputCollector col = mock(ISpoutOutputCollector.class);
-		SpoutBatchCollector collector = mock(SpoutBatchCollector.class);
-		PowerMockito.field(SpoutBatchCollector.class, "collector").set(collector, col);
+		SpoutBatchCollector collector = new SpoutBatchCollector(context, col, 0);
 		
-		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
+		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, context, 0);
 		
 		int taskId = 0;
 		String streamId = new String();
 		Batch batch = mock(Batch.class);
 		Object messageId = mock(Object.class);
 		
+		collector.batchEmitted = false;
 		collectorImpl.batchEmitDirect(taskId, streamId, null, batch, messageId);
 		
 		verify(col).emitDirect(taskId, streamId, (List)batch, messageId);
+		Assert.assertTrue(collector.batchEmitted);
 	}
 	
 	@SuppressWarnings("unchecked")

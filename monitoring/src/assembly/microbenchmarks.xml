@@ -1,0 +1,44 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <id>microbenchmarks</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <files>
+    <file>
+      <source>target/classes/de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/MeasureOutputDataRate.class</source>
+      <destName>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/MeasureOutputDataRate.class</destName>
+    </file>
+    <file>
+      <source>target/classes/de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/SchemaSpout.class</source>
+      <destName>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/SchemaSpout.class</destName>
+    </file>
+    <file>
+      <source>target/classes/de/hub/cs/dbis/aeolus/monitoring/utils/AeolusConfig.class</source>
+      <destName>de/hub/cs/dbis/aeolus/monitoring/utils/AeolusConfig.class</destName>
+    </file>
+    <file>
+      <source>target/classes/de/hub/cs/dbis/aeolus/monitoring/utils/ConfigReader.class</source>
+      <destName>de/hub/cs/dbis/aeolus/monitoring/utils/ConfigReader.class</destName>
+    </file>
+    <file>
+      <source>../queries/utils/target/classes/de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</source>
+      <destName>de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</destName>
+    </file>
+    <file>
+      <source>../testUtils/target/classes/de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</source>
+      <destName>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</destName>
+    </file>
+  </files>
+  
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>de.hub.cs.dbis.aeolus:batching:jar:${project.version}</include>
+      </includes>
+      <unpack>true</unpack>
+    </dependencySet>
+  </dependencySets>
+</assembly>

@@ -49,6 +49,17 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	 * The internally used BatchCollector.
 	 */
 	private final SpoutBatchCollectorImpl batcher;
+	/**
+	 * Is set to {@code true}, each time any {@code emit(...)} or {@code emitDirect(...)} method of this
+	 * {@link SpoutBatchCollector} is called. Needs to be reset to {@code false} externally (see
+	 * {@link SpoutOutputBatcher#nextTuple()}.
+	 */
+	boolean tupleEmitted;
+	/**
+	 * Is set to {@code true} (by {@link SpoutBatchCollectorImpl}), each time a batch is emitted by {@link #batcher}.
+	 * Needs to be reset to {@code false} externally (see {@link SpoutOutputBatcher#nextTuple()}.
+	 */
+	boolean batchEmitted;
 	
 	
 	
@@ -84,6 +95,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	@Override
 	public List<Integer> emit(String streamId, List<Object> tuple, Object messageId) {
 		logger.trace("streamId: {}; tuple: {}; messageId: {}", streamId, tuple, messageId);
+		this.tupleEmitted = true;
 		return this.batcher.tupleEmit(streamId, null, tuple, messageId);
 	}
 	
@@ -142,6 +154,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
 		logger.trace("taskId: {}; streamId: {}; tuple: {}; messageId: {}", new Integer(taskId), streamId, tuple,
 			messageId);
+		this.tupleEmitted = true;
 		this.batcher.tupleEmitDirect(taskId, streamId, null, tuple, messageId);
 	}
 	
@@ -180,6 +193,13 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	@Override
 	public void emitDirect(int taskId, List<Object> tuple) {
 		this.emitDirect(taskId, tuple, null);
+	}
+	
+	/**
+	 * Emits all incomplete batches from the output buffer.
+	 */
+	public void flush() {
+		this.batcher.flush();
 	}
 	
 }

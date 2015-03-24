@@ -96,6 +96,7 @@ public class BoltOutputBatcher implements IRichBolt {
 	@Override
 	public void cleanup() {
 		this.wrappedBolt.cleanup();
+		this.batchCollector.flush();
 	}
 	
 	@Override

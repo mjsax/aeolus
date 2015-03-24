@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.monitoring;
+package de.hub.cs.dbis.aeolus.testUtils;
 
 import java.util.Map;
 

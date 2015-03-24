@@ -127,4 +127,28 @@ public class ForwardBoltTest {
 			Assert.assertEquals(result, collector.output.get(stream));
 		}
 	}
+	
+	@Test
+	public void testDataSink() {
+		ForwardBolt bolt = new ForwardBolt();
+		
+		TestOutputCollector collector = new TestOutputCollector();
+		bolt.prepare(null, null, new OutputCollector(collector));
+		
+		LinkedList<Tuple> tuples = new LinkedList<Tuple>();
+		
+		for(int i = 0; i < 3; ++i) {
+			ArrayList<Object> attributes = new ArrayList<Object>();
+			attributes.add(new Integer(i));
+			
+			tuples.add(mock(Tuple.class));
+			when(tuples.get(i).getValues()).thenReturn(attributes);
+			
+			bolt.execute(tuples.get(i));
+			Assert.assertEquals(tuples, collector.acked);
+		}
+		
+		Assert.assertEquals(0, collector.output.size());
+	}
+	
 }

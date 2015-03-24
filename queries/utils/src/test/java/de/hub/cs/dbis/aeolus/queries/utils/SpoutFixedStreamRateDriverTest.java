@@ -48,7 +48,7 @@ public class SpoutFixedStreamRateDriverTest {
 	@Test
 	public void testForwardCalls() {
 		IRichSpout worker = mock(IRichSpout.class);
-		SpoutFixedStreamRateDriver driver = new SpoutFixedStreamRateDriver(worker, 10);
+		FixedStreamRateDriverSpout driver = new FixedStreamRateDriverSpout(worker, 10);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -86,7 +86,7 @@ public class SpoutFixedStreamRateDriverTest {
 	
 	@Test
 	public void testNextTuple() {
-		SpoutFixedStreamRateDriver driver = new SpoutFixedStreamRateDriver(new IncSpout(), 10);
+		FixedStreamRateDriverSpout driver = new FixedStreamRateDriverSpout(new IncSpout(), 10);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -100,7 +100,8 @@ public class SpoutFixedStreamRateDriverTest {
 		}
 		long stop = System.nanoTime();
 		
-		Assert.assertEquals(1900, (stop - start) / 1000 / 1000, -1);
+		long executionTime = (stop - start) / 1000 / 1000;
+		Assert.assertTrue(executionTime - 1 <= 1900 && 1900 <= executionTime + 1);
 	}
 	
 }

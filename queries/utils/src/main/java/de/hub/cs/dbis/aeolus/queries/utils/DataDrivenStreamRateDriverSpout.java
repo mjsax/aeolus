@@ -30,9 +30,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 
 
 /**
- * {@link SpoutDataDrivenStreamRateDriver} wraps a working spout (with high output rate) and assures a
+ * {@link DataDrivenStreamRateDriverSpout} wraps a working spout (with high output rate) and assures a
  * <em>data driven</em> output data rate. Hence, each tuple emitted by the wrapped spout is expected to have a timestamp
- * attribute. {@link SpoutDataDrivenStreamRateDriver} ensures that the produces output rate meets the output rate
+ * attribute. {@link DataDrivenStreamRateDriverSpout} ensures that the produces output rate meets the output rate
  * defined by this timestamp values. Thus, replaying a data stream from file can be done with the original data rate. *
  * The timestamp attribute is expected to be of type {@link Number}.
  * 
@@ -40,7 +40,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * @author Matthias J. Sax
  */
 // TODO: add support to specify timestamp attribute by name
-public class SpoutDataDrivenStreamRateDriver<T extends Number> implements IRichSpout {
+public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichSpout {
 	private static final long serialVersionUID = -2459573797603618679L;
 	
 	
@@ -64,7 +64,7 @@ public class SpoutDataDrivenStreamRateDriver<T extends Number> implements IRichS
 	/**
 	 * Wrapper for the original {@link SpoutOutputCollector} that extract the timestamp for each emitted tuple.
 	 */
-	private SpoutDataDrivenStreamRateDriverCollector<T> timestampChecker;
+	private DataDrivenStreamRateDriverCollector<T> timestampChecker;
 	
 	
 	
@@ -90,14 +90,14 @@ public class SpoutDataDrivenStreamRateDriver<T extends Number> implements IRichS
 	
 	
 	/**
-	 * Instantiates a new {@link SpoutDataDrivenStreamRateDriver} that wraps the given spout.
+	 * Instantiates a new {@link DataDrivenStreamRateDriverSpout} that wraps the given spout.
 	 * 
 	 * @param spout
 	 *            The working spout.
 	 * @param tsIndex
 	 *            The index of the timestamp attribute.
 	 */
-	public SpoutDataDrivenStreamRateDriver(IRichSpout spout, int tsIndex, TIME_UNIT timeUnit) {
+	public DataDrivenStreamRateDriverSpout(IRichSpout spout, int tsIndex, TIME_UNIT timeUnit) {
 		assert (spout != null);
 		assert (timeUnit != null);
 		assert (tsIndex >= 0);
@@ -111,7 +111,7 @@ public class SpoutDataDrivenStreamRateDriver<T extends Number> implements IRichS
 	
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
-		this.timestampChecker = new SpoutDataDrivenStreamRateDriverCollector<T>(collector, this.tsIndex);
+		this.timestampChecker = new DataDrivenStreamRateDriverCollector<T>(collector, this.tsIndex);
 		this.wrappedSpout.open(conf, context, this.timestampChecker);
 	}
 	
