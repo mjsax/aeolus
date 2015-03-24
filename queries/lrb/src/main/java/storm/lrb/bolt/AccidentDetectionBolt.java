@@ -27,6 +27,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -284,10 +285,10 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	}
 
 	public Map<Integer, Map<Integer, Accident>> getAccidentsPerPosition() {
-		return accidentsPerPosition;
+		return Collections.unmodifiableMap(accidentsPerPosition);
 	}
 
 	public Map<Integer, Map<Integer, Integer>> getStopInformationPerPosition() {
-		return stopInformationPerPosition;
+		return Collections.unmodifiableMap(stopInformationPerPosition);
 	}
 }
