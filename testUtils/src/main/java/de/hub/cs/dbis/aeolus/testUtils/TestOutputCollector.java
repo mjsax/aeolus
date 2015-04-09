@@ -34,7 +34,7 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class TestOutputCollector implements IOutputCollector {
-	public HashMap<String, LinkedList<List<Object>>> output = new HashMap<String, LinkedList<List<Object>>>();
+	public HashMap<String, List<List<Object>>> output = new HashMap<String, List<List<Object>>>();
 	public LinkedList<Tuple> acked = new LinkedList<Tuple>();
 	public LinkedList<Tuple> failed = new LinkedList<Tuple>();
 	
@@ -46,7 +46,7 @@ public class TestOutputCollector implements IOutputCollector {
 	
 	@Override
 	public List<Integer> emit(String streamId, Collection<Tuple> anchors, List<Object> tuple) {
-		LinkedList<List<Object>> streamOutput = this.output.get(streamId);
+		List<List<Object>> streamOutput = this.output.get(streamId);
 		if(streamOutput == null) {
 			streamOutput = new LinkedList<List<Object>>();
 			this.output.put(streamId, streamOutput);
