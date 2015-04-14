@@ -57,6 +57,7 @@ public class BatchingFieldsGroupingITCase {
 	@SuppressWarnings("rawtypes")
 	@Test(timeout = 30000)
 	public void testFieldsGrouping() {
+		final String topologyName = "testTopology";
 		final int maxValue = 1000;
 		final int batchSize = 1 + this.r.nextInt(5);
 		final int numberOfAttributes = 1 + this.r.nextInt(10);
@@ -87,12 +88,14 @@ public class BatchingFieldsGroupingITCase {
 			.fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels)
 			.fieldsGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2", groupingFiels);
 		
-		cluster.submitTopology("test", new HashMap(), builder.createTopology());
+		cluster.submitTopology(topologyName, new HashMap(), builder.createTopology());
 		
-		Utils.sleep(10 * 1000); // experienced test failure with 5 * 1000
-		cluster.killTopology("test");
+		Utils.sleep(10 * 1000);
+		cluster.killTopology(topologyName);
+		Utils.sleep(5 * 1000); // give "kill" some time to clean up; otherwise, test might hang and time out
 		cluster.shutdown();
 		
 		Assert.assertEquals(new LinkedList<String>(), VerifyBolt.errorMessages);
+		Assert.assertTrue(VerifyBolt.matchedTuples > 0);
 	}
 }

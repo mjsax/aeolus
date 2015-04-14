@@ -117,7 +117,7 @@ abstract class AbstractBatchCollector {
 		this.componentId = context.getThisComponentId();
 		logger.trace("this-id: {}", this.componentId);
 		
-		// StreamId -> ComponentId -> Grouping
+		// StreamId -> ReceiverId -> Grouping
 		for(Entry<String, Map<String, Grouping>> outputStream : context.getThisTargets().entrySet()) {
 			final String streamId = outputStream.getKey();
 			logger.trace("output-stream: {}", streamId);
@@ -149,23 +149,38 @@ abstract class AbstractBatchCollector {
 					
 					numberOfBatches = 0; // mark as direct output stream
 				} else if(receiver.getValue().is_set_fields()) {
-					// TODO we could reduce number of output buffers, if two logical consumers use the same output field
-					// for partitioning AND have the same dop
-					this.fieldsGroupingReceivers.add(receiverId);
-					logger.trace("fieldsGrouping");
-					
-					this.weights.put(receiverId, new Integer(numberOfBatches));
-					numberOfBatches *= taskIds.size();
-					
-					Map<Integer, Integer> taskToIndex = this.streamBatchIndexMapping.get(streamId);
-					if(taskToIndex == null) {
-						taskToIndex = new HashMap<Integer, Integer>();
-						this.streamBatchIndexMapping.put(streamId, taskToIndex);
+					// do not consider as regular fieldsGrouping if emulated by directGrouping
+					for(Entry<String, Map<String, Grouping>> outputStream2 : context.getThisTargets().entrySet()) {
+						if(outputStream2.getKey().equals(BatchingOutputFieldsDeclarer.STREAM_PREFIX + streamId)) {
+							final Map<String, Grouping> streamReceivers2 = outputStream2.getValue();
+							for(Entry<String, Grouping> receiver2 : streamReceivers2.entrySet()) {
+								if(receiver2.getKey().equals(receiverId)) {
+									assert (receiver2.getValue().is_set_direct());
+									numberOfBatches = 0; // mark as emulated via direct output stream
+								}
+							}
+						}
 					}
-					int i = 0;
-					for(Integer tId : taskIds) {
-						taskToIndex.put(tId, new Integer(i));
-						++i;
+					
+					if(numberOfBatches != 0) {
+						// TODO we could reduce number of output buffers, if two logical consumers use the same output
+						// field for partitioning AND have the same dop
+						this.fieldsGroupingReceivers.add(receiverId);
+						logger.trace("fieldsGrouping");
+						
+						this.weights.put(receiverId, new Integer(numberOfBatches));
+						numberOfBatches *= taskIds.size();
+						
+						Map<Integer, Integer> taskToIndex = this.streamBatchIndexMapping.get(streamId);
+						if(taskToIndex == null) {
+							taskToIndex = new HashMap<Integer, Integer>();
+							this.streamBatchIndexMapping.put(streamId, taskToIndex);
+						}
+						int i = 0;
+						for(Integer tId : taskIds) {
+							taskToIndex.put(tId, new Integer(i));
+							++i;
+						}
 					}
 				}
 			}
@@ -200,8 +215,8 @@ abstract class AbstractBatchCollector {
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
 		int bufferIndex = 0;
 		
-		if(this.streamBatchIndexMapping.get(streamId) != null) {
-			Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
+		final Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
+		if(taskIndex != null) {
 			for(String receiverComponentId : this.receivers.get(streamId)) {
 				if(this.fieldsGroupingReceivers.contains(receiverComponentId)) {
 					Integer taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext,
@@ -210,14 +225,27 @@ abstract class AbstractBatchCollector {
 				}
 			}
 		}
-		
-		final Batch buffer = this.outputBuffers.get(streamId)[bufferIndex];
-		buffer.addTuple(tuple);
-		
-		if(buffer.isFull()) {
-			this.batchEmit(streamId, null, buffer, null);
-			this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSize, this.numberOfAttributes.get(
-				streamId).intValue());
+		String directStream = BatchingOutputFieldsDeclarer.STREAM_PREFIX + streamId;
+		if(this.directOutputBuffers.containsKey(directStream)) {
+			// emulate fieldsGrouping by direct emit
+			for(String receiverComponentId : this.receivers.get(directStream)) {
+				int taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext, this.componentId,
+					streamId, receiverComponentId, tuple).intValue();
+				this.tupleEmitDirect(taskId, directStream, anchors, tuple, messageId);
+			}
+		} else {
+			// regular fieldsGrouping
+			Batch[] streamBuffers = this.outputBuffers.get(streamId);
+			if(streamBuffers != null) {
+				final Batch buffer = streamBuffers[bufferIndex];
+				buffer.addTuple(tuple);
+				
+				if(buffer.isFull()) {
+					this.batchEmit(streamId, null, buffer, null);
+					this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSize, this.numberOfAttributes
+						.get(streamId).intValue());
+				}
+			}
 		}
 		
 		return null;
@@ -244,13 +272,18 @@ abstract class AbstractBatchCollector {
 	 */
 	public void tupleEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
 		Integer tid = new Integer(taskId);
-		final Batch buffer = this.directOutputBuffers.get(streamId).get(tid);
-		buffer.addTuple(tuple);
-		
-		if(buffer.isFull()) {
-			this.batchEmit(streamId, null, buffer, null);
-			this.directOutputBuffers.get(streamId).put(tid,
-				new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+		final Map<Integer, Batch> streamBuffers = this.directOutputBuffers.get(streamId);
+		if(streamBuffers != null) {
+			final Batch buffer = streamBuffers.get(tid);
+			if(buffer != null) {
+				buffer.addTuple(tuple);
+				
+				if(buffer.isFull()) {
+					this.batchEmitDirect(taskId, streamId, null, buffer, null);
+					this.directOutputBuffers.get(streamId).put(tid,
+						new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+				}
+			}
 		}
 	}
 	

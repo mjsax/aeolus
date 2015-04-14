@@ -90,8 +90,9 @@ public class FileReaderSpoutITCase {
 		
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("LR-SpoutTest", conf, builder.createTopology());
-		Utils.sleep(10000);
+		Utils.sleep(10 * 1000);
 		cluster.killTopology("LR-SpoutTest");
+		Utils.sleep(5 * 1000); // give "kill" some time to clean up; otherwise, test might hang and time out
 		cluster.shutdown();
 		
 		

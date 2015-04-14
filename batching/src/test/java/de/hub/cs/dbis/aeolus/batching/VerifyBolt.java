@@ -60,6 +60,7 @@ public class VerifyBolt implements IRichBolt {
 	private final Map<Set<Object>, LinkedList<Tuple>> batching = new HashMap<Set<Object>, LinkedList<Tuple>>();
 	
 	public static List<String> errorMessages = new LinkedList<String>();
+	public static int matchedTuples = 0;
 	
 	
 	
@@ -106,6 +107,8 @@ public class VerifyBolt implements IRichBolt {
 				if(!input.getValues().equals(t.getValues())) {
 					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
 					logger.error("received tuple does not match expected one: {} vs. {}", input, t);
+				} else {
+					++matchedTuples;
 				}
 			}
 		} else {
@@ -118,6 +121,8 @@ public class VerifyBolt implements IRichBolt {
 				if(!input.getValues().equals(t.getValues())) {
 					errorMessages.add("received tuple does not match expected one: " + input + " vs. " + t);
 					logger.error("received tuple does not match expected one: {} vs. {}", input, t);
+				} else {
+					++matchedTuples;
 				}
 			}
 		}
