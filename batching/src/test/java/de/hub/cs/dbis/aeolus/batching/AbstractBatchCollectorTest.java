@@ -21,6 +21,7 @@ package de.hub.cs.dbis.aeolus.batching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import backtype.storm.Config;
 import backtype.storm.generated.Grouping;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.task.WorkerTopologyContext;
@@ -839,4 +841,14 @@ public class AbstractBatchCollectorTest {
 		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
 		Assert.assertEquals(9, collector.batchBuffer.get(directStream).size());
 	}
+	
+	@Test
+	public void testKryoRegistrations() {
+		Config stormConfig = mock(Config.class);
+		AbstractBatchCollector.registerKryoClasses(stormConfig);
+		
+		verify(stormConfig).registerSerialization(Batch.class);
+		verify(stormConfig).registerSerialization(BatchColumn.class);
+	}
+	
 }

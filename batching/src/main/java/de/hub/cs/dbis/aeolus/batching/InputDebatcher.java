@@ -24,6 +24,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
@@ -133,6 +134,17 @@ public class InputDebatcher implements IRichBolt {
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		return this.wrappedBolt.getComponentConfiguration();
+	}
+	
+	/**
+	 * Registers internally used classes for serialization and deserialization. Same as
+	 * {@link SpoutOutputBatcher#registerKryoClasses(Config)} and {@link BoltOutputBatcher#registerKryoClasses(Config)}.
+	 * 
+	 * @param stormConfig
+	 *            The storm config the which the classes should be registered to.
+	 */
+	public static void registerKryoClasses(Config stormConfig) {
+		AbstractBatchCollector.registerKryoClasses(stormConfig);
 	}
 	
 }

@@ -30,6 +30,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backtype.storm.Config;
 import backtype.storm.generated.Grouping;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Tuple;
@@ -313,6 +314,18 @@ abstract class AbstractBatchCollector {
 				
 			}
 		}
+	}
+	
+	/**
+	 * Registers the classes {@link Batch Batch.class} and {@link BatchColumn BatchColumn.class} for serialization and
+	 * deserialization.
+	 * 
+	 * @param stormConfig
+	 *            The storm config the which the classes should be registered to.
+	 */
+	static void registerKryoClasses(Config stormConfig) {
+		stormConfig.registerSerialization(Batch.class);
+		stormConfig.registerSerialization(BatchColumn.class);
 	}
 	
 	/**

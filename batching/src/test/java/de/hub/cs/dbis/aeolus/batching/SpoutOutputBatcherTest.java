@@ -36,6 +36,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import backtype.storm.Config;
 import backtype.storm.generated.Grouping;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -227,4 +228,14 @@ public class SpoutOutputBatcherTest {
 		
 		Assert.assertEquals(1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 	}
+	
+	@Test
+	public void testKryoRegistrations() {
+		Config stormConfig = mock(Config.class);
+		SpoutOutputBatcher.registerKryoClasses(stormConfig);
+		
+		verify(stormConfig).registerSerialization(Batch.class);
+		verify(stormConfig).registerSerialization(BatchColumn.class);
+	}
+	
 }

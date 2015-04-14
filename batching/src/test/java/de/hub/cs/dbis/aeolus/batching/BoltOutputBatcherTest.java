@@ -36,6 +36,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import backtype.storm.Config;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -126,6 +127,15 @@ public class BoltOutputBatcherTest {
 		
 		verify(this.boltMock).getComponentConfiguration();
 		Assert.assertSame(result, conf);
+	}
+	
+	@Test
+	public void testKryoRegistrations() {
+		Config stormConfig = mock(Config.class);
+		BoltOutputBatcher.registerKryoClasses(stormConfig);
+		
+		verify(stormConfig).registerSerialization(Batch.class);
+		verify(stormConfig).registerSerialization(BatchColumn.class);
 	}
 	
 }

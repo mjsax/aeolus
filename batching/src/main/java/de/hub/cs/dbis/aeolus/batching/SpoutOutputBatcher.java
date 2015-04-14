@@ -23,6 +23,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
@@ -145,6 +146,17 @@ public class SpoutOutputBatcher implements IRichSpout {
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		return this.wrappedSpout.getComponentConfiguration();
+	}
+	
+	/**
+	 * Registers internally used classes for serialization and deserialization. Same as
+	 * {@link BoltOutputBatcher#registerKryoClasses(Config)} and {@link InputDebatcher#registerKryoClasses(Config)}.
+	 * 
+	 * @param stormConfig
+	 *            The storm config the which the classes should be registered to.
+	 */
+	public static void registerKryoClasses(Config stormConfig) {
+		AbstractBatchCollector.registerKryoClasses(stormConfig);
 	}
 	
 }

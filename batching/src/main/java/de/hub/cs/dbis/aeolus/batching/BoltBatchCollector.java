@@ -246,4 +246,5 @@ class BoltBatchCollector extends OutputCollector {
 	public void flush() {
 		this.batcher.flush();
 	}
+	
 }

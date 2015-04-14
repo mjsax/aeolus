@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
@@ -185,6 +186,15 @@ public class InputDebatcherTest {
 		
 		verify(boltMock).getComponentConfiguration();
 		Assert.assertSame(result, conf);
+	}
+	
+	@Test
+	public void testKryoRegistrations() {
+		Config stormConfig = mock(Config.class);
+		InputDebatcher.registerKryoClasses(stormConfig);
+		
+		verify(stormConfig).registerSerialization(Batch.class);
+		verify(stormConfig).registerSerialization(BatchColumn.class);
 	}
 	
 }
