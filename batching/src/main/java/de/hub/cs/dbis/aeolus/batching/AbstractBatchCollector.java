@@ -90,6 +90,10 @@ abstract class AbstractBatchCollector {
 	 */
 	private final Map<String, Batch[]> outputBuffers = new HashMap<String, Batch[]>();
 	/**
+	 * Maps direct output streams to corresponding output buffers. Each consumer task has its own output buffer.
+	 */
+	private final Map<String, Map<Integer, Batch>> directOutputBuffers = new HashMap<String, Map<Integer, Batch>>();
+	/**
 	 * Assigns a "weight" to each receiver the used fields-grouping. This weight is necessary to compute the correct
 	 * index within the list of output buffers.
 	 */
@@ -131,7 +135,20 @@ abstract class AbstractBatchCollector {
 				receiverIds.add(receiverId);
 				final List<Integer> taskIds = context.getComponentTasks(receiverId);
 				logger.trace("receiver and tasks: {} - {}", receiverId, taskIds);
-				if(receiver.getValue().is_set_fields()) {
+				if(receiver.getValue().is_set_direct()) {
+					logger.trace("directGrouping");
+					
+					Map<Integer, Batch> outputBatches = this.directOutputBuffers.get(streamId);
+					if(outputBatches == null) {
+						outputBatches = new HashMap<Integer, Batch>();
+						this.directOutputBuffers.put(streamId, outputBatches);
+					}
+					for(Integer taskId : taskIds) {
+						outputBatches.put(taskId, new Batch(batchSize, numAttributes));
+					}
+					
+					numberOfBatches = 0; // mark as direct output stream
+				} else if(receiver.getValue().is_set_fields()) {
 					// TODO we could reduce number of output buffers, if two logical consumers use the same output field
 					// for partitioning AND have the same dop
 					this.fieldsGroupingReceivers.add(receiverId);
@@ -153,12 +170,14 @@ abstract class AbstractBatchCollector {
 				}
 			}
 			
-			
-			Batch[] batches = new Batch[numberOfBatches];
-			for(int i = 0; i < numberOfBatches; ++i) {
-				batches[i] = new Batch(batchSize, numAttributes);
+			if(numberOfBatches > 0) { // otherwise, we got a direct output stream and this.directOutputBuffers is
+										// already set up
+				Batch[] batches = new Batch[numberOfBatches];
+				for(int i = 0; i < numberOfBatches; ++i) {
+					batches[i] = new Batch(batchSize, numAttributes);
+				}
+				this.outputBuffers.put(streamId, batches);
 			}
-			this.outputBuffers.put(streamId, batches);
 		}
 	}
 	
@@ -205,29 +224,34 @@ abstract class AbstractBatchCollector {
 	}
 	
 	/**
-	 * Not implemented yet.
-	 */
-	// TODO
-	/*
 	 * Captures an regular direct-emit call of an operator, adds the output tuple to the corresponding output buffer,
 	 * and emits the buffer if it gets filled completely during this call.
 	 * 
-	 * @param taskId The ID of the receiver task.
+	 * @param taskId
+	 *            The ID of the receiver task.
 	 * 
-	 * @param streamId The name of the output stream the tuple is appended.
+	 * @param streamId
+	 *            The name of the output stream the tuple is appended.
 	 * 
-	 * @param anchors The anchor tuples of the emitted tuple (bolts only).
+	 * @param anchors
+	 *            The anchor tuples of the emitted tuple (bolts only).
 	 * 
-	 * @param tuple The output tuple to be emitted.
+	 * @param tuple
+	 *            The output tuple to be emitted.
 	 * 
-	 * @param messageId The ID of the output tuple (spouts only).
+	 * @param messageId
+	 *            The ID of the output tuple (spouts only).
 	 */
 	public void tupleEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
-		// final Batch buffer = this.outputBuffers.get(streamId).get(new Integer(taskId));
-		// buffer.addTuple(tuple);
-		//
-		// this.batchEmitDirect(taskId, streamId, anchors, buffer, messageId);
-		// logger.trace("tuple: {} -> sentTo ({}): {}", tuple, streamId, new Integer(taskId));
+		Integer tid = new Integer(taskId);
+		final Batch buffer = this.directOutputBuffers.get(streamId).get(tid);
+		buffer.addTuple(tuple);
+		
+		if(buffer.isFull()) {
+			this.batchEmit(streamId, null, buffer, null);
+			this.directOutputBuffers.get(streamId).put(tid,
+				new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+		}
 	}
 	
 	/**
@@ -238,10 +262,22 @@ abstract class AbstractBatchCollector {
 			for(int i = 0; i < this.outputBuffers.get(streamId).length; ++i) {
 				Batch batch = this.outputBuffers.get(streamId)[i];
 				if(!batch.isEmpty()) {
-					this.batchEmit(streamId, null, this.outputBuffers.get(streamId)[i], null);
+					this.batchEmit(streamId, null, batch, null);
 					this.outputBuffers.get(streamId)[i] = new Batch(this.batchSize, this.numberOfAttributes.get(
 						streamId).intValue());
 				}
+			}
+		}
+		
+		for(String streamId : this.directOutputBuffers.keySet()) {
+			for(Integer taskId : this.directOutputBuffers.get(streamId).keySet()) {
+				Batch batch = this.directOutputBuffers.get(streamId).get(taskId);
+				if(!batch.isEmpty()) {
+					this.batchEmitDirect(taskId.intValue(), streamId, null, batch, null);
+					this.directOutputBuffers.get(streamId).put(taskId,
+						new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+				}
+				
 			}
 		}
 	}

@@ -89,7 +89,7 @@ public class BatchingFieldsGroupingITCase {
 		
 		cluster.submitTopology("test", new HashMap(), builder.createTopology());
 		
-		Utils.sleep(10 * 1000); //experienced test failure with 5 * 1000
+		Utils.sleep(10 * 1000); // experienced test failure with 5 * 1000
 		cluster.killTopology("test");
 		cluster.shutdown();
 		

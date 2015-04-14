@@ -108,10 +108,16 @@ public class SpoutOutputBatcherTest {
 	}
 	
 	@Test
-	public void testDeactivate() {
+	public void testDeactivate() throws Exception {
+		SpoutBatchCollector collectorMock = mock(SpoutBatchCollector.class);
+		PowerMockito.whenNew(SpoutBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		
 		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		spout.open(null, null, null);
+		
 		spout.deactivate();
 		verify(this.spoutMock).deactivate();
+		verify(collectorMock).flush();
 	}
 	
 	@Test
@@ -141,7 +147,7 @@ public class SpoutOutputBatcherTest {
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
 		spout.declareOutputFields(declarer);
 		
-		verify(this.spoutMock).declareOutputFields(declarer);
+		verify(this.spoutMock).declareOutputFields(any(BatchingOutputFieldsDeclarer.class));
 	}
 	
 	@Test

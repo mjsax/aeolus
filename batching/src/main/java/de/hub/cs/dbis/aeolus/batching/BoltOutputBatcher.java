@@ -101,7 +101,7 @@ public class BoltOutputBatcher implements IRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		this.wrappedBolt.declareOutputFields(declarer);
+		this.wrappedBolt.declareOutputFields(new BatchingOutputFieldsDeclarer(declarer));
 	}
 	
 	@Override

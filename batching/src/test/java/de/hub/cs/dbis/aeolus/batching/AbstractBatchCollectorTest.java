@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -37,7 +38,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -122,26 +122,26 @@ public class AbstractBatchCollectorTest {
 	
 	@Test
 	public void testEmitShuffleSimple() {
-		this.runTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(1, 1));
+		this.prepateAndRunTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(1, 1));
 	}
 	
 	@Test
 	public void testEmitShuffleMultipleConsumerTasks() {
-		this.runTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(1, 10));
+		this.prepateAndRunTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(1, 10));
 	}
 	
 	@Test
 	public void testEmitShuffleMultipleConsumersNoDop() {
-		this.runTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(10, 1));
+		this.prepateAndRunTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(10, 1));
 		
 	}
 	
 	@Test
 	public void testEmitShuffleFull() {
-		this.runTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(5, 5));
+		this.prepateAndRunTestEmitShuffleDefaultOutputStream(this.generateConsumerTasks(5, 5));
 	}
 	
-	private void runTestEmitShuffleDefaultOutputStream(int[] numberOfConsumerTasks) {
+	private void prepateAndRunTestEmitShuffleDefaultOutputStream(int[] numberOfConsumerTasks) {
 		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
 	}
 	
@@ -169,8 +169,7 @@ public class AbstractBatchCollectorTest {
 		List<Batch>[] expectedResult = new List[numberOfConsumerTasks.length];
 		Batch[] currentBatch = new Batch[numberOfConsumerTasks.length];
 		
-		Grouping shuffle = mock(Grouping.class);
-		when(new Boolean(shuffle.is_set_fields())).thenReturn(new Boolean(false));
+		Grouping grouping = mock(Grouping.class);
 		
 		TopologyContext context = mock(TopologyContext.class);
 		when(context.getThisComponentId()).thenReturn(this.sourceId);
@@ -182,7 +181,7 @@ public class AbstractBatchCollectorTest {
 			final String consumerId = consumerPrefix + i;
 			
 			Map<String, Grouping> consumer = new HashMap<String, Grouping>();
-			consumer.put(consumerId, shuffle);
+			consumer.put(consumerId, grouping);
 			
 			final List<Integer> consumerTasks = new ArrayList<Integer>();
 			for(int j = 0; j < numberOfConsumerTasks[i]; ++j) {
@@ -239,12 +238,7 @@ public class AbstractBatchCollectorTest {
 				
 			}
 			
-			String outputStream = outputStreams[index];
-			if(outputStream.equals(Utils.DEFAULT_STREAM_ID)) {
-				collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, tuple, null);
-			} else {
-				collector.tupleEmit(outputStream, null, tuple, null);
-			}
+			collector.tupleEmit(outputStreams[index], null, tuple, null);
 			
 			for(int j = 0; j < numberOfConsumerTasks.length; ++j) {
 				if(outputStreams[index].equals(outputStreams[j])) {
@@ -253,7 +247,6 @@ public class AbstractBatchCollectorTest {
 						expectedResult[j].add(currentBatch[j]);
 						currentBatch[j] = new Batch(batchSize, numberOfAttributes[j]);
 					}
-					
 				}
 			}
 		}
@@ -267,51 +260,41 @@ public class AbstractBatchCollectorTest {
 	
 	@Test
 	public void testEmitFieldGroupingSimple() {
-		this.runTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(1, 1));
+		this.prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(1, 1));
 	}
 	
 	@Test
 	public void testEmitFieldGroupingMultipleConsumerTasks() {
-		this.runTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(1, 10));
+		this.prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(1, 10));
 	}
 	
 	@Test
 	public void testEmitFieldGroupingMultipleConsumersNoDop() {
-		this.runTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(10, 1));
+		this.prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(10, 1));
 	}
 	
 	@Test
 	public void testEmitFieldGroupingFull() {
-		this.runTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(3, 3));
+		this.prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(this.generateConsumerTasks(3, 3));
 	}
 	
-	private void runTestEmitFieldsGroupingDefaultOutputStream(int[] numberOfConsumerTasks) {
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0),
-			false);
-	}
-	
-	@Test
-	public void testEmitShuffeFieldGroupingCombined() {
-		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0),
-			true);
+	private void prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(int[] numberOfConsumerTasks) {
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
 	}
 	
 	@Test
 	public void testEmitFieldGroupingDistinctOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1),
-			false);
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1));
 	}
 	
 	@Test
 	public void testEmitFieldGroupingRandomOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2),
-			false);
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2));
 	}
 	
-	private void runTestEmitFieldsGrouping(int[] numberOfConsumerTasks, String[] outputStreams, boolean mixedGrouping) {
+	private void runTestEmitFieldsGrouping(int[] numberOfConsumerTasks, String[] outputStreams) {
 		assert (numberOfConsumerTasks.length == outputStreams.length);
 		assert (numberOfConsumerTasks.length < 100);
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
@@ -326,39 +309,13 @@ public class AbstractBatchCollectorTest {
 		Map<String, List<String>> streams = new HashMap<String, List<String>>();
 		
 		Grouping grouping = mock(Grouping.class);
-		boolean[] groupings = new boolean[numberOfConsumerTasks.length];
-		if(mixedGrouping) {
-			assert (numberOfConsumerTasks.length > 1);
-			boolean shuff = false;
-			boolean fields = false;
-			while(!shuff || !fields) {
-				for(int i = 0; i < groupings.length; ++i) {
-					groupings[i] = this.r.nextBoolean();
-				}
-				shuff = false;
-				fields = false;
-				for(int i = 0; i < groupings.length; ++i) {
-					if(groupings[i] == true) {
-						fields = true;
-					} else {
-						shuff = true;
-					}
-				}
-			}
-		} else {
-			for(int i = 0; i < groupings.length; ++i) {
-				groupings[i] = true;
-			}
-		}
 		
 		TopologyContext context = mock(TopologyContext.class);
 		when(context.getThisComponentId()).thenReturn(this.sourceId);
 		
 		int maxNumberOfBatches = 1;
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			if(groupings[i]) {
-				maxNumberOfBatches *= numberOfConsumerTasks[i];
-			}
+			maxNumberOfBatches *= numberOfConsumerTasks[i];
 		}
 		final int numberOfDistinctValues = 1 + maxNumberOfBatches / 2 + this.r.nextInt(2 * maxNumberOfBatches);
 		Values[] partitionsTuple = new Values[numberOfDistinctValues];
@@ -374,43 +331,37 @@ public class AbstractBatchCollectorTest {
 			Map<String, Grouping> consumer = new HashMap<String, Grouping>();
 			consumer.put(consumerId, grouping);
 			
-			Map<Set<Integer>, Batch> old = currentBatch.get(outputStreams[i]);
+			Map<Set<Integer>, Batch> old = currentBatch.put(outputStreams[i], new HashMap<Set<Integer>, Batch>());
 			if(old == null) {
 				old = new HashMap<Set<Integer>, Batch>();
 			}
-			currentBatch.put(outputStreams[i], new HashMap<Set<Integer>, Batch>());
+			
 			final List<Integer> consumerTasks = new ArrayList<Integer>();
 			for(int j = 0; j < numberOfConsumerTasks[i]; ++j) {
 				Integer tid = new Integer(i * 100 + j);
 				consumerTasks.add(tid);
 				
-				if(groupings[i]) {
-					if(old.size() == 0) {
-						Set<Integer> s = new HashSet<Integer>();
-						s.add(tid);
-						currentBatch.get(outputStreams[i]).put(s, new Batch(batchSize, 1));
-					} else {
-						for(Set<Integer> s : old.keySet()) {
-							Set<Integer> s2 = new HashSet<Integer>();
-							s2.addAll(s);
-							s2.add(tid);
-							currentBatch.get(outputStreams[i]).put(s2, new Batch(batchSize, 1));
-						}
-					}
+				if(old.size() == 0) {
+					Set<Integer> s = new HashSet<Integer>();
+					s.add(tid);
+					currentBatch.get(outputStreams[i]).put(s, new Batch(batchSize, 1));
 				} else {
-					currentBatch.put(outputStreams[i], old);
+					for(Set<Integer> s : old.keySet()) {
+						Set<Integer> s2 = new HashSet<Integer>();
+						s2.addAll(s);
+						s2.add(tid);
+						currentBatch.get(outputStreams[i]).put(s2, new Batch(batchSize, 1));
+					}
 				}
 			}
 			when(context.getComponentTasks(consumerId)).thenReturn(consumerTasks);
 			taskIds.put(consumerId, consumerTasks);
 			
-			if(groupings[i]) {
-				for(int j = 0; j < numberOfDistinctValues; ++j) {
-					when(
-						StormConnector.getFieldsGroupingReceiverTaskId(any(WorkerTopologyContext.class),
-							eq(this.sourceId), eq(outputStreams[i]), eq(consumerId), eq(partitionsTuple[j])))
-						.thenReturn(consumerTasks.get(j % numberOfConsumerTasks[i]));
-				}
+			for(int j = 0; j < numberOfDistinctValues; ++j) {
+				when(
+					StormConnector.getFieldsGroupingReceiverTaskId(any(WorkerTopologyContext.class), eq(this.sourceId),
+						eq(outputStreams[i]), eq(consumerId), eq(partitionsTuple[j]))).thenReturn(
+					consumerTasks.get(j % numberOfConsumerTasks[i]));
 			}
 			
 			Map<String, Grouping> streamMapping = targets.get(outputStreams[i]);
@@ -435,28 +386,7 @@ public class AbstractBatchCollectorTest {
 		}
 		when(context.getThisTargets()).thenReturn(targets);
 		
-		if(mixedGrouping) {
-			// this is kind of a hack:
-			// the ordering of the returned values of .if_set_fields() must correspond to the call sequence in
-			// AbstractBatchCollector
-			// => thus, we emulate this call sequence using two for loops and mock accordingly
-			// => this hack make the test depending on implementation details of AbstractBatchCollector what is of
-			// course not desired... (however, it is the only way to make the test run)
-			OngoingStubbing<Boolean> stub = when(new Boolean(grouping.is_set_fields()));
-			
-			for(Entry<String, Map<String, Grouping>> e : targets.entrySet()) {
-				for(Entry<String, Grouping> e2 : e.getValue().entrySet()) {
-					int j = 0;
-					while(!e2.getKey().equals(consumerPrefix + j)) {
-						++j;
-					}
-					stub = stub.thenReturn(new Boolean(groupings[j]));
-					
-				}
-			}
-		} else {
-			when(new Boolean(grouping.is_set_fields())).thenReturn(new Boolean(true));
-		}
+		when(new Boolean(grouping.is_set_fields())).thenReturn(new Boolean(true));
 		
 		
 		
@@ -474,18 +404,14 @@ public class AbstractBatchCollectorTest {
 			
 			Values tuple = new Values(new Integer(this.r.nextInt(numberOfDistinctValues)));
 			String outputStream = outputStreams[index];
-			if(outputStream.equals(Utils.DEFAULT_STREAM_ID)) {
-				collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, tuple, null);
-			} else {
-				collector.tupleEmit(outputStream, null, tuple, null);
-			}
+			collector.tupleEmit(outputStream, null, tuple, null);
 			
 			for(Entry<String, List<String>> s : streams.entrySet()) {
 				if(s.getKey().equals(outputStream)) {
 					Set<Integer> batchKey = new HashSet<Integer>();
 					
 					for(int k = 0; k < numberOfConsumerTasks.length; ++k) {
-						if(outputStreams[k].equals(outputStream) && groupings[k]) {
+						if(outputStreams[k].equals(outputStream)) {
 							batchKey.add(taskIds.get(consumerPrefix + k).get(
 								((Integer)tuple.get(0)).intValue() % numberOfConsumerTasks[k]));
 						}
@@ -510,23 +436,187 @@ public class AbstractBatchCollectorTest {
 	}
 	
 	@Test
+	public void testEmitDirectSimple() {
+		this.prepareAndRunTestEmitDirectDefaultOutputStream(this.generateConsumerTasks(1, 1));
+	}
+	
+	@Test
+	public void testEmitDirectMultipleConsumerTasks() {
+		this.prepareAndRunTestEmitDirectDefaultOutputStream(this.generateConsumerTasks(1, 10));
+	}
+	
+	@Test
+	public void testEmitDirectMultipleConsumersNoDop() {
+		this.prepareAndRunTestEmitDirectDefaultOutputStream(this.generateConsumerTasks(10, 1));
+	}
+	
+	@Test
+	public void testEmitDirectFull() {
+		this.prepareAndRunTestEmitDirectDefaultOutputStream(this.generateConsumerTasks(5, 5));
+	}
+	
+	private void prepareAndRunTestEmitDirectDefaultOutputStream(int[] numberOfConsumerTasks) {
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
+	}
+	
+	@Test
+	public void testEmitDirectDistinctOutputStreams() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1));
+	}
+	
+	@Test
+	public void testEmitDirectRandomOutputStreams() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2));
+	}
+	
+	private void runTestEmitDirect(int[] numberOfConsumerTasks, String[] outputStreams) {
+		assert (numberOfConsumerTasks.length == outputStreams.length);
+		assert (numberOfConsumerTasks.length < 100);
+		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
+			assert (numberOfConsumerTasks[i] < 100);
+		}
+		
+		final String consumerPrefix = "consumer-";
+		final int[] numberOfAttributes = new int[numberOfConsumerTasks.length];
+		
+		Grouping grouping = mock(Grouping.class);
+		when(new Boolean(grouping.is_set_direct())).thenReturn(new Boolean(true));
+		
+		TopologyContext context = mock(TopologyContext.class);
+		when(context.getThisComponentId()).thenReturn(this.sourceId);
+		
+		final int[][] taskIds = new int[numberOfConsumerTasks.length][];
+		
+		final int batchSize = 1 + this.r.nextInt(5);
+		Map<String, List<Batch>> expectedResult = new HashMap<String, List<Batch>>();
+		Map<Integer, Batch> currentBatch = new HashMap<Integer, Batch>();
+		
+		Map<String, Map<String, Grouping>> targets = new HashMap<String, Map<String, Grouping>>();
+		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
+			taskIds[i] = new int[numberOfConsumerTasks[i]];
+			for(int j = 0; j < taskIds[i].length; ++j) {
+				taskIds[i][j] = i * 100 + j;
+			}
+			
+			final String consumerId = consumerPrefix + i;
+			
+			Map<String, Grouping> consumer = new HashMap<String, Grouping>();
+			consumer.put(consumerId, grouping);
+			
+			final List<Integer> consumerTasks = new ArrayList<Integer>();
+			for(int j = 0; j < numberOfConsumerTasks[i]; ++j) {
+				consumerTasks.add(new Integer(i * 100 + j));
+			}
+			when(context.getComponentTasks(consumerId)).thenReturn(consumerTasks);
+			
+			Map<String, Grouping> streamMapping = targets.get(outputStreams[i]);
+			if(streamMapping == null) {
+				targets.put(outputStreams[i], consumer);
+			} else {
+				streamMapping.putAll(consumer);
+			}
+			
+			Fields schema = context.getComponentOutputFields(this.sourceId, outputStreams[i]);
+			if(schema == null) {
+				numberOfAttributes[i] = 1 + this.r.nextInt(5);
+				String[] attributes = new String[numberOfAttributes[i]];
+				for(int j = 0; j < numberOfAttributes[i]; ++j) {
+					attributes[j] = "a" + i + "_" + j;
+				}
+				when(context.getComponentOutputFields(this.sourceId, outputStreams[i])).thenReturn(
+					new Fields(attributes));
+			} else {
+				numberOfAttributes[i] = schema.size();
+			}
+			
+			expectedResult.put(outputStreams[i], new LinkedList<Batch>());
+			for(int j = 0; j < taskIds[i].length; ++j) {
+				currentBatch.put(new Integer(taskIds[i][j]), new Batch(batchSize, numberOfAttributes[i]));
+			}
+		}
+		when(context.getThisTargets()).thenReturn(targets);
+		
+		
+		
+		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		
+		
+		
+		final int numberOfTuples = batchSize * 20 + this.r.nextInt(batchSize * 10);
+		for(int i = 0; i < numberOfTuples; ++i) {
+			final int index = this.r.nextInt(numberOfConsumerTasks.length);
+			
+			Values tuple = new Values();
+			for(int j = 0; j < numberOfAttributes[index]; ++j) {
+				switch(this.r.nextInt(3)) {
+				case 0:
+					tuple.add(new Integer(this.r.nextInt()));
+					break;
+				case 1:
+					tuple.add(new Double(this.r.nextInt() + this.r.nextDouble()));
+					break;
+				default:
+					tuple.add(new String("" + (char)(32 + this.r.nextInt(95))));
+					break;
+				}
+				
+			}
+			
+			String outputStream = outputStreams[index];
+			
+			for(int j = 0; j < numberOfConsumerTasks.length; ++j) {
+				if(outputStreams[index].equals(outputStreams[j])) {
+					int tid = taskIds[j][this.r.nextInt(taskIds[j].length)];
+					collector.tupleEmitDirect(tid, outputStream, null, tuple, null);
+					
+					Integer tidO = new Integer(tid);
+					Batch b = currentBatch.get(tidO);
+					b.addTuple(tuple);
+					if(b.isFull()) {
+						expectedResult.get(outputStream).add(b);
+						currentBatch.put(tidO, new Batch(batchSize, numberOfAttributes[j]));
+					}
+				}
+			}
+			
+		}
+		
+		
+		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
+			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.batchBuffer.get(outputStreams[i]));
+		}
+	}
+	
+	@Test
 	public void testFlush() {
 		final String secondStream = "stream-2";
 		final String thirdStream = "stream-3";
+		final String directStream = "direct";
 		
 		HashMap<String, Grouping> consumer = new HashMap<String, Grouping>();
 		consumer.put("receiver", mock(Grouping.class));
+		
+		HashMap<String, Grouping> directConsumer = new HashMap<String, Grouping>();
+		Grouping direct = mock(Grouping.class);
+		when(new Boolean(direct.is_set_direct())).thenReturn(new Boolean(true));
+		directConsumer.put("directReceiver", direct);
 		
 		Map<String, Map<String, Grouping>> targets = new HashMap<String, Map<String, Grouping>>();
 		targets.put(Utils.DEFAULT_STREAM_ID, consumer);
 		targets.put(secondStream, consumer);
 		targets.put(thirdStream, consumer);
+		targets.put(directStream, directConsumer);
 		
 		TopologyContext context = mock(TopologyContext.class);
 		when(context.getThisTargets()).thenReturn(targets);
 		when(context.getComponentOutputFields(null, Utils.DEFAULT_STREAM_ID)).thenReturn(new Fields("dummy"));
 		when(context.getComponentOutputFields(null, secondStream)).thenReturn(new Fields("dummy"));
 		when(context.getComponentOutputFields(null, thirdStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, directStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentTasks("directReceiver")).thenReturn(
+			Arrays.asList(new Integer[] {new Integer(0), new Integer(1), new Integer(2)}));
 		
 		final int batchSize = 5;
 		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
@@ -536,6 +626,7 @@ public class AbstractBatchCollectorTest {
 			collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(i)), null);
 			collector.tupleEmit(secondStream, null, new Values(new Integer(i)), null);
 			collector.tupleEmit(thirdStream, null, new Values(new Integer(i)), null);
+			collector.tupleEmitDirect(i % 3, directStream, null, new Values(new Integer(i)), null);
 		}
 		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(40)), null);
 		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(41)), null);
@@ -547,11 +638,13 @@ public class AbstractBatchCollectorTest {
 		Assert.assertEquals(8, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
 		Assert.assertEquals(8, collector.batchBuffer.get(secondStream).size());
 		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
+		Assert.assertEquals(6, collector.batchBuffer.get(directStream).size());
 		
 		collector.flush();
 		
 		Assert.assertEquals(9, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
 		Assert.assertEquals(9, collector.batchBuffer.get(secondStream).size());
 		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
+		Assert.assertEquals(9, collector.batchBuffer.get(directStream).size());
 	}
 }

@@ -99,8 +99,8 @@ public class SpoutOutputBatcher implements IRichSpout {
 	
 	@Override
 	public void deactivate() {
-		// TODO: flush partial batches
 		this.wrappedSpout.deactivate();
+		this.batchCollector.flush();
 	}
 	
 	@Override
@@ -138,7 +138,8 @@ public class SpoutOutputBatcher implements IRichSpout {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		this.wrappedSpout.declareOutputFields(declarer);
+		this.wrappedSpout.declareOutputFields(new BatchingOutputFieldsDeclarer(declarer));
+		
 	}
 	
 	@Override
