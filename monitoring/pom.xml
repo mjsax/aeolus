@@ -43,25 +43,119 @@
         </dependencies>
       </plugin>
 
+      <!-- get default data from flink-java-examples package -->
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/microbenchmarks.xml</descriptor>
-          </descriptors>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.9</version><!--$NO-MVN-MAN-VER$-->
         <executions>
           <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
+            <id>unpack</id>
+            <phase>prepare-package</phase>
             <goals>
-              <goal>single</goal>
+              <goal>unpack</goal>
             </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>de.hub.cs.dbis.aeolus</groupId>
+                  <artifactId>utils</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <includes>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class,
+                            de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class,
+                            de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>de.hub.cs.dbis.aeolus</groupId>
+                  <artifactId>testUtils</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <includes>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</includes>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>de.hub.cs.dbis.aeolus</groupId>
+                  <artifactId>batching</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                  <includes>de/hub/cs/dbis/aeolus/batching/*.class</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
           </execution>
         </executions>
       </plugin>
+
+      <!-- self-contained jars for each example -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        
+        <executions>
+
+          <!-- Measure Output Rate -->
+          <execution>
+            <id>MeasureOutputRate</id>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <configuration>
+              <classifier>microbenchmarks</classifier>
+
+              <includes>
+                <include>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/MeasureOutputDataRate.class</include>
+                <include>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/SchemaSpout.class</include>
+                <include>de/hub/cs/dbis/aeolus/monitoring/throughput/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/monitoring/utils/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</include>
+                <include>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class</include>
+                <include>de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class</include>
+                <include>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</include>
+                <include>de/hub/cs/dbis/aeolus/batching/*.class</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+        </plugin>
     </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.9,)</versionRange>
+                    <goals>
+                      <goal>unpack</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore/>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
   </build>
 
   <dependencies>
