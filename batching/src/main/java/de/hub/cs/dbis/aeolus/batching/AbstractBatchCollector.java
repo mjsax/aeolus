@@ -335,7 +335,7 @@ abstract class AbstractBatchCollector {
 	 *            The name of the output stream the batch is appended.
 	 * @param anchors
 	 *            The anchor tuples of the emitted batch (bolts only).
-	 * @param tuple
+	 * @param batch
 	 *            The output batch to be emitted.
 	 * @param messageId
 	 *            The ID of the output batch (spouts only).
@@ -353,7 +353,7 @@ abstract class AbstractBatchCollector {
 	 *            The name of the output stream the batch is appended.
 	 * @param anchors
 	 *            The anchor tuples of the emitted batch (bolts only).
-	 * @param tuple
+	 * @param batch
 	 *            The output batch to be emitted.
 	 * @param messageId
 	 *            The ID of the output batch (spouts only).

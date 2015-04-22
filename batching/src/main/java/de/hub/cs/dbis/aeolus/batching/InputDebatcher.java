@@ -68,7 +68,7 @@ public class InputDebatcher implements IRichBolt {
 	 * @param bolt
 	 *            The bolt to be wrapped.
 	 */
-	InputDebatcher(IRichBolt bolt) {
+	public InputDebatcher(IRichBolt bolt) {
 		this.wrappedBolt = bolt;
 	}
 	
@@ -89,7 +89,9 @@ public class InputDebatcher implements IRichBolt {
 	public void execute(Tuple input) {
 		logger.trace("input: {}", input);
 		
-		if(input.getValues().getClass().getName().equals(Batch.class.getName())) {
+		// we cannot check "input.getValues() instanceof Batch", because Storm does not preserve this information
+		// (the class of input.getValues() is always java.utils.ArrayList)
+		if(input.size() > 0 && input.getValue(0) instanceof BatchColumn) {
 			logger.trace("debatching");
 			
 			final int numberOfAttributes = input.size();

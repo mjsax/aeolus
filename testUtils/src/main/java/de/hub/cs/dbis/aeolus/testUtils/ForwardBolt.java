@@ -39,7 +39,7 @@ import backtype.storm.utils.Utils;
 
 /**
  * {@link ForwardBolt} forwards each incoming tuple to zero, one, or multiple output streams (ie, data is replicated to
- * all output streams). In case of zero configured output streams, {@link ForwarBolt} acts as a data sink. All incoming
+ * all output streams). In case of zero configured output streams, {@link ForwardBolt} acts as a data sink. All incoming
  * tuples must have the same schema if it is not used as a data sink. {@link ForwardBolt} acknowledges all forwarded
  * tuples.
  * 
@@ -48,6 +48,7 @@ import backtype.storm.utils.Utils;
 // TODO add .emitDirect(...) support
 public class ForwardBolt implements IRichBolt {
 	private static final long serialVersionUID = -2047329782139913124L;
+	
 	private final static Logger logger = LoggerFactory.getLogger(ForwardBolt.class);
 	
 	private final Fields tupleSchema;

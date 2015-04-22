@@ -48,8 +48,8 @@ public class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
 	/**
 	 * Instantiates a new {@link BatchingOutputFieldsDeclarer} using the provided declarer object.
 	 * 
-	 * @param The
-	 *            origianl declarer object.
+	 * @param declarer
+	 *            The original declarer object.
 	 */
 	public BatchingOutputFieldsDeclarer(OutputFieldsDeclarer declarer) {
 		this.declarer = declarer;
