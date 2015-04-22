@@ -45,43 +45,43 @@ import backtype.storm.tuple.Values;
  * 
  * @author Matthias J. Sax
  */
-abstract class AbstractThroughputCounter {
+public abstract class AbstractThroughputCounter {
 	/**
 	 * The default ID of the report stream.
 	 */
-	public static final String DEFAULT_STATS_STREAM = "aeolus::throughput";
+	public final static String DEFAULT_STATS_STREAM = "aeolus::throughput";
 	/**
 	 * The name of the timestamp attribute.
 	 */
-	public static final String TS_ATTRIBUTE = "ts";
+	public final static String TS_ATTRIBUTE = "ts";
 	/**
 	 * The name of the stream ID attribute.
 	 */
-	public static final String STREAM_ID_ATTRIBUTE = "streamId";
+	public final static String STREAM_ID_ATTRIBUTE = "streamId";
 	/**
 	 * The name of the overall count attribute.
 	 */
-	public static final String COUNT_ATTRIBUTE = "count";
+	public final static String COUNT_ATTRIBUTE = "count";
 	/**
 	 * The name of the delta count attribute.
 	 */
-	public static final String DELTA_ATTRIBUTE = "delta";
+	public final static String DELTA_ATTRIBUTE = "delta";
 	/**
 	 * The index of the timestamp attribute.
 	 */
-	public static final int TS_INDEX = 0;
+	public final static int TS_INDEX = 0;
 	/**
 	 * The index of the stream ID attribute.
 	 */
-	public static final int STREAM_ID_INDEX = 1;
+	public final static int STREAM_ID_INDEX = 1;
 	/**
 	 * The index of the overall count attribute.
 	 */
-	public static final int COUNT_INDEX = 2;
+	public final static int COUNT_INDEX = 2;
 	/**
 	 * The index of the delta count attribute.
 	 */
-	public static final int DELTA_INDEX = 3;
+	public final static int DELTA_INDEX = 3;
 	
 	
 	

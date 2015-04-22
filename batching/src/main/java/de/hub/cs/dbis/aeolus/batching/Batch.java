@@ -37,7 +37,7 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 class Batch extends ArrayList<BatchColumn> {
-	private static final long serialVersionUID = 4904732830895959975L;
+	private final static long serialVersionUID = 4904732830895959975L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(Batch.class);
 	

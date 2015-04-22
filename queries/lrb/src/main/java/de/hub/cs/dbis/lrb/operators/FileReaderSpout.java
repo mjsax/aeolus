@@ -45,7 +45,7 @@ import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
  * @author Matthias J. Sax
  */
 public class FileReaderSpout extends AbstractOrderedFileInputSpout {
-	private static final long serialVersionUID = 8536833427236986702L;
+	private final static long serialVersionUID = 8536833427236986702L;
 	
 	
 	

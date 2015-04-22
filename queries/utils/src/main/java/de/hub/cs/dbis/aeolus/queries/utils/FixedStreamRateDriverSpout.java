@@ -36,7 +36,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * @author Matthias J. Sax
  */
 public class FixedStreamRateDriverSpout implements IRichSpout {
-	private static final long serialVersionUID = 5846769281188227304L;
+	private final static long serialVersionUID = 5846769281188227304L;
 	
 	/**
 	 * The original spout that produces output tuples.

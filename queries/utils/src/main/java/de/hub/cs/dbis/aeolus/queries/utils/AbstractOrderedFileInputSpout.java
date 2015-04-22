@@ -54,9 +54,9 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInputSpout<String> {
-	private static final long serialVersionUID = -4690963122364704481L;
+	private final static long serialVersionUID = -4690963122364704481L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
+	private final static Logger logger = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
 	
 	
 	
@@ -64,13 +64,13 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 * Can be used to specify an input file name (or prefix together with {@link #INPUT_FILE_SUFFIXES}). The
 	 * configuration value is expected to be of type {@link String}.
 	 */
-	public static final String INPUT_FILE_NAME = "OrderedFileInputSpout.input";
+	public final static String INPUT_FILE_NAME = "OrderedFileInputSpout.input";
 	/**
 	 * Can be used to specify a list of file name suffixes (one suffix for each input file) if multiple input files are
 	 * used. {@link #INPUT_FILE_NAME} is used as file prefix for each file. The configuration value is expected to be of
 	 * type {@link List}.
 	 */
-	public static final String INPUT_FILE_SUFFIXES = "OrderedFileInputSpout.inputFileSuffixes";
+	public final static String INPUT_FILE_SUFFIXES = "OrderedFileInputSpout.inputFileSuffixes";
 	/**
 	 * The prefix of all input file names.
 	 */
@@ -89,11 +89,24 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 	 */
 	protected Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
 	
+	
+	
+	/**
+	 * Creates a {@code AbstractOrderedFileInputSpout} which declares fields without explicit stream ID.
+	 */
 	public AbstractOrderedFileInputSpout() {}
 	
+	/**
+	 * Creates a {@code AbstractOrderedFileInputSpout} which declares fields on stream with ID {@code streamID}.
+	 * 
+	 * @param streamID
+	 *            the ID of the stream the fields ought to be declared on
+	 */
 	public AbstractOrderedFileInputSpout(String streamID) {
 		super(streamID);
 	}
+	
+	
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -110,18 +123,18 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			
 			for(int index = context.getThisTaskIndex(); index < suffixes.size(); index += componentTaskCount) {
 				try {
-					LOGGER.debug("Adding partition input file {}", this.prefix + suffixes.get(index));
+					logger.debug("Adding partition input file {}", this.prefix + suffixes.get(index));
 					this.inputFiles.add(new BufferedReader(new FileReader(this.prefix + suffixes.get(index))));
 				} catch(FileNotFoundException e) {
-					LOGGER.error("Input file <{}> not found.", this.prefix + suffixes.get(index));
+					logger.error("Input file <{}> not found.", this.prefix + suffixes.get(index));
 				}
 			}
 		} else {
 			try {
-				LOGGER.debug("Adding single input file {}", this.prefix);
+				logger.debug("Adding single input file {}", this.prefix);
 				this.inputFiles.add(new BufferedReader(new FileReader(this.prefix)));
 			} catch(FileNotFoundException e) {
-				LOGGER.error("Input file <{}> not found:", this.prefix);
+				logger.error("Input file <{}> not found:", this.prefix);
 			}
 		}
 		
@@ -149,36 +162,36 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 			String line = null;
 			Integer emitIndexAsObject = new Integer(this.emitIndex);
 			try {
-				LOGGER.trace("Read from partition {}", emitIndexAsObject);
+				logger.trace("Read from partition {}", emitIndexAsObject);
 				line = this.inputFiles.get(this.emitIndex).readLine();
 			} catch(IOException e) {
-				LOGGER.error(e.toString());
+				logger.error(e.toString());
 			}
 			if(line != null) {
 				try {
 					this.emitted = super.emitNextTuple(emitIndexAsObject, new Long(this.extractTimestamp(line)), line);
 					
-					LOGGER.trace("Emitted the following tuples {}", this.emitted);
+					logger.trace("Emitted the following tuples {}", this.emitted);
 					if(this.emitted.size() != 0) {
 						return;
 					}
 				} catch(ParseException e) {
-					LOGGER.error(e.toString());
+					logger.error(e.toString());
 				}
 			} else {
-				LOGGER.debug("Try to close empty partition {}", emitIndexAsObject);
+				logger.debug("Try to close empty partition {}", emitIndexAsObject);
 				if(super.closePartition(emitIndexAsObject)) {
 					try {
 						this.inputFiles.get(this.emitIndex).close();
 					} catch(IOException e) {
-						LOGGER.error("Closing input file reader failed.", e);
+						logger.error("Closing input file reader failed.", e);
 					}
 					this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
 																// super.emitNextTuple
 				} else {
 					// we cannot put any more data,
 					this.emitted = super.emitNextTuple(null, null, null);
-					LOGGER.trace("Emitted the following tuples {}", this.emitted);
+					logger.trace("Emitted the following tuples {}", this.emitted);
 				}
 			}
 		}
@@ -205,7 +218,7 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 					reader.close();
 				}
 			} catch(IOException e) {
-				LOGGER.error("Closing input file reader failed.", e);
+				logger.error("Closing input file reader failed.", e);
 			}
 		}
 	}

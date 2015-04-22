@@ -47,7 +47,7 @@ import backtype.storm.utils.Utils;
  */
 // TODO add .emitDirect(...) support
 public class ForwardBolt implements IRichBolt {
-	private static final long serialVersionUID = -2047329782139913124L;
+	private final static long serialVersionUID = -2047329782139913124L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(ForwardBolt.class);
 	

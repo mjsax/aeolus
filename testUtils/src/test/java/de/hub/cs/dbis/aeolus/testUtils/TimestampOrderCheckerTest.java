@@ -52,9 +52,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
-import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
-import de.hub.cs.dbis.aeolus.testUtils.TimestampOrderChecker;
 
 
 
@@ -66,7 +63,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TimestampOrderChecker;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LoggerFactory.class})
 public class TimestampOrderCheckerTest {
-	private static final Map<String, Object> boltConfigStatic = new HashMap<String, Object>();
+	private final static Map<String, Object> boltConfigStatic = new HashMap<String, Object>();
 	private static IRichBolt boltMockStatic;
 	private static Logger loggerMockStatic;
 	

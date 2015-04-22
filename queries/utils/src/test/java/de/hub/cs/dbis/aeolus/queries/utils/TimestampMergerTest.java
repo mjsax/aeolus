@@ -69,7 +69,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TimestampOrderChecker;
  */
 @RunWith(PowerMockRunner.class)
 public class TimestampMergerTest {
-	private static final Map<String, Object> boltConfig = new HashMap<String, Object>();
+	private final static Map<String, Object> boltConfig = new HashMap<String, Object>();
 	
 	private static TimestampOrderChecker checker;
 	private static IRichBolt boltMockStatic;

@@ -46,20 +46,20 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public abstract class AbstractFileOutputBolt implements IRichBolt {
-	private static final long serialVersionUID = 5082995927274164044L;
+	private final static long serialVersionUID = 5082995927274164044L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractFileOutputBolt.class);
+	private final static Logger logger = LoggerFactory.getLogger(AbstractFileOutputBolt.class);
 	
 	
 	
 	/**
 	 * Can be used to specify an output file name. The configuration value is expected to be of type {@link String}.
 	 */
-	public static final String OUTPUT_FILE_NAME = "FileOutputBolt.outputFile";
+	public final static String OUTPUT_FILE_NAME = "FileOutputBolt.outputFile";
 	/**
 	 * Can be used to specify an output directory. The configuration value is expected to be of type {@link String}.
 	 */
-	public static final String OUTPUT_DIR_NAME = "FileOutputBolt.outputDir";
+	public final static String OUTPUT_DIR_NAME = "FileOutputBolt.outputDir";
 	/**
 	 * The name of the output file.
 	 */
@@ -94,7 +94,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 		try {
 			this.writer = new BufferedWriter(new FileWriter(this.outputDirName + File.separator + this.outputFileName));
 		} catch(IOException e) {
-			LOGGER.error("Could not open output file <{}> for writing.", this.outputDirName + File.separator
+			logger.error("Could not open output file <{}> for writing.", this.outputDirName + File.separator
 				+ this.outputFileName);
 		}
 		
@@ -107,7 +107,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 			try {
 				this.writer.write(this.tupleToString(input));
 			} catch(IOException e) {
-				LOGGER.error("Could not output tuple to output file: {}", input);
+				logger.error("Could not output tuple to output file: {}", input);
 			}
 		}
 		this.collector.ack(input);
@@ -132,7 +132,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 			try {
 				this.writer.close();
 			} catch(IOException e) {
-				LOGGER.error(e.getMessage());
+				logger.error(e.getMessage());
 			}
 		}
 	}

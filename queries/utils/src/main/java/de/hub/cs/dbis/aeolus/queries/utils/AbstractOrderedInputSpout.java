@@ -59,9 +59,9 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
-	private static final long serialVersionUID = 6224448887936832190L;
+	private final static long serialVersionUID = 6224448887936832190L;
 	
-	private final static Logger LOGGER = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
+	private final static Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
 	
 	
 	
@@ -69,7 +69,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 * Can be used to specify the number of input partitions that are available (default value is one). The
 	 * configuration value is expected to be of type {@link Integer}.
 	 */
-	public static final String NUMBER_OF_PARTITIONS = "OrderedInputSpout.partitions";
+	public final static String NUMBER_OF_PARTITIONS = "OrderedInputSpout.partitions";
 	/**
 	 * The merger to be used.
 	 */
@@ -113,7 +113,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		if(numPartitions != null) {
 			numberOfPartitons = numPartitions.intValue();
 		}
-		LOGGER.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
+		logger.debug("Number of configured partitions: {}", new Integer(numberOfPartitons));
 		
 		Integer[] partitionIds = new Integer[numberOfPartitons];
 		for(int i = 0; i < numberOfPartitons; ++i) {
@@ -141,7 +141,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 */
 	// TODO: add support for non-default and/or multiple output streams (what about directEmit(...)?)
 	protected final Map<Values, List<Integer>> emitNextTuple(Integer index, Long timestamp, T tuple) {
-		LOGGER.trace("Received new output tuple (partitionId, ts, tuple): {}, {}, {}", index, timestamp, tuple);
+		logger.trace("Received new output tuple (partitionId, ts, tuple): {}, {}, {}", index, timestamp, tuple);
 		if(index != null && timestamp != null && tuple != null) {
 			this.merger.addTuple(index, new Values(timestamp, tuple));
 		}
@@ -149,7 +149,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 		Values t;
 		Map<Values, List<Integer>> emitted = new HashMap<Values, List<Integer>>();
 		while((t = this.merger.getNextTuple()) != null) {
-			LOGGER.trace("Emitting tuple: {}", t);
+			logger.trace("Emitting tuple: {}", t);
 			emitted.put(t, this.collector.emit(t));
 		}
 		

@@ -35,12 +35,12 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class FileSinkBolt extends AbstractFileOutputBolt {
-	private static final long serialVersionUID = -3429907305973973314L;
+	private final static long serialVersionUID = -3429907305973973314L;
 	
 	/**
 	 * String representation of an {@code null} attribute.
 	 */
-	private static final String nullAttribute = "null";
+	private final static String nullAttribute = "null";
 	
 	/**
 	 * The name of the output file.
@@ -76,14 +76,14 @@ public class FileSinkBolt extends AbstractFileOutputBolt {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
-		String fileName = (String)stormConf.get(OUTPUT_FILE_NAME);
+		String fileName = (String)stormConf.get(AbstractFileOutputBolt.OUTPUT_FILE_NAME);
 		if(fileName == null) {
-			stormConf.put(OUTPUT_FILE_NAME, this.outputFileName);
+			stormConf.put(AbstractFileOutputBolt.OUTPUT_FILE_NAME, this.outputFileName);
 		}
 		
-		String dirName = (String)stormConf.get(OUTPUT_DIR_NAME);
+		String dirName = (String)stormConf.get(AbstractFileOutputBolt.OUTPUT_DIR_NAME);
 		if(dirName == null && this.outputDirName != null) {
-			stormConf.put(OUTPUT_DIR_NAME, this.outputDirName);
+			stormConf.put(AbstractFileOutputBolt.OUTPUT_DIR_NAME, this.outputDirName);
 		}
 		
 		super.prepare(stormConf, context, collector);

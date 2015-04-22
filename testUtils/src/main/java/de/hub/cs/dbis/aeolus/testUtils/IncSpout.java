@@ -48,8 +48,8 @@ import backtype.storm.utils.Utils;
  */
 // TODO add acking/failing support
 public class IncSpout implements IRichSpout {
-	private static final long serialVersionUID = -2903431146131196173L;
-	private final static Logger LOGGER = LoggerFactory.getLogger(IncSpout.class);
+	private final static long serialVersionUID = -2903431146131196173L;
+	private final static Logger logger = LoggerFactory.getLogger(IncSpout.class);
 	
 	private final Random r;
 	
@@ -183,7 +183,7 @@ public class IncSpout implements IRichSpout {
 			
 			for(String stream : this.outputStreams) {
 				List<Integer> receiverIds = this.collector.emit(stream, tuple);
-				LOGGER.trace("emitted tuple {} to output stream {} to receiver tasks with IDs {}", tuple, stream,
+				logger.trace("emitted tuple {} to output stream {} to receiver tasks with IDs {}", tuple, stream,
 					receiverIds);
 			}
 			

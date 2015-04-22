@@ -40,9 +40,9 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class TimestampOrderChecker implements IRichBolt {
-	private static final long serialVersionUID = -6266187713977343965L;
+	private final static long serialVersionUID = -6266187713977343965L;
 	
-	private static final Logger logger = LoggerFactory.getLogger(TimestampOrderChecker.class);
+	private final static Logger logger = LoggerFactory.getLogger(TimestampOrderChecker.class);
 	
 	
 	

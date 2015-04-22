@@ -42,7 +42,7 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class ThroughputCounterBolt implements IRichBolt {
-	private static final long serialVersionUID = -2588575856564324599L;
+	private final static long serialVersionUID = -2588575856564324599L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(ThroughputCounterBolt.class);
 	

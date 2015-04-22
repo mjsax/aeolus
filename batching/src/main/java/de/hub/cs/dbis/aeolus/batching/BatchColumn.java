@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Matthias J. Sax
  */
 class BatchColumn extends ArrayList<Object> {
-	private static final long serialVersionUID = -2215147192473477343L;
+	private final static long serialVersionUID = -2215147192473477343L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(BatchColumn.class);
 	

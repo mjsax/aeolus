@@ -47,7 +47,7 @@ import backtype.storm.tuple.TupleImpl;
  * @author Matthias J. Sax
  */
 public class InputDebatcher implements IRichBolt {
-	private static final long serialVersionUID = 7781347435499103691L;
+	private final static long serialVersionUID = 7781347435499103691L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(InputDebatcher.class);
 	

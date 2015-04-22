@@ -46,9 +46,9 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class BoltOutputBatcher implements IRichBolt {
-	private static final long serialVersionUID = 6453060658895879104L;
+	private final static long serialVersionUID = 6453060658895879104L;
 	
-	private final Logger logger = LoggerFactory.getLogger(BoltOutputBatcher.class);
+	private final static Logger logger = LoggerFactory.getLogger(BoltOutputBatcher.class);
 	
 	/**
 	 * The used {@link BoltBatchCollector} that wraps the actual {@link OutputCollector}.
@@ -75,7 +75,7 @@ public class BoltOutputBatcher implements IRichBolt {
 	 *            The size of the output batches to be built.
 	 */
 	BoltOutputBatcher(IRichBolt bolt, int batchSize) {
-		this.logger.debug("batchSize: {}", new Integer(batchSize));
+		logger.debug("batchSize: {}", new Integer(batchSize));
 		this.wrappedBolt = bolt;
 		this.batchSize = batchSize;
 	}

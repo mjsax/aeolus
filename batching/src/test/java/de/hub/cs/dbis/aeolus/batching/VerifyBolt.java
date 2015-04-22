@@ -43,12 +43,12 @@ import backtype.storm.tuple.Tuple;
  * @author Matthias J. Sax
  */
 public class VerifyBolt implements IRichBolt {
-	private static final long serialVersionUID = -2047329782139913124L;
+	private final static long serialVersionUID = -2047329782139913124L;
 	
-	private static final Logger logger = LoggerFactory.getLogger(VerifyBolt.class);
+	private final static Logger logger = LoggerFactory.getLogger(VerifyBolt.class);
 	
-	public static final String SPOUT_ID = "noBatchingSpout";
-	public static final String BATCHING_SPOUT_ID = "batchingSpout";
+	public final static String SPOUT_ID = "noBatchingSpout";
+	public final static String BATCHING_SPOUT_ID = "batchingSpout";
 	
 	private final Fields tupleSchema;
 	private final Fields partitions;

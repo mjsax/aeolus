@@ -41,7 +41,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  */
 // TODO: add support to specify timestamp attribute by name
 public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichSpout {
-	private static final long serialVersionUID = -2459573797603618679L;
+	private final static long serialVersionUID = -2459573797603618679L;
 	
 	
 	

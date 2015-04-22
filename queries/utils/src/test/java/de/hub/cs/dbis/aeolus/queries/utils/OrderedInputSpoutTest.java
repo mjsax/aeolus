@@ -60,7 +60,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
@@ -74,65 +73,6 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
  */
 @RunWith(PowerMockRunner.class)
 public class OrderedInputSpoutTest {
-	
-	private class TestOrderedInputSpout extends AbstractOrderedInputSpout<String> {
-		private static final long serialVersionUID = -6722924299495546729L;
-		
-		private final List<Deque<String>> data;
-		private final Random rr;
-		
-		Map<Values, List<Integer>> emitted;
-		
-		TestOrderedInputSpout(List<Deque<String>> data, Random rr) {
-			this.data = data;
-			this.rr = rr;
-		}
-		
-		public TestOrderedInputSpout(List<Deque<String>> data, Random rr, String streamID) {
-			super(streamID);
-			this.data = data;
-			this.rr = rr;
-		}
-		
-		
-		@Override
-		public void nextTuple() {
-			int index = this.rr.nextInt(this.data.size());
-			int old = index;
-			while(this.data.get(index).size() == 0) {
-				index = (index + 1) % this.data.size();
-				if(index == old) {
-					this.emitted = super.emitNextTuple(null, null, null);
-					return;
-				}
-			}
-			String line = this.data.get(index).removeFirst();
-			this.emitted = super.emitNextTuple(new Integer(index), new Long(Long.parseLong(line.trim())), line);
-		}
-		
-		@Override
-		public void close() {}
-		
-		@Override
-		public void activate() {}
-		
-		@Override
-		public void deactivate() {}
-		
-		@Override
-		public void ack(Object msgId) {}
-		
-		@Override
-		public void fail(Object msgId) {}
-		
-		@Override
-		public Map<String, Object> getComponentConfiguration() {
-			return null;
-		}
-		
-	}
-	
-	
 	
 	private long seed;
 	private Random r;

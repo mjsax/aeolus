@@ -27,8 +27,8 @@ import backtype.storm.tuple.Tuple;
 /**
  * @author Matthias J. Sax
  */
-public class TestFileOutputBolt extends AbstractFileOutputBolt {
-	private static final long serialVersionUID = -956984089329568377L;
+class TestFileOutputBolt extends AbstractFileOutputBolt {
+	private final static long serialVersionUID = -956984089329568377L;
 	
 	@Override
 	protected String tupleToString(Tuple t) {

@@ -45,7 +45,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * @author Matthias J. Sax
  */
 public class SpoutOutputBatcher implements IRichSpout {
-	private static final long serialVersionUID = -8627934412821417370L;
+	private final static long serialVersionUID = -8627934412821417370L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(SpoutOutputBatcher.class);
 	

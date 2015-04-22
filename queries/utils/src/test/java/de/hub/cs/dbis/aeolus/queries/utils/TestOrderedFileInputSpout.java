@@ -29,7 +29,7 @@ import java.util.Map;
  * @author Matthias J. Sax
  */
 class TestOrderedFileInputSpout extends AbstractOrderedFileInputSpout {
-	private static final long serialVersionUID = -5336858069313450395L;
+	private final static long serialVersionUID = -5336858069313450395L;
 	
 	@Override
 	protected long extractTimestamp(String line) throws ParseException {
