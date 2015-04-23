@@ -125,9 +125,11 @@ class ThroughputCounterOutputCollector extends OutputCollector {
 	 * 
 	 * @param ts
 	 *            The timestamp when this report is triggered.
+	 * @param factor
+	 *            The normalization factor to get reported values "per second".
 	 */
-	void reportCount(long ts) {
-		this.counter.reportCount(ts);
+	void reportCount(long ts, double factor) {
+		this.counter.reportCount(ts, factor);
 	}
 	
 }

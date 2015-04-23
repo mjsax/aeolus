@@ -159,8 +159,10 @@ public abstract class AbstractThroughputCounter {
 	 * 
 	 * @param ts
 	 *            The timestamp when this report is triggered.
+	 * @param factor
+	 *            The normalization factor for reported values "per second".
 	 */
-	synchronized void reportCount(long ts) {
+	synchronized void reportCount(long ts, double factor) {
 		long overallDelta = 0;
 		
 		for(Entry<String, Counter> count : this.deltaCounter.entrySet()) {
@@ -174,7 +176,8 @@ public abstract class AbstractThroughputCounter {
 			}
 			c.counter += delta.counter;
 			overallDelta += delta.counter;
-			this.doEmit(new Values(new Long(ts), streamId, new Long(c.counter), new Long(delta.counter)));
+			this.doEmit(new Values(new Long(ts), streamId, new Long(c.counter),
+				new Long((long)(delta.counter / factor))));
 			
 			count.setValue(new Counter());
 		}
@@ -187,7 +190,7 @@ public abstract class AbstractThroughputCounter {
 			id = "out";
 		}
 		
-		this.doEmit(new Values(new Long(ts), id, new Long(this.overallCount), new Long(overallDelta)));
+		this.doEmit(new Values(new Long(ts), id, new Long(this.overallCount), new Long((long)(overallDelta / factor))));
 	}
 	
 	/**

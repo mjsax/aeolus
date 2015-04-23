@@ -35,10 +35,13 @@ abstract class AbstractReportingThread extends Thread {
 	 */
 	private final long interval;
 	/**
+	 * The normalization factor to a "per seconds" basis.
+	 */
+	private final double factor;
+	/**
 	 * The timestamp for the next reporting.
 	 */
 	private long nextReportTime;
-	
 	
 	
 	/**
@@ -49,6 +52,7 @@ abstract class AbstractReportingThread extends Thread {
 	 */
 	public AbstractReportingThread(long interval) {
 		this.interval = interval;
+		this.factor = interval / 1000.0;
 	}
 	
 	
@@ -61,7 +65,7 @@ abstract class AbstractReportingThread extends Thread {
 			while(System.currentTimeMillis() < this.nextReportTime) {
 				// busy wait
 			}
-			this.doReport(this.nextReportTime);
+			this.doReport(this.nextReportTime, this.factor);
 			this.nextReportTime += this.interval;
 		}
 	}
@@ -71,7 +75,9 @@ abstract class AbstractReportingThread extends Thread {
 	 * 
 	 * @param reportTimestamp
 	 *            The current reporting timestamp.
+	 * @param factor
+	 *            The normalization factor to get reported values "per second".
 	 */
-	abstract void doReport(long reportTimestamp);
+	abstract void doReport(long reportTimestamp, @SuppressWarnings("hiding") double factor);
 	
 }

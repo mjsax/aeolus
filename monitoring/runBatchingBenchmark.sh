@@ -5,7 +5,9 @@ do
   for batchSize in 0 1 2 3 4 5 6 7 8 9 10
   do
     echo "Run with output rate of $outputRate tps and batches of $batchSize tuples."
+    # ./runSingleBatchingBenchmark.sh <sampleInterval> <numberOfSamples> <dataRate> <batchSize>
     bash runSingleBatchingBenchmark.sh 1 30 $outputRate $batchSize
+    # bash runSingleBatchingBenchmark.sh 2 15 $outputRate $batchSize
     if [ ! $? -eq 0 ]
     then
       exit -1

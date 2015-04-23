@@ -19,6 +19,7 @@
 package de.hub.cs.dbis.aeolus.queries.utils;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 import backtype.storm.task.OutputCollector;
@@ -30,7 +31,8 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link FileSinkBolt}
+ * {@link FileSinkBolt} writes all received tuples in CSV format to an output file. Each line of the output file consist
+ * of a single tuple. If a tuple contains zero attributes, it is represented as {@code NULL} (in capital letters).
  * 
  * @author Matthias J. Sax
  */
@@ -76,17 +78,18 @@ public class FileSinkBolt extends AbstractFileOutputBolt {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
-		String fileName = (String)stormConf.get(AbstractFileOutputBolt.OUTPUT_FILE_NAME);
+		HashMap<Object, Object> conf = new HashMap<Object, Object>(stormConf);
+		String fileName = (String)conf.get(AbstractFileOutputBolt.OUTPUT_FILE_NAME);
 		if(fileName == null) {
-			stormConf.put(AbstractFileOutputBolt.OUTPUT_FILE_NAME, this.outputFileName);
+			conf.put(AbstractFileOutputBolt.OUTPUT_FILE_NAME, this.outputFileName);
 		}
 		
-		String dirName = (String)stormConf.get(AbstractFileOutputBolt.OUTPUT_DIR_NAME);
+		String dirName = (String)conf.get(AbstractFileOutputBolt.OUTPUT_DIR_NAME);
 		if(dirName == null && this.outputDirName != null) {
-			stormConf.put(AbstractFileOutputBolt.OUTPUT_DIR_NAME, this.outputDirName);
+			conf.put(AbstractFileOutputBolt.OUTPUT_DIR_NAME, this.outputDirName);
 		}
 		
-		super.prepare(stormConf, context, collector);
+		super.prepare(conf, context, collector);
 	}
 	
 	@Override

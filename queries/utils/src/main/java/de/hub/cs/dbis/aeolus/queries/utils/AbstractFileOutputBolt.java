@@ -101,11 +101,35 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 		this.collector = collector;
 	}
 	
+	/**
+	 * Writes the given tuple to disc (see {@link #tupleToString(Tuple)}.
+	 * 
+	 * @param input
+	 *            The input tuple to be processed.
+	 */
 	@Override
 	public void execute(Tuple input) {
 		if(this.writer != null) {
 			try {
 				this.writer.write(this.tupleToString(input));
+			} catch(IOException e) {
+				logger.error("Could not output tuple to output file: {}", input);
+			}
+		}
+		this.collector.ack(input);
+	}
+	
+	/**
+	 * Same as {@link #execute(Tuple)}, but flushed the written output data to disc immediately.
+	 * 
+	 * @param input
+	 *            The input tuple to be processed.
+	 */
+	public void executeAndFlush(Tuple input) {
+		if(this.writer != null) {
+			try {
+				this.writer.write(this.tupleToString(input));
+				this.writer.flush();
 			} catch(IOException e) {
 				logger.error("Could not output tuple to output file: {}", input);
 			}

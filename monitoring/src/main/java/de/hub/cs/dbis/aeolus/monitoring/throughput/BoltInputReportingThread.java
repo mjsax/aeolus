@@ -54,8 +54,8 @@ class BoltInputReportingThread extends AbstractReportingThread {
 	 * Reporting is do via {@link BoltThroughputCounter#reportCount(long)}.
 	 */
 	@Override
-	void doReport(long reportTimestamp) {
-		this.counter.reportCount(reportTimestamp);
+	void doReport(long reportTimestamp, double factor) {
+		this.counter.reportCount(reportTimestamp, factor);
 	}
 	
 }

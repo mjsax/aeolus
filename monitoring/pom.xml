@@ -66,6 +66,7 @@
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <includes>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class,
                             de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class,
+                            de/hub/cs/dbis/aeolus/queries/utils/FileFlushSinkBolt.class,
                             de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</includes>
                 </artifactItem>
                 <artifactItem>
@@ -117,6 +118,7 @@
                 <include>de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</include>
                 <include>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class</include>
                 <include>de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class</include>
+                <include>de/hub/cs/dbis/aeolus/queries/utils/FileFlushSinkBolt.class</include>
                 <include>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</include>
                 <include>de/hub/cs/dbis/aeolus/batching/*.class</include>
               </includes>

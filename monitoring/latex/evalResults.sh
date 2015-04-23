@@ -60,7 +60,7 @@ do
     else
       # add sinlge plot
       echo \
-"\\addplot table[x expr=\\coordindex, y index=0] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
+"\\addplot table[x index=0, y index=1] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
     fi
   done
 
@@ -92,7 +92,7 @@ do
       do
         # add sinlge plot
         echo \
-"\\addplot table[x expr=\\coordindex, y index=0] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
+"\\addplot table[x index=0, y index=1] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
       done
     done
 

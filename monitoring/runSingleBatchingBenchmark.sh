@@ -37,6 +37,7 @@ tmpFile=/tmp/aeolus-single-benchmark.tmp
 # deploy topology and retrieve host name of machine executing spout
 storm jar target/monitoring-$aeolusVersion-microbenchmarks.jar \
     -Dlogback.configurationFile=src/main/resources/logback.xml \
+    -Daeolus.microbenchmarks.reportingInterval=$(($1 * 1000)) \
     -Daeolus.microbenchmarks.dataRate=$3 \
     -Daeolus.microbenchmarks.batchSize=$4 \
     de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.MeasureOutputDataRate \
@@ -94,11 +95,30 @@ ssh $spoutHost \
      then
        break
      fi
-     index=\$((\$index + 1))
+     index=\$((index + 1))
    done
-   cat $sampleOutputFile | grep -e '^NET,' | cut -d, -f 6
+   cat $sampleOutputFile | grep -e '^NET,' | cut -d, -f \$index
    rm $sampleOutputFile
-" > $resultOutputFile
+" > ${resultOutputFile}.tmp
+
+# post-processing to add TS to each line
+TS=__HEADER__
+for line in `cat ${resultOutputFile}.tmp`
+do
+  if [ $TS = __HEADER__ ]
+  then
+    # header line
+    echo "ts $line" > ${resultOutputFile}
+    TS=0
+  else
+    # data line
+    echo "$TS $line" >> ${resultOutputFile}
+    TS=$((TS + sampleInterval))
+  fi
+done
+rm ${resultOutputFile}.tmp
+
+# get Aeolus monitoring data
 scp $spoutStatsHost:$spoutStatsFile $localDir/$counterFile-spout-$3-$4.stats
 scp $sinkStatsHost:$sinkStatsFile $localDir/$counterFile-sink-$3-$4.stats
 

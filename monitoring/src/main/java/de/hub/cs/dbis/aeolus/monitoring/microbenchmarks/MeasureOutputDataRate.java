@@ -52,7 +52,7 @@ import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterBolt;
 import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterSpout;
 import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
 import de.hub.cs.dbis.aeolus.monitoring.utils.ConfigReader;
-import de.hub.cs.dbis.aeolus.queries.utils.FileSinkBolt;
+import de.hub.cs.dbis.aeolus.queries.utils.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.queries.utils.FixedStreamRateDriverSpout;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 
@@ -184,29 +184,30 @@ public class MeasureOutputDataRate {
 		if(submitOrTerminate) {
 			final double dataRate = Double.parseDouble(System.getProperty("aeolus.microbenchmarks.dataRate"));
 			final int batchSize = Integer.parseInt(System.getProperty("aeolus.microbenchmarks.batchSize"));
+			final int interval = Integer.parseInt(System.getProperty("aeolus.microbenchmarks.reportingInterval"));
 			
 			TopologyBuilder builder = new TopologyBuilder();
 			
 			// spout
 			IRichSpout spout = new ThroughputCounterSpout(new FixedStreamRateDriverSpout(new SchemaSpout(), dataRate),
-				1000);
+				interval);
 			if(batchSize > 0) {
 				spout = new SpoutOutputBatcher(spout, batchSize);
 			}
 			builder.setSpout(spoutId, spout);
 			
 			// sink
-			IRichBolt sink = new ThroughputCounterBolt(new ForwardBolt(), 1000, true);
+			IRichBolt sink = new ThroughputCounterBolt(new ForwardBolt(), interval, true);
 			if(batchSize > 0) {
 				sink = new InputDebatcher(sink);
 			}
 			builder.setBolt(sinkId, sink).shuffleGrouping(spoutId);
 			
 			// statistics
-			builder.setBolt(spoutStatisticsId, new InputDebatcher(new FileSinkBolt(spoutStatsFile))).shuffleGrouping(
-				spoutId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
-			builder.setBolt(sinkStatisticsId, new InputDebatcher(new FileSinkBolt(sinkStatsFile))).shuffleGrouping(
-				sinkId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+			builder.setBolt(spoutStatisticsId, new InputDebatcher(new FileFlushSinkBolt(spoutStatsFile)))
+				.shuffleGrouping(spoutId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+			builder.setBolt(sinkStatisticsId, new InputDebatcher(new FileFlushSinkBolt(sinkStatsFile)))
+				.shuffleGrouping(sinkId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
 			
 			stormConfig.setNumWorkers(4);
 			

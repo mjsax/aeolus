@@ -56,7 +56,7 @@ public class FileSinkBoltTest {
 	
 	
 	@Test
-	public void testConstructorSimpleFileName() {
+	public void testConstructorSimpleFileName() throws Exception {
 		String filename = "simple.file";
 		
 		FileSinkBolt bolt = new FileSinkBolt(filename);
@@ -64,12 +64,11 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		Assert.assertEquals(filename, stormConf.get(FileSinkBolt.OUTPUT_FILE_NAME));
-		Assert.assertEquals(null, stormConf.get(FileSinkBolt.OUTPUT_DIR_NAME));
+		PowerMockito.verifyNew(FileWriter.class).withArguments("." + File.separator + filename);
 	}
 	
 	@Test
-	public void testConstructorRelativePath() {
+	public void testConstructorRelativePath() throws Exception {
 		String file = "simple.file";
 		String dir = ".." + File.separator + "directory1" + File.separator + "directory2";
 		String filename = dir + File.separator + file;
@@ -79,12 +78,11 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		Assert.assertEquals(file, stormConf.get(FileSinkBolt.OUTPUT_FILE_NAME));
-		Assert.assertEquals(dir, stormConf.get(FileSinkBolt.OUTPUT_DIR_NAME));
+		PowerMockito.verifyNew(FileWriter.class).withArguments(filename);
 	}
 	
 	@Test
-	public void testConstructorAbsolutePath() {
+	public void testConstructorAbsolutePath() throws Exception {
 		String file = "simple.file";
 		String dir = File.separator + "directory1" + File.separator + "directory2";
 		String filename = dir + File.separator + file;
@@ -94,8 +92,7 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		Assert.assertEquals(file, stormConf.get(FileSinkBolt.OUTPUT_FILE_NAME));
-		Assert.assertEquals(dir, stormConf.get(FileSinkBolt.OUTPUT_DIR_NAME));
+		PowerMockito.verifyNew(FileWriter.class).withArguments(filename);
 	}
 	
 	@Test
