@@ -79,7 +79,7 @@ public class InputDebatcherTest {
 		TopologyContext context = mock(TopologyContext.class);
 		bolt.prepare(conf, context, null);
 		
-		verify(boltMock).prepare(same(conf), same(context), any(BoltBatchCollector.class));
+		verify(boltMock).prepare(same(conf), same(context), any(BatchOutputCollector.class));
 	}
 	
 	@Test

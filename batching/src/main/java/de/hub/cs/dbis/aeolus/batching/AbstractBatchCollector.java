@@ -41,21 +41,20 @@ import backtype.storm.tuple.Tuple;
 
 /**
  * {@link AbstractBatchCollector} buffers emitted tuples in batches and emits full batches. It is used by
- * {@link SpoutBatchCollector} and {@link BoltBatchCollector}.
+ * {@link BatchSpoutOutputCollector} and {@link BatchOutputCollector}.
  * 
  * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as
  * jar-file. This jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
  * 
  * @author Matthias J. Sax
  */
-// TODO: what about batches of different sizes (for different output streams? or for different consumers?)
 abstract class AbstractBatchCollector {
 	protected final static Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);
 	
 	/**
-	 * The size of the output batches.
+	 * The sizes of the output batches for each output stream.
 	 */
-	private final int batchSize;
+	private final Map<String, Integer> batchSizes;
 	/**
 	 * The number of the attributes of the output schema.
 	 */
@@ -108,12 +107,28 @@ abstract class AbstractBatchCollector {
 	 * @param context
 	 *            The current runtime environment.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
 	AbstractBatchCollector(TopologyContext context, int batchSize) {
-		logger.trace("batchSize: {}", new Integer(batchSize));
+		this(context, new SingleBatchSizeMap(batchSize));
+	}
+	
+	/**
+	 * Creates a new {@link AbstractBatchCollector} that emits batches of different size.
+	 * 
+	 * @param context
+	 *            The current runtime environment.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	AbstractBatchCollector(TopologyContext context, Map<String, Integer> batchSizes) {
+		this(context, new HashMap<String, Integer>(batchSizes));
+	}
+	
+	private AbstractBatchCollector(TopologyContext context, HashMap<String, Integer> batchSizes) {
+		logger.trace("batchSizes: {}", batchSizes);
 		
-		this.batchSize = batchSize;
+		this.batchSizes = batchSizes;
 		this.topologyContext = context;
 		this.componentId = context.getThisComponentId();
 		logger.trace("this-id: {}", this.componentId);
@@ -145,7 +160,7 @@ abstract class AbstractBatchCollector {
 						this.directOutputBuffers.put(streamId, outputBatches);
 					}
 					for(Integer taskId : taskIds) {
-						outputBatches.put(taskId, new Batch(batchSize, numAttributes));
+						outputBatches.put(taskId, new Batch(this.batchSizes.get(streamId).intValue(), numAttributes));
 					}
 					
 					numberOfBatches = 0; // mark as direct output stream
@@ -165,7 +180,7 @@ abstract class AbstractBatchCollector {
 					
 					if(numberOfBatches != 0) {
 						// TODO we could reduce number of output buffers, if two logical consumers use the same output
-						// field for partitioning AND have the same dop
+						// fields for partitioning AND have the same dop
 						this.fieldsGroupingReceivers.add(receiverId);
 						logger.trace("fieldsGrouping");
 						
@@ -190,7 +205,7 @@ abstract class AbstractBatchCollector {
 										// already set up
 				Batch[] batches = new Batch[numberOfBatches];
 				for(int i = 0; i < numberOfBatches; ++i) {
-					batches[i] = new Batch(batchSize, numAttributes);
+					batches[i] = new Batch(this.batchSizes.get(streamId).intValue(), numAttributes);
 				}
 				this.outputBuffers.put(streamId, batches);
 			}
@@ -243,8 +258,8 @@ abstract class AbstractBatchCollector {
 				
 				if(buffer.isFull()) {
 					this.batchEmit(streamId, null, buffer, null);
-					this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSize, this.numberOfAttributes
-						.get(streamId).intValue());
+					this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSizes.get(streamId).intValue(),
+						this.numberOfAttributes.get(streamId).intValue());
 				}
 			}
 		}
@@ -281,8 +296,10 @@ abstract class AbstractBatchCollector {
 				
 				if(buffer.isFull()) {
 					this.batchEmitDirect(taskId, streamId, null, buffer, null);
-					this.directOutputBuffers.get(streamId).put(tid,
-						new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+					this.directOutputBuffers.get(streamId).put(
+						tid,
+						new Batch(this.batchSizes.get(streamId).intValue(), this.numberOfAttributes.get(streamId)
+							.intValue()));
 				}
 			}
 		}
@@ -297,8 +314,8 @@ abstract class AbstractBatchCollector {
 				Batch batch = this.outputBuffers.get(streamId)[i];
 				if(!batch.isEmpty()) {
 					this.batchEmit(streamId, null, batch, null);
-					this.outputBuffers.get(streamId)[i] = new Batch(this.batchSize, this.numberOfAttributes.get(
-						streamId).intValue());
+					this.outputBuffers.get(streamId)[i] = new Batch(this.batchSizes.get(streamId).intValue(),
+						this.numberOfAttributes.get(streamId).intValue());
 				}
 			}
 		}
@@ -308,8 +325,10 @@ abstract class AbstractBatchCollector {
 				Batch batch = this.directOutputBuffers.get(streamId).get(taskId);
 				if(!batch.isEmpty()) {
 					this.batchEmitDirect(taskId.intValue(), streamId, null, batch, null);
-					this.directOutputBuffers.get(streamId).put(taskId,
-						new Batch(this.batchSize, this.numberOfAttributes.get(streamId).intValue()));
+					this.directOutputBuffers.get(streamId).put(
+						taskId,
+						new Batch(this.batchSizes.get(streamId).intValue(), this.numberOfAttributes.get(streamId)
+							.intValue()));
 				}
 				
 			}

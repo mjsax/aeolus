@@ -20,9 +20,6 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.ArrayList;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 
 
@@ -34,8 +31,6 @@ import org.slf4j.LoggerFactory;
  */
 class BatchColumn extends ArrayList<Object> {
 	private final static long serialVersionUID = -2215147192473477343L;
-	
-	private final static Logger logger = LoggerFactory.getLogger(BatchColumn.class);
 	
 	
 	
@@ -55,8 +50,6 @@ class BatchColumn extends ArrayList<Object> {
 	public BatchColumn(int batchSize) {
 		super(batchSize);
 		assert (batchSize > 0);
-		
-		logger.trace("Instantiating a BatchColumn of size {}.", new Integer(batchSize));
 	}
 	
 	/**

@@ -20,9 +20,6 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -48,18 +45,20 @@ import backtype.storm.tuple.Tuple;
 public class BoltOutputBatcher implements IRichBolt {
 	private final static long serialVersionUID = 6453060658895879104L;
 	
-	private final static Logger logger = LoggerFactory.getLogger(BoltOutputBatcher.class);
-	
 	/**
-	 * The used {@link BoltBatchCollector} that wraps the actual {@link OutputCollector}.
+	 * The used {@link BatchOutputCollector} that wraps the actual {@link OutputCollector}.
 	 */
-	private BoltBatchCollector batchCollector;
+	private BatchOutputCollector batchCollector;
 	/**
 	 * The bolt that is wrapped.
 	 */
 	private final IRichBolt wrappedBolt;
 	/**
-	 * The size of the output batches to be sent.
+	 * The sizes of the output batches for each output stream.
+	 */
+	private final Map<String, Integer> batchSizes;
+	/**
+	 * The size of the output batches (for all output streams).
 	 */
 	private final int batchSize;
 	
@@ -72,19 +71,38 @@ public class BoltOutputBatcher implements IRichBolt {
 	 * @param bolt
 	 *            The original bolt to be wrapped.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
 	BoltOutputBatcher(IRichBolt bolt, int batchSize) {
-		logger.debug("batchSize: {}", new Integer(batchSize));
 		this.wrappedBolt = bolt;
+		this.batchSizes = null;
 		this.batchSize = batchSize;
+	}
+	
+	/**
+	 * Instantiates a new {@link BoltOutputBatcher} the emits the output of the given {@link IRichBolt} in batches of
+	 * size {@code batchSize}.
+	 * 
+	 * @param bolt
+	 *            The original bolt to be wrapped.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	BoltOutputBatcher(IRichBolt bolt, Map<String, Integer> batchSizes) {
+		this.wrappedBolt = bolt;
+		this.batchSizes = batchSizes;
+		this.batchSize = -1;
 	}
 	
 	
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
-		this.batchCollector = new BoltBatchCollector(context, collector, this.batchSize);
+		if(this.batchSizes != null) {
+			this.batchCollector = new BatchOutputCollector(context, collector, this.batchSizes);
+		} else {
+			this.batchCollector = new BatchOutputCollector(context, collector, this.batchSize);
+		}
 		this.wrappedBolt.prepare(stormConf, context, this.batchCollector);
 		
 	}

@@ -41,8 +41,8 @@ import backtype.storm.utils.Utils;
  * @author Matthias J. Sax
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(SpoutBatchCollector.class)
-public class SpoutBatchCollectorTest {
+@PrepareForTest(BatchSpoutOutputCollector.class)
+public class BatchSpoutOutputCollectorTest {
 	private static SpoutBatchCollectorImpl collectorMock;
 	
 	private static int taskId;
@@ -69,63 +69,63 @@ public class SpoutBatchCollectorTest {
 	
 	@Test
 	public void testEmitFull() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emit(streamId, tuple, messageId);
 		verify(collectorMock).tupleEmit(streamId, null, tuple, messageId);
 	}
 	
 	@Test
 	public void testEmitTupleMessageId() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emit(tuple, messageId);
 		verify(collectorMock).tupleEmit(Utils.DEFAULT_STREAM_ID, null, tuple, messageId);
 	}
 	
 	@Test
 	public void testEmitTuple() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emit(tuple);
 		verify(collectorMock).tupleEmit(Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitStreamIdTuple() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emit(streamId, tuple);
 		verify(collectorMock).tupleEmit(streamId, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectFull() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, streamId, tuple, messageId);
 		verify(collectorMock).tupleEmitDirect(taskId, streamId, null, tuple, messageId);
 	}
 	
 	@Test
 	public void testEmitDirectTupleMessageId() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, tuple, messageId);
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, null, tuple, messageId);
 	}
 	
 	@Test
 	public void testEmitDirectStreamIdTuple() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, streamId, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, streamId, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectTuple() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
 	@Test
 	public void testFlush() {
-		SpoutBatchCollector collector = new SpoutBatchCollector(null, null, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(null, null, 0);
 		collector.flush();
 		verify(collectorMock).flush();
 	}

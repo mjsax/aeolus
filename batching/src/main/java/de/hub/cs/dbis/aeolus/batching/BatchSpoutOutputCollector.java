@@ -19,6 +19,7 @@
 package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,13 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link SpoutBatchCollector} is used by {@link SpoutOutputBatcher} to capture all calls to the original provided
+ * {@link BatchSpoutOutputCollector} is used by {@link SpoutOutputBatcher} to capture all calls to the original provided
  * {@link SpoutOutputCollector}. It used {@link SpoutBatchCollectorImpl} to buffer all emitted tuples in batches.
  * 
  * @author Matthias J. Sax
  */
-class SpoutBatchCollector extends SpoutOutputCollector {
-	private final static Logger logger = LoggerFactory.getLogger(SpoutBatchCollector.class);
+class BatchSpoutOutputCollector extends SpoutOutputCollector {
+	private final static Logger logger = LoggerFactory.getLogger(BatchSpoutOutputCollector.class);
 	
 	/**
 	 * The originally provided collector object.
@@ -51,7 +52,7 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	private final SpoutBatchCollectorImpl batcher;
 	/**
 	 * Is set to {@code true}, each time any {@code emit(...)} or {@code emitDirect(...)} method of this
-	 * {@link SpoutBatchCollector} is called. Needs to be reset to {@code false} externally (see
+	 * {@link BatchSpoutOutputCollector} is called. Needs to be reset to {@code false} externally (see
 	 * {@link SpoutOutputBatcher#nextTuple()}.
 	 */
 	boolean tupleEmitted;
@@ -64,21 +65,35 @@ class SpoutBatchCollector extends SpoutOutputCollector {
 	
 	
 	/**
-	 * Instantiates a new {@link SpoutBatchCollector} for the given batch size.
+	 * Instantiates a new {@link BatchSpoutOutputCollector} for the given batch size.
 	 * 
 	 * @param context
 	 *            The current runtime environment.
 	 * @param collector
 	 *            The original collector object.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
-	SpoutBatchCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
+	BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
 		super(collector);
-		logger.trace("batchSize: {}", new Integer(batchSize));
-		
 		this.collector = collector;
 		this.batcher = new SpoutBatchCollectorImpl(this, context, batchSize);
+	}
+	
+	/**
+	 * Instantiates a new {@link BatchSpoutOutputCollector} for the given batch size.
+	 * 
+	 * @param context
+	 *            The current runtime environment.
+	 * @param collector
+	 *            The original collector object.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector, Map<String, Integer> batchSizes) {
+		super(collector);
+		this.collector = collector;
+		this.batcher = new SpoutBatchCollectorImpl(this, context, batchSizes);
 	}
 	
 	

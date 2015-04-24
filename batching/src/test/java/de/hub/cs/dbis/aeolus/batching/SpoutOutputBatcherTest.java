@@ -78,22 +78,22 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testOpen() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
 		TopologyContext context = mock(TopologyContext.class);
 		spout.open(conf, context, null);
 		
-		verify(this.spoutMock).open(same(conf), same(context), any(SpoutBatchCollector.class));
+		verify(this.spoutMock).open(same(conf), same(context), any(BatchSpoutOutputCollector.class));
 	}
 	
 	@Test
 	public void testClose() throws Exception {
-		SpoutBatchCollector collectorMock = mock(SpoutBatchCollector.class);
-		PowerMockito.whenNew(SpoutBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		BatchSpoutOutputCollector collectorMock = mock(BatchSpoutOutputCollector.class);
+		PowerMockito.whenNew(BatchSpoutOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
 		
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		spout.open(null, null, null);
 		spout.close();
 		
@@ -103,17 +103,17 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testActivate() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		spout.activate();
 		verify(this.spoutMock).activate();
 	}
 	
 	@Test
 	public void testDeactivate() throws Exception {
-		SpoutBatchCollector collectorMock = mock(SpoutBatchCollector.class);
-		PowerMockito.whenNew(SpoutBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		BatchSpoutOutputCollector collectorMock = mock(BatchSpoutOutputCollector.class);
+		PowerMockito.whenNew(BatchSpoutOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
 		
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		spout.open(null, null, null);
 		
 		spout.deactivate();
@@ -123,7 +123,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testAck() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		
 		Object messageId = mock(Object.class);
 		spout.ack(messageId);
@@ -133,7 +133,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testFail() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		
 		Object messageId = mock(Object.class);
 		spout.fail(messageId);
@@ -143,7 +143,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testDeclareOutputFields() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
 		spout.declareOutputFields(declarer);
@@ -153,7 +153,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testGetComponentConfiguration() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, 2 + this.r.nextInt(9));
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
 		
 		final Map<String, Object> conf = new HashMap<String, Object>();
 		when(spout.getComponentConfiguration()).thenReturn(conf);

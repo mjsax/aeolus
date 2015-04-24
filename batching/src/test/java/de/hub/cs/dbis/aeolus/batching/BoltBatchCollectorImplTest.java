@@ -47,8 +47,8 @@ public class BoltBatchCollectorImplTest {
 	@Test
 	public void testBatchEmit() throws IllegalArgumentException, IllegalAccessException {
 		IOutputCollector col = mock(IOutputCollector.class);
-		BoltBatchCollector collector = mock(BoltBatchCollector.class);
-		PowerMockito.field(BoltBatchCollector.class, "collector").set(collector, col);
+		BatchOutputCollector collector = mock(BatchOutputCollector.class);
+		PowerMockito.field(BatchOutputCollector.class, "collector").set(collector, col);
 		
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		
@@ -63,7 +63,7 @@ public class BoltBatchCollectorImplTest {
 	
 	@Test(expected = AssertionError.class)
 	public void testBatchEmitAnchors() {
-		BoltBatchCollector collector = mock(BoltBatchCollector.class);
+		BatchOutputCollector collector = mock(BatchOutputCollector.class);
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		collectorImpl.batchEmit(null, null, null, mock(Object.class));
 	}
@@ -72,8 +72,8 @@ public class BoltBatchCollectorImplTest {
 	@Test
 	public void batchEmitDirect() throws IllegalArgumentException, IllegalAccessException {
 		IOutputCollector col = mock(IOutputCollector.class);
-		BoltBatchCollector collector = mock(BoltBatchCollector.class);
-		PowerMockito.field(BoltBatchCollector.class, "collector").set(collector, col);
+		BatchOutputCollector collector = mock(BatchOutputCollector.class);
+		PowerMockito.field(BatchOutputCollector.class, "collector").set(collector, col);
 		
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		
@@ -89,7 +89,7 @@ public class BoltBatchCollectorImplTest {
 	
 	@Test(expected = AssertionError.class)
 	public void testBatchEmitDirectAnchors() {
-		BoltBatchCollector collector = mock(BoltBatchCollector.class);
+		BatchOutputCollector collector = mock(BatchOutputCollector.class);
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		collectorImpl.batchEmitDirect(0, null, null, null, mock(Object.class));
 	}

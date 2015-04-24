@@ -21,6 +21,7 @@ package de.hub.cs.dbis.aeolus.batching;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +37,13 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link BoltBatchCollector} is used by {@link BoltOutputBatcher} to capture all calls to the original provided
+ * {@link BatchOutputCollector} is used by {@link BoltOutputBatcher} to capture all calls to the original provided
  * {@link OutputCollector}. It used {@link BoltBatchCollectorImpl} to buffer all emitted tuples in batches.
  * 
  * @author Matthias J. Sax
  */
-class BoltBatchCollector extends OutputCollector {
-	final static Logger logger = LoggerFactory.getLogger(BoltBatchCollector.class);
+class BatchOutputCollector extends OutputCollector {
+	final static Logger logger = LoggerFactory.getLogger(BatchOutputCollector.class);
 	
 	/**
 	 * The originally provided collector object.
@@ -56,21 +57,37 @@ class BoltBatchCollector extends OutputCollector {
 	
 	
 	/**
-	 * Instantiates a new {@link BoltBatchCollector} for the given batch size.
+	 * Instantiates a new {@link BatchOutputCollector} for the given batch size.
 	 * 
 	 * @param context
 	 *            The current runtime environment.
 	 * @param collector
 	 *            The original collector object.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
-	public BoltBatchCollector(TopologyContext context, IOutputCollector collector, int batchSize) {
+	public BatchOutputCollector(TopologyContext context, IOutputCollector collector, int batchSize) {
 		super(collector);
-		logger.trace("batchSize: {}", new Integer(batchSize));
 		
 		this.collector = collector;
 		this.batcher = new BoltBatchCollectorImpl(this, context, batchSize);
+	}
+	
+	/**
+	 * Instantiates a new {@link BatchOutputCollector} for the given batch size.
+	 * 
+	 * @param context
+	 *            The current runtime environment.
+	 * @param collector
+	 *            The original collector object.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	public BatchOutputCollector(TopologyContext context, IOutputCollector collector, Map<String, Integer> batchSizes) {
+		super(collector);
+		
+		this.collector = collector;
+		this.batcher = new BoltBatchCollectorImpl(this, context, batchSizes);
 	}
 	
 	

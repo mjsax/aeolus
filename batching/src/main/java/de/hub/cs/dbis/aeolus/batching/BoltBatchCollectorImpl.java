@@ -20,6 +20,7 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -30,7 +31,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link BoltBatchCollectorImpl} performs back calls to a {@link BoltBatchCollector}.
+ * {@link BoltBatchCollectorImpl} performs back calls to a {@link BatchOutputCollector}.
  * 
  * This design is necessary, because multiple inheritance in not supported in Java. Furthermore, the actual logic of
  * output batching is the same for Spouts and Bolts, but both use different interfaces. Thus,
@@ -41,9 +42,9 @@ import backtype.storm.tuple.Tuple;
  */
 class BoltBatchCollectorImpl extends AbstractBatchCollector {
 	/**
-	 * The {@link BoltBatchCollector} that used this instance of an {@link AbstractBatchCollector}.
+	 * The {@link BatchOutputCollector} that used this instance of an {@link AbstractBatchCollector}.
 	 */
-	private final BoltBatchCollector boltBatchCollector;
+	private final BatchOutputCollector boltBatchCollector;
 	
 	
 	
@@ -52,14 +53,31 @@ class BoltBatchCollectorImpl extends AbstractBatchCollector {
 	 * {@link OutputCollector} in order to emit a {@link Batch} of tuples.
 	 * 
 	 * @param boltBatchCollector
-	 *            The {@link BoltBatchCollector} for call backs.
+	 *            The {@link BatchOutputCollector} for call backs.
 	 * @param context
 	 *            The current runtime environment.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
-	BoltBatchCollectorImpl(BoltBatchCollector boltBatchCollector, TopologyContext context, int batchSize) {
+	BoltBatchCollectorImpl(BatchOutputCollector boltBatchCollector, TopologyContext context, int batchSize) {
 		super(context, batchSize);
+		this.boltBatchCollector = boltBatchCollector;
+	}
+	
+	/**
+	 * Instantiates a new {@link BoltBatchCollectorImpl} that back calls the original Storm provided
+	 * {@link OutputCollector} in order to emit a {@link Batch} of tuples.
+	 * 
+	 * @param boltBatchCollector
+	 *            The {@link BatchOutputCollector} for call backs.
+	 * @param context
+	 *            The current runtime environment.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	BoltBatchCollectorImpl(BatchOutputCollector boltBatchCollector, TopologyContext context,
+		Map<String, Integer> batchSizes) {
+		super(context, batchSizes);
 		this.boltBatchCollector = boltBatchCollector;
 	}
 	
@@ -69,7 +87,7 @@ class BoltBatchCollectorImpl extends AbstractBatchCollector {
 	@Override
 	protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 		assert (messageId == null);
-		BoltBatchCollector.logger.trace("streamId: {}; anchors: {}, batch: {}", streamId, anchors, batch);
+		BatchOutputCollector.logger.trace("streamId: {}; anchors: {}, batch: {}", streamId, anchors, batch);
 		return this.boltBatchCollector.collector.emit(streamId, anchors, (List)batch);
 	}
 	
@@ -77,7 +95,7 @@ class BoltBatchCollectorImpl extends AbstractBatchCollector {
 	@Override
 	protected void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
 		assert (messageId == null);
-		BoltBatchCollector.logger.trace("taskId: {}; streamId: {}; anchors: {}, batch: {}", new Integer(taskId),
+		BatchOutputCollector.logger.trace("taskId: {}; streamId: {}; anchors: {}, batch: {}", new Integer(taskId),
 			streamId, anchors, batch);
 		this.boltBatchCollector.collector.emitDirect(taskId, streamId, anchors, (List)batch);
 	}

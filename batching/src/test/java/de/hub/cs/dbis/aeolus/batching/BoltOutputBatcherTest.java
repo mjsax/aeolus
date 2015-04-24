@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,17 +53,10 @@ import backtype.storm.tuple.Tuple;
 public class BoltOutputBatcherTest {
 	private IRichBolt boltMock;
 	
-	private long seed;
-	private Random r;
-	
 	
 	
 	@Before
 	public void prepare() {
-		this.seed = System.currentTimeMillis();
-		this.r = new Random(this.seed);
-		System.out.println("Test seed: " + this.seed);
-		
 		this.boltMock = mock(IRichBolt.class);
 	}
 	
@@ -72,19 +64,19 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testPrepare() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
 		
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
 		TopologyContext context = mock(TopologyContext.class);
 		bolt.prepare(conf, context, null);
 		
-		verify(this.boltMock).prepare(same(conf), same(context), any(BoltBatchCollector.class));
+		verify(this.boltMock).prepare(same(conf), same(context), any(BatchOutputCollector.class));
 	}
 	
 	@Test
 	public void testExecute() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
 		
 		Tuple input = mock(Tuple.class);
 		bolt.execute(input);
@@ -94,10 +86,10 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testCleanup() throws Exception {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
 		
-		BoltBatchCollector collectorMock = mock(BoltBatchCollector.class);
-		PowerMockito.whenNew(BoltBatchCollector.class).withAnyArguments().thenReturn(collectorMock);
+		BatchOutputCollector collectorMock = mock(BatchOutputCollector.class);
+		PowerMockito.whenNew(BatchOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
 		
 		bolt.prepare(null, null, null);
 		bolt.cleanup();
@@ -108,7 +100,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testDeclareOutputFields() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
 		
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
 		bolt.declareOutputFields(declarer);
@@ -118,7 +110,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testGetComponentConfiguration() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, 2 + this.r.nextInt(8));
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
 		
 		final Map<String, Object> conf = new HashMap<String, Object>();
 		when(bolt.getComponentConfiguration()).thenReturn(conf);

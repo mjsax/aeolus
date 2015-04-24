@@ -45,8 +45,8 @@ import backtype.storm.utils.Utils;
  * @author Matthias J. Sax
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(BoltBatchCollector.class)
-public class BoltBatchCollectorTest {
+@PrepareForTest(BatchOutputCollector.class)
+public class BatchOutputCollectorTest {
 	private static BoltBatchCollectorImpl collectorMock;
 	
 	private static int taskId;
@@ -79,91 +79,91 @@ public class BoltBatchCollectorTest {
 	
 	@Test
 	public void testEmitFull() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(streamId, anchors, tuple);
 		verify(collectorMock).tupleEmit(streamId, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitStreamIdAnchorTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(streamId, anchor, tuple);
 		verify(collectorMock).tupleEmit(streamId, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitStreamIdTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(streamId, tuple);
 		verify(collectorMock).tupleEmit(streamId, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitAnchorsTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(anchors, tuple);
 		verify(collectorMock).tupleEmit(Utils.DEFAULT_STREAM_ID, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitAnchorTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(anchor, tuple);
 		verify(collectorMock).tupleEmit(Utils.DEFAULT_STREAM_ID, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emit(tuple);
 		verify(collectorMock).tupleEmit(Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectFull() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, streamId, anchors, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, streamId, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectStreamIdAnchorTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, streamId, anchor, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, streamId, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectStreamIdTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, streamId, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, streamId, null, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectAnchorsTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, anchors, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectAnchorTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, anchor, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, anchors, tuple, null);
 	}
 	
 	@Test
 	public void testEmitDirectTuple() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.emitDirect(taskId, tuple);
 		verify(collectorMock).tupleEmitDirect(taskId, Utils.DEFAULT_STREAM_ID, null, tuple, null);
 	}
 	
 	@Test
 	public void testFlush() {
-		BoltBatchCollector collector = new BoltBatchCollector(null, null, 0);
+		BatchOutputCollector collector = new BatchOutputCollector(null, null, 0);
 		collector.flush();
 		verify(collectorMock).flush();
 	}

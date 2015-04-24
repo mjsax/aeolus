@@ -46,6 +46,10 @@ public class TestBatchCollector extends AbstractBatchCollector {
 		super(context, batchSize);
 	}
 	
+	TestBatchCollector(TopologyContext context, HashMap<String, Integer> batchSizes) {
+		super(context, batchSizes);
+	}
+	
 	
 	
 	@Override

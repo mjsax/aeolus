@@ -20,9 +20,6 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -47,18 +44,20 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 public class SpoutOutputBatcher implements IRichSpout {
 	private final static long serialVersionUID = -8627934412821417370L;
 	
-	private final static Logger logger = LoggerFactory.getLogger(SpoutOutputBatcher.class);
-	
 	/**
-	 * The used {@link SpoutBatchCollector} that wraps the actual {@link SpoutOutputCollector}.
+	 * The used {@link BatchSpoutOutputCollector} that wraps the actual {@link SpoutOutputCollector}.
 	 */
-	private SpoutBatchCollector batchCollector;
+	private BatchSpoutOutputCollector batchCollector;
 	/**
 	 * The spout that is wrapped.
 	 */
 	private final IRichSpout wrappedSpout;
 	/**
-	 * The size of the output batches to be sent.
+	 * The sizes of the output batches for each output stream.
+	 */
+	private final Map<String, Integer> batchSizes;
+	/**
+	 * The size of the output batches (for all output streams).
 	 */
 	private final int batchSize;
 	
@@ -71,19 +70,38 @@ public class SpoutOutputBatcher implements IRichSpout {
 	 * @param spout
 	 *            The original spout to be wrapped.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, int batchSize) {
-		logger.debug("batchSize: {}", new Integer(batchSize));
 		this.wrappedSpout = spout;
+		this.batchSizes = null;
 		this.batchSize = batchSize;
+	}
+	
+	/**
+	 * Instantiates a new {@link SpoutOutputBatcher} the emits the output of the given {@link IRichSpout} in batches of
+	 * size {@code batchSize}.
+	 * 
+	 * @param spout
+	 *            The original spout to be wrapped.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	public SpoutOutputBatcher(IRichSpout spout, Map<String, Integer> batchSizes) {
+		this.wrappedSpout = spout;
+		this.batchSizes = batchSizes;
+		this.batchSize = -1;
 	}
 	
 	
 	
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
-		this.batchCollector = new SpoutBatchCollector(context, collector, this.batchSize);
+		if(this.batchSizes != null) {
+			this.batchCollector = new BatchSpoutOutputCollector(context, collector, this.batchSizes);
+		} else {
+			this.batchCollector = new BatchSpoutOutputCollector(context, collector, this.batchSize);
+		}
 		this.wrappedSpout.open(conf, context, this.batchCollector);
 	}
 	

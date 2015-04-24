@@ -47,7 +47,7 @@ public class SpoutBatchCollectorImplTest {
 	public void testBatchEmit() throws IllegalArgumentException, IllegalAccessException {
 		TopologyContext context = mock(TopologyContext.class);
 		ISpoutOutputCollector col = mock(ISpoutOutputCollector.class);
-		SpoutBatchCollector collector = new SpoutBatchCollector(context, col, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(context, col, 0);
 		
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, context, 0);
 		
@@ -65,7 +65,7 @@ public class SpoutBatchCollectorImplTest {
 	@SuppressWarnings("unchecked")
 	@Test(expected = AssertionError.class)
 	public void testBatchEmitAnchors() {
-		SpoutBatchCollector collector = mock(SpoutBatchCollector.class);
+		BatchSpoutOutputCollector collector = mock(BatchSpoutOutputCollector.class);
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		collectorImpl.batchEmit(null, mock(Collection.class), null, null);
 	}
@@ -75,7 +75,7 @@ public class SpoutBatchCollectorImplTest {
 	public void batchEmitDirect() throws IllegalArgumentException, IllegalAccessException {
 		TopologyContext context = mock(TopologyContext.class);
 		ISpoutOutputCollector col = mock(ISpoutOutputCollector.class);
-		SpoutBatchCollector collector = new SpoutBatchCollector(context, col, 0);
+		BatchSpoutOutputCollector collector = new BatchSpoutOutputCollector(context, col, 0);
 		
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, context, 0);
 		
@@ -94,7 +94,7 @@ public class SpoutBatchCollectorImplTest {
 	@SuppressWarnings("unchecked")
 	@Test(expected = AssertionError.class)
 	public void testBatchEmitDirectAnchors() {
-		SpoutBatchCollector collector = mock(SpoutBatchCollector.class);
+		BatchSpoutOutputCollector collector = mock(BatchSpoutOutputCollector.class);
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
 		collectorImpl.batchEmitDirect(0, null, mock(Collection.class), null, null);
 	}

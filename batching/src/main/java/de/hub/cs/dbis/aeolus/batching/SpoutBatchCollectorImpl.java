@@ -20,6 +20,7 @@ package de.hub.cs.dbis.aeolus.batching;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -30,7 +31,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link SpoutBatchCollectorImpl} performs back calls to a {@link SpoutBatchCollector}.
+ * {@link SpoutBatchCollectorImpl} performs back calls to a {@link BatchSpoutOutputCollector}.
  * 
  * This design is necessary, because multiple inheritance in not supported in Java. Furthermore, the actual logic of
  * output batching is the same for Spouts and Bolts, but both use different interfaces. Thus,
@@ -41,9 +42,9 @@ import backtype.storm.tuple.Tuple;
  */
 class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	/**
-	 * The {@link SpoutBatchCollector} that used this instance of an {@link AbstractBatchCollector}.
+	 * The {@link BatchSpoutOutputCollector} that used this instance of an {@link AbstractBatchCollector}.
 	 */
-	private final SpoutBatchCollector spoutBatchCollector;
+	private final BatchSpoutOutputCollector spoutBatchCollector;
 	
 	
 	
@@ -52,14 +53,31 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	 * {@link SpoutOutputCollector} in order to emit a {@link Batch} of tuples.
 	 * 
 	 * @param spoutBatchCollector
-	 *            The {@link SpoutBatchCollector} for call backs.
+	 *            The {@link BatchSpoutOutputCollector} for call backs.
 	 * @param context
 	 *            The current runtime environment.
 	 * @param batchSize
-	 *            The size of the output batches to be built.
+	 *            The batch size to be used for all output streams.
 	 */
-	SpoutBatchCollectorImpl(SpoutBatchCollector spoutBatchCollector, TopologyContext context, int batchSize) {
+	SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context, int batchSize) {
 		super(context, batchSize);
+		this.spoutBatchCollector = spoutBatchCollector;
+	}
+	
+	/**
+	 * Instantiates a new {@link SpoutBatchCollectorImpl} that back calls the original Storm provided
+	 * {@link SpoutOutputCollector} in order to emit a {@link Batch} of tuples.
+	 * 
+	 * @param spoutBatchCollector
+	 *            The {@link BatchSpoutOutputCollector} for call backs.
+	 * @param context
+	 *            The current runtime environment.
+	 * @param batchSizes
+	 *            The batch sizes for each output stream.
+	 */
+	SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context,
+		Map<String, Integer> batchSizes) {
+		super(context, batchSizes);
 		this.spoutBatchCollector = spoutBatchCollector;
 	}
 	
