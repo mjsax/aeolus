@@ -203,7 +203,6 @@
             <link>https://storm.apache.org/javadoc/apidocs/</link>
           </links>
           <aggregate>true</aggregate>
-          <detectLinks>true</detectLinks>
           <show>package</show>
           <validateLinks>true</validateLinks>
         </configuration>

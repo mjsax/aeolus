@@ -97,9 +97,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        
-        <executions>
+        <version>2.6</version>
 
+        <executions>
           <!-- Measure Output Rate -->
           <execution>
             <id>MeasureOutputRate</id>

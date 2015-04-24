@@ -18,6 +18,10 @@
  */
 package de.hub.cs.dbis.aeolus.monitoring.throughput;
 
+import backtype.storm.utils.Utils;
+
+
+
 
 
 /**
@@ -57,14 +61,16 @@ abstract class AbstractReportingThread extends Thread {
 	
 	
 	
+	/**
+	 * Invokes {@link #doReport(long, double)} each {@link #interval} milliseconds until {@link #isRunning} is set to
+	 * {@code false}.
+	 */
 	@Override
 	public void run() {
 		this.nextReportTime = System.currentTimeMillis();
 		
 		while(this.isRunning) {
-			while(System.currentTimeMillis() < this.nextReportTime) {
-				// busy wait
-			}
+			Utils.sleep(this.nextReportTime - System.currentTimeMillis());
 			this.doReport(this.nextReportTime, this.factor);
 			this.nextReportTime += this.interval;
 		}

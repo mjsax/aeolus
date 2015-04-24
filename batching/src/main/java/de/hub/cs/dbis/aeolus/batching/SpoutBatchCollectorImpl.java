@@ -59,7 +59,7 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
 	 */
-	SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context, int batchSize) {
+	public SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context, int batchSize) {
 		super(context, batchSize);
 		this.spoutBatchCollector = spoutBatchCollector;
 	}
@@ -75,7 +75,7 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
 	 */
-	SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context,
+	public SpoutBatchCollectorImpl(BatchSpoutOutputCollector spoutBatchCollector, TopologyContext context,
 		Map<String, Integer> batchSizes) {
 		super(context, batchSizes);
 		this.spoutBatchCollector = spoutBatchCollector;
@@ -85,21 +85,21 @@ class SpoutBatchCollectorImpl extends AbstractBatchCollector {
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
+	protected List<Integer> doEmit(String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId) {
 		assert (anchors == null);
-		logger.trace("streamId: {}; batch: {}; messageId: {}", streamId, batch, messageId);
+		logger.trace("streamId: {}; Tuple/batch: {}; messageId: {}", streamId, tupleOrBatch, messageId);
 		this.spoutBatchCollector.batchEmitted = true;
-		return this.spoutBatchCollector.collector.emit(streamId, (List)batch, messageId);
+		return this.spoutBatchCollector.collector.emit(streamId, (List)tupleOrBatch, messageId);
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	protected void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
+	protected void doEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId) {
 		assert (anchors == null);
-		logger.trace("taskId: {}; streamId: {}; batch: {}; messageId: {}", new Integer(taskId), streamId, batch,
-			messageId);
+		logger.trace("taskId: {}; streamId: {}; tuple/batch: {}; messageId: {}", new Integer(taskId), streamId,
+			tupleOrBatch, messageId);
 		this.spoutBatchCollector.batchEmitted = true;
-		this.spoutBatchCollector.collector.emitDirect(taskId, streamId, (List)batch, messageId);
+		this.spoutBatchCollector.collector.emitDirect(taskId, streamId, (List)tupleOrBatch, messageId);
 	}
 	
 }

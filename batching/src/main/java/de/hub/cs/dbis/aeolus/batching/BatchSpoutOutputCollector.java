@@ -74,7 +74,7 @@ class BatchSpoutOutputCollector extends SpoutOutputCollector {
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
 	 */
-	BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
+	public BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector, int batchSize) {
 		super(collector);
 		this.collector = collector;
 		this.batcher = new SpoutBatchCollectorImpl(this, context, batchSize);
@@ -90,7 +90,8 @@ class BatchSpoutOutputCollector extends SpoutOutputCollector {
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
 	 */
-	BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector, Map<String, Integer> batchSizes) {
+	public BatchSpoutOutputCollector(TopologyContext context, ISpoutOutputCollector collector,
+		Map<String, Integer> batchSizes) {
 		super(collector);
 		this.collector = collector;
 		this.batcher = new SpoutBatchCollectorImpl(this, context, batchSizes);

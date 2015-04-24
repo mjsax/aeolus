@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 
 import org.apache.thrift7.TException;
 import org.slf4j.Logger;
@@ -192,7 +193,9 @@ public class MeasureOutputDataRate {
 			IRichSpout spout = new ThroughputCounterSpout(new FixedStreamRateDriverSpout(new SchemaSpout(), dataRate),
 				interval);
 			if(batchSize > 0) {
-				spout = new SpoutOutputBatcher(spout, batchSize);
+				HashMap<String, Integer> batchSizes = new HashMap<String, Integer>();
+				batchSizes.put(Utils.DEFAULT_STREAM_ID, new Integer(batchSize));
+				spout = new SpoutOutputBatcher(spout, batchSizes);
 			}
 			builder.setSpout(spoutId, spout);
 			
@@ -204,10 +207,10 @@ public class MeasureOutputDataRate {
 			builder.setBolt(sinkId, sink).shuffleGrouping(spoutId);
 			
 			// statistics
-			builder.setBolt(spoutStatisticsId, new InputDebatcher(new FileFlushSinkBolt(spoutStatsFile)))
-				.shuffleGrouping(spoutId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
-			builder.setBolt(sinkStatisticsId, new InputDebatcher(new FileFlushSinkBolt(sinkStatsFile)))
-				.shuffleGrouping(sinkId, AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+			builder.setBolt(spoutStatisticsId, new FileFlushSinkBolt(spoutStatsFile)).shuffleGrouping(spoutId,
+				AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+			builder.setBolt(sinkStatisticsId, new FileFlushSinkBolt(sinkStatsFile)).shuffleGrouping(sinkId,
+				AbstractThroughputCounter.DEFAULT_STATS_STREAM);
 			
 			stormConfig.setNumWorkers(4);
 			

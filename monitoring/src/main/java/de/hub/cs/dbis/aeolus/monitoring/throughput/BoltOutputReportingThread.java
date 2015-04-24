@@ -51,7 +51,7 @@ class BoltOutputReportingThread extends AbstractReportingThread {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Reporting is do via {@link ThroughputCounterOutputCollector#reportCount(long)}.
+	 * Reporting is do via {@link ThroughputCounterOutputCollector#reportCount(long, double)}.
 	 */
 	@Override
 	void doReport(long reportTimestamp, double factor) {

@@ -56,7 +56,7 @@ public class BoltBatchCollectorImplTest {
 		Collection<Tuple> anchors = mock(Collection.class);
 		Batch batch = mock(Batch.class);
 		
-		collectorImpl.batchEmit(streamId, anchors, batch, null);
+		collectorImpl.doEmit(streamId, anchors, batch, null);
 		
 		verify(col).emit(streamId, anchors, (List)batch);
 	}
@@ -65,7 +65,7 @@ public class BoltBatchCollectorImplTest {
 	public void testBatchEmitAnchors() {
 		BatchOutputCollector collector = mock(BatchOutputCollector.class);
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
-		collectorImpl.batchEmit(null, null, null, mock(Object.class));
+		collectorImpl.doEmit(null, null, null, mock(Object.class));
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -82,7 +82,7 @@ public class BoltBatchCollectorImplTest {
 		Collection<Tuple> anchors = mock(Collection.class);
 		Batch batch = mock(Batch.class);
 		
-		collectorImpl.batchEmitDirect(taskId, streamId, anchors, batch, null);
+		collectorImpl.doEmitDirect(taskId, streamId, anchors, batch, null);
 		
 		verify(col).emitDirect(taskId, streamId, anchors, (List)batch);
 	}
@@ -91,7 +91,7 @@ public class BoltBatchCollectorImplTest {
 	public void testBatchEmitDirectAnchors() {
 		BatchOutputCollector collector = mock(BatchOutputCollector.class);
 		BoltBatchCollectorImpl collectorImpl = new BoltBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
-		collectorImpl.batchEmitDirect(0, null, null, null, mock(Object.class));
+		collectorImpl.doEmitDirect(0, null, null, null, mock(Object.class));
 	}
 	
 }

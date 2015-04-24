@@ -32,7 +32,7 @@ import backtype.storm.utils.Utils;
  * 
  * @author Matthias J. Sax
  */
-public class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
+class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
 	/**
 	 * Stream-ID prefix for automatically declared direct output streams.
 	 */

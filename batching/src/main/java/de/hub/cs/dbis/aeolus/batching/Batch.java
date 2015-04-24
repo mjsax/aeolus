@@ -72,7 +72,7 @@ class Batch extends ArrayList<BatchColumn> {
 	 * @param numberOfAttributes
 	 *            The number of attributes of the tuples stored in this {@link Batch} (must be larger than 0).
 	 */
-	Batch(int batchSize, int numberOfAttributes) {
+	public Batch(int batchSize, int numberOfAttributes) {
 		super(numberOfAttributes);
 		
 		assert (batchSize > 0);

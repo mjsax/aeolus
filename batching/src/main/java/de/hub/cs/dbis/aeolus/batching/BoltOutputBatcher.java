@@ -73,7 +73,7 @@ public class BoltOutputBatcher implements IRichBolt {
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
 	 */
-	BoltOutputBatcher(IRichBolt bolt, int batchSize) {
+	public BoltOutputBatcher(IRichBolt bolt, int batchSize) {
 		this.wrappedBolt = bolt;
 		this.batchSizes = null;
 		this.batchSize = batchSize;
@@ -88,7 +88,7 @@ public class BoltOutputBatcher implements IRichBolt {
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
 	 */
-	BoltOutputBatcher(IRichBolt bolt, Map<String, Integer> batchSizes) {
+	public BoltOutputBatcher(IRichBolt bolt, Map<String, Integer> batchSizes) {
 		this.wrappedBolt = bolt;
 		this.batchSizes = batchSizes;
 		this.batchSize = -1;

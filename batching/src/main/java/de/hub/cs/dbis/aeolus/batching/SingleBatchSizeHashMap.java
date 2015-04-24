@@ -28,13 +28,13 @@ import java.util.Set;
 
 
 /**
- * {@link SingleBatchSizeMap} is a dummy map, that stores a single batch size and returns this value for any key (ie,
- * stream ID) used in {@link #get(Object)}. All other methods throw an {@link UnsupportedOperationException}.
+ * {@link SingleBatchSizeHashMap} is a dummy map, that stores a single batch size and returns this value for any key
+ * (ie, stream ID) used in {@link #get(Object)}. All other methods may throw an {@link UnsupportedOperationException}.
  * 
  * 
  * @author Matthias J. Sax
  */
-class SingleBatchSizeMap extends HashMap<String, Integer> {
+class SingleBatchSizeHashMap extends HashMap<String, Integer> {
 	private static final long serialVersionUID = -1872488162485981597L;
 	
 	/**
@@ -45,12 +45,12 @@ class SingleBatchSizeMap extends HashMap<String, Integer> {
 	
 	
 	/**
-	 * Instantiates a new {@link SingleBatchSizeMap} that return {@code batchSize} for any stream ID.
+	 * Instantiates a new {@link SingleBatchSizeHashMap} that return {@code batchSize} for any stream ID.
 	 * 
 	 * @param batchSize
 	 *            The batch size to be returned.
 	 */
-	public SingleBatchSizeMap(int batchSize) {
+	public SingleBatchSizeHashMap(int batchSize) {
 		this.batchSize = new Integer(batchSize);
 	}
 	
@@ -97,11 +97,15 @@ class SingleBatchSizeMap extends HashMap<String, Integer> {
 	}
 	
 	/**
-	 * Throws an {@link UnsupportedOperationException}.
+	 * Throws an {@link UnsupportedOperationException} if {@code value} is different to the already specified batch
+	 * size.
 	 */
 	@Override
 	public Integer put(String key, Integer value) {
-		throw new UnsupportedOperationException();
+		if(value == null || value.intValue() != this.batchSize.intValue()) {
+			throw new UnsupportedOperationException();
+		}
+		return this.batchSize;
 	}
 	
 	/**

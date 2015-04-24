@@ -39,6 +39,41 @@ echo \
 
 for outputRate in $outputRates
 do
+  for operatorId in $operators
+  do
+    # tikz-header
+    echo \
+"\begin{tikzpicture}
+\begin{axis}[
+  title=Measure data rates in tps for operator $operatorId,
+  width=\textwidth,
+  height=0.5\textwidth,
+  ylabel={data rate in tps},
+  xlabel={time in s},
+  legend columns=3,
+  legend style={at={(0.5,-0.3)},anchor=north},
+]" >> $latexFile
+
+    # add plots
+    for batchSize in $batchSizes
+    do
+      for resultFile in `ls ../bb-res/microbenchmarks-$operatorId-*-$outputRate-$batchSize.res | grep -v -e "::"`
+      do
+        # add sinlge plot
+        echo \
+"\\addplot table[x index=0, y index=1] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
+      done
+    done
+
+    # close tikz
+    echo \
+"\\end{axis}
+\\end{tikzpicture}
+" >> $latexFile
+  done
+
+
+
   # tikz-header
   echo \
 "\begin{tikzpicture}
@@ -51,6 +86,8 @@ do
   legend columns=3,
   legend style={at={(0.5,-0.3)},anchor=north},
 ]" >> $latexFile
+
+  # add plots
   for batchSize in $batchSizes
   do
     resultFile=../bb-res/microbenchmarks-MeasureOutputRate-$outputRate-$batchSize.res
@@ -72,36 +109,6 @@ do
 
 
 
-  for operatorId in $operators
-  do
-    # tikz-header
-    echo \
-"\begin{tikzpicture}
-\begin{axis}[
-  title=Measure data rates in tps for operator $operatorId,
-  width=\textwidth,
-  height=0.5\textwidth,
-  ylabel={data rate in tps},
-  xlabel={time in s},
-  legend columns=3,
-  legend style={at={(0.5,-0.3)},anchor=north},
-]" >> $latexFile
-    for batchSize in $batchSizes
-    do
-      for resultFile in `ls ../bb-res/microbenchmarks-$operatorId-*-$outputRate-$batchSize.res | grep -v -e "::"`
-      do
-        # add sinlge plot
-        echo \
-"\\addplot table[x index=0, y index=1] {$resultFile}; \\addlegendentry{$batchSize};" >> $latexFile
-      done
-    done
-
-    # close tikz
-    echo \
-"\\end{axis}
-\\end{tikzpicture}
-" >> $latexFile
-  done
 done
 
 

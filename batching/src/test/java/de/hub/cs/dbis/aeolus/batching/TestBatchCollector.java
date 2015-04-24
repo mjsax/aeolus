@@ -37,7 +37,7 @@ import backtype.storm.tuple.Tuple;
 public class TestBatchCollector extends AbstractBatchCollector {
 	public final Map<String, List<Integer>> taskBuffer = new HashMap<String, List<Integer>>();
 	public final Map<String, List<Collection<Tuple>>> anchorBuffer = new HashMap<String, List<Collection<Tuple>>>();
-	public final Map<String, List<Batch>> batchBuffer = new HashMap<String, List<Batch>>();
+	public final Map<String, List<Object>> resultBuffer = new HashMap<String, List<Object>>();
 	public final Map<String, List<Object>> messageIdBuffer = new HashMap<String, List<Object>>();
 	
 	
@@ -53,18 +53,18 @@ public class TestBatchCollector extends AbstractBatchCollector {
 	
 	
 	@Override
-	protected List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
-		this.setListMembers(-1, streamId, anchors, batch, messageId);
+	protected List<Integer> doEmit(String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId) {
+		this.setListMembers(-1, streamId, anchors, tupleOrBatch, messageId);
 		return null;
 	}
 	
 	@Override
-	protected void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
-		this.setListMembers(taskId, streamId, anchors, batch, messageId);
+	protected void doEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId) {
+		this.setListMembers(taskId, streamId, anchors, tupleOrBatch, messageId);
 		
 	}
 	
-	private void setListMembers(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId) {
+	private void setListMembers(int taskId, String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId) {
 		if(taskId != -1) {
 			List<Integer> taksList = this.taskBuffer.get(streamId);
 			if(taksList == null) {
@@ -81,12 +81,12 @@ public class TestBatchCollector extends AbstractBatchCollector {
 		}
 		anchorList.add(anchors);
 		
-		List<Batch> batchList = this.batchBuffer.get(streamId);
-		if(batchList == null) {
-			batchList = new LinkedList<Batch>();
-			this.batchBuffer.put(streamId, batchList);
+		List<Object> resultList = this.resultBuffer.get(streamId);
+		if(resultList == null) {
+			resultList = new LinkedList<Object>();
+			this.resultBuffer.put(streamId, resultList);
 		}
-		batchList.add(batch);
+		resultList.add(tupleOrBatch);
 		
 		List<Object> messageIdList = this.messageIdBuffer.get(streamId);
 		if(messageIdList == null) {

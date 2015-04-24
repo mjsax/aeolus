@@ -110,6 +110,26 @@ public class AbstractBatchCollectorTest {
 		return outputStreams;
 	}
 	
+	private HashMap<String, Integer> generateBatchSizes(String[] streamIds) {
+		HashMap<String, Integer> batchSizes = new HashMap<String, Integer>();
+		
+		boolean notZero;
+		do {
+			for(String id : streamIds) {
+				batchSizes.put(id, new Integer(this.r.nextInt(6)));
+			}
+			
+			notZero = false;
+			for(Integer bS : batchSizes.values()) {
+				if(bS.intValue() > 0) {
+					notZero = true;
+				}
+			}
+		} while(!notZero);
+		
+		return batchSizes;
+	}
+	
 	
 	
 	@Before
@@ -145,22 +165,29 @@ public class AbstractBatchCollectorTest {
 	}
 	
 	private void prepateAndRunTestEmitShuffleDefaultOutputStream(int[] numberOfConsumerTasks) {
-		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
+		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0), null);
 	}
 	
 	@Test
 	public void testEmitShuffleDistinctOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
-		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1));
+		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1), null);
 	}
 	
 	@Test
 	public void testEmitShuffleRandomOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
-		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2));
+		this.runTestEmitShuffle(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2), null);
 	}
 	
-	private void runTestEmitShuffle(int[] numberOfConsumerTasks, String[] outputStreams) {
+	@Test
+	public void testEmitShuffleRandomOutputStreamsDifferentBatchSizes() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
+		String[] streamIds = this.generateStreamIds(numberOfConsumerTasks.length, 2);
+		this.runTestEmitShuffle(numberOfConsumerTasks, streamIds, this.generateBatchSizes(streamIds));
+	}
+	
+	private void runTestEmitShuffle(int[] numberOfConsumerTasks, String[] outputStreams, HashMap<String, Integer> batchSizes) {
 		assert (numberOfConsumerTasks.length == outputStreams.length);
 		
 		final int batchSize = 1 + this.r.nextInt(5);
@@ -169,7 +196,7 @@ public class AbstractBatchCollectorTest {
 		final int[] numberOfAttributes = new int[numberOfConsumerTasks.length];
 		
 		@SuppressWarnings("unchecked")
-		List<Batch>[] expectedResult = new List[numberOfConsumerTasks.length];
+		List<Object>[] expectedResult = new List[numberOfConsumerTasks.length];
 		Batch[] currentBatch = new Batch[numberOfConsumerTasks.length];
 		
 		Grouping grouping = mock(Grouping.class);
@@ -212,16 +239,36 @@ public class AbstractBatchCollectorTest {
 				numberOfAttributes[i] = schema.size();
 			}
 			
-			expectedResult[i] = new LinkedList<Batch>();
-			currentBatch[i] = new Batch(batchSize, numberOfAttributes[i]);
+			expectedResult[i] = new LinkedList<Object>();
+			if(batchSizes == null) {
+				currentBatch[i] = new Batch(batchSize, numberOfAttributes[i]);
+			} else {
+				int bS = batchSizes.get(outputStreams[i]).intValue();
+				if(bS > 0) {
+					currentBatch[i] = new Batch(bS, numberOfAttributes[i]);
+				}
+			}
 		}
 		when(context.getThisTargets()).thenReturn(targets);
 		
 		
 		
-		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		TestBatchCollector collector;
+		int maxBatchSize = 0;
+		if(batchSizes == null) {
+			collector = new TestBatchCollector(context, batchSize);
+			maxBatchSize = batchSize;
+		} else {
+			collector = new TestBatchCollector(context, batchSizes);
+			for(Integer b : batchSizes.values()) {
+				int bS = b.intValue();
+				if(bS > maxBatchSize) {
+					maxBatchSize = bS;
+				}
+			}
+		}
 		
-		final int numberOfTuples = batchSize * 20 + this.r.nextInt(batchSize * 10);
+		final int numberOfTuples = maxBatchSize * 20 + this.r.nextInt(maxBatchSize * 10);
 		for(int i = 0; i < numberOfTuples; ++i) {
 			final int index = this.r.nextInt(numberOfConsumerTasks.length);
 			
@@ -245,10 +292,19 @@ public class AbstractBatchCollectorTest {
 			
 			for(int j = 0; j < numberOfConsumerTasks.length; ++j) {
 				if(outputStreams[index].equals(outputStreams[j])) {
-					currentBatch[j].addTuple(tuple);
-					if(currentBatch[j].isFull()) {
-						expectedResult[j].add(currentBatch[j]);
-						currentBatch[j] = new Batch(batchSize, numberOfAttributes[j]);
+					if(currentBatch[j] != null) {
+						currentBatch[j].addTuple(tuple);
+						if(currentBatch[j].isFull()) {
+							expectedResult[j].add(currentBatch[j]);
+							if(batchSizes == null) {
+								currentBatch[j] = new Batch(batchSize, numberOfAttributes[j]);
+							} else {
+								currentBatch[j] = new Batch(batchSizes.get(outputStreams[index]).intValue(),
+									numberOfAttributes[j]);
+							}
+						}
+					} else {
+						expectedResult[j].add(tuple);
 					}
 				}
 			}
@@ -257,7 +313,7 @@ public class AbstractBatchCollectorTest {
 		
 		
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			Assert.assertEquals(expectedResult[i], collector.batchBuffer.get(outputStreams[i]));
+			Assert.assertEquals(expectedResult[i], collector.resultBuffer.get(outputStreams[i]));
 		}
 	}
 	
@@ -282,22 +338,32 @@ public class AbstractBatchCollectorTest {
 	}
 	
 	private void prepareAndRunTestEmitFieldsGroupingDefaultOutputStream(int[] numberOfConsumerTasks) {
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0),
+			null);
 	}
 	
 	@Test
 	public void testEmitFieldGroupingDistinctOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1));
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1),
+			null);
 	}
 	
 	@Test
 	public void testEmitFieldGroupingRandomOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
-		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2));
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2),
+			null);
 	}
 	
-	private void runTestEmitFieldsGrouping(int[] numberOfConsumerTasks, String[] outputStreams) {
+	@Test
+	public void testEmitFieldGroupingRandomOutputStreamsDifferentBatchSizes() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
+		String[] streamIds = this.generateStreamIds(numberOfConsumerTasks.length, 2);
+		this.runTestEmitFieldsGrouping(numberOfConsumerTasks, streamIds, this.generateBatchSizes(streamIds));
+	}
+	
+	private void runTestEmitFieldsGrouping(int[] numberOfConsumerTasks, String[] outputStreams, HashMap<String, Integer> batchSizes) {
 		assert (numberOfConsumerTasks.length == outputStreams.length);
 		assert (numberOfConsumerTasks.length < 100);
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
@@ -347,13 +413,27 @@ public class AbstractBatchCollectorTest {
 				if(old.size() == 0) {
 					Set<Integer> s = new HashSet<Integer>();
 					s.add(tid);
-					currentBatch.get(outputStreams[i]).put(s, new Batch(batchSize, 1));
+					if(batchSizes == null) {
+						currentBatch.get(outputStreams[i]).put(s, new Batch(batchSize, 1));
+					} else {
+						int bS = batchSizes.get(outputStreams[i]).intValue();
+						if(bS > 0) {
+							currentBatch.get(outputStreams[i]).put(s, new Batch(bS, 1));
+						}
+					}
 				} else {
 					for(Set<Integer> s : old.keySet()) {
 						Set<Integer> s2 = new HashSet<Integer>();
 						s2.addAll(s);
 						s2.add(tid);
-						currentBatch.get(outputStreams[i]).put(s2, new Batch(batchSize, 1));
+						if(batchSizes == null) {
+							currentBatch.get(outputStreams[i]).put(s2, new Batch(batchSize, 1));
+						} else {
+							int bS = batchSizes.get(outputStreams[i]).intValue();
+							if(bS > 0) {
+								currentBatch.get(outputStreams[i]).put(s2, new Batch(bS, 1));
+							}
+						}
 					}
 				}
 			}
@@ -393,15 +473,28 @@ public class AbstractBatchCollectorTest {
 		
 		
 		
-		Map<String, List<Batch>> expectedResult = new HashMap<String, List<Batch>>();
+		Map<String, List<Object>> expectedResult = new HashMap<String, List<Object>>();
 		for(String s : streams.keySet()) {
-			expectedResult.put(s, new LinkedList<Batch>());
+			expectedResult.put(s, new LinkedList<Object>());
 		}
 		
-		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		TestBatchCollector collector;
+		int maxBatchSize = 0;
+		if(batchSizes == null) {
+			collector = new TestBatchCollector(context, batchSize);
+			maxBatchSize = batchSize;
+		} else {
+			collector = new TestBatchCollector(context, batchSizes);
+			for(Integer b : batchSizes.values()) {
+				int bS = b.intValue();
+				if(bS > maxBatchSize) {
+					maxBatchSize = bS;
+				}
+			}
+		}
 		
-		final int numberOfTuples = numberOfDistinctValues * batchSize * 20
-			+ this.r.nextInt(numberOfDistinctValues * batchSize * 10);
+		final int numberOfTuples = numberOfDistinctValues * maxBatchSize * 20
+			+ this.r.nextInt(numberOfDistinctValues * maxBatchSize * 10);
 		for(int i = 0; i < numberOfTuples; ++i) {
 			final int index = this.r.nextInt(numberOfConsumerTasks.length);
 			
@@ -421,12 +514,20 @@ public class AbstractBatchCollectorTest {
 					}
 					
 					Batch batch = currentBatch.get(outputStream).get(batchKey);
-					batch.addTuple(tuple);
-					if(batch.isFull()) {
-						expectedResult.get(outputStream).add(batch);
-						currentBatch.get(outputStream).put(batchKey, new Batch(batchSize, 1));
+					if(batch != null) {
+						batch.addTuple(tuple);
+						if(batch.isFull()) {
+							expectedResult.get(outputStream).add(batch);
+							if(batchSizes == null) {
+								currentBatch.get(outputStream).put(batchKey, new Batch(batchSize, 1));
+							} else {
+								currentBatch.get(outputStream).put(batchKey,
+									new Batch(batchSizes.get(outputStream).intValue(), 1));
+							}
+						}
+					} else {
+						expectedResult.get(outputStream).add(tuple);
 					}
-					
 				}
 			}
 		}
@@ -434,7 +535,7 @@ public class AbstractBatchCollectorTest {
 		
 		
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.batchBuffer.get(outputStreams[i]));
+			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.resultBuffer.get(outputStreams[i]));
 		}
 	}
 	
@@ -460,24 +561,32 @@ public class AbstractBatchCollectorTest {
 	
 	private void prepareAndRunTestEmitFieldsGroupingViaDirectEmitDefaultOutputStream(int[] numberOfConsumerTasks) {
 		this.runTestEmitFieldsGroupingViaDirectEmit(numberOfConsumerTasks,
-			this.generateStreamIds(numberOfConsumerTasks.length, 0));
+			this.generateStreamIds(numberOfConsumerTasks.length, 0), null);
 	}
 	
 	@Test
 	public void testEmitFieldGroupingViaDirectEmitDistinctOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
 		this.runTestEmitFieldsGroupingViaDirectEmit(numberOfConsumerTasks,
-			this.generateStreamIds(numberOfConsumerTasks.length, 1));
+			this.generateStreamIds(numberOfConsumerTasks.length, 1), null);
 	}
 	
 	@Test
 	public void testEmitFieldGroupingViaDirectEmitRandomOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
 		this.runTestEmitFieldsGroupingViaDirectEmit(numberOfConsumerTasks,
-			this.generateStreamIds(numberOfConsumerTasks.length, 2));
+			this.generateStreamIds(numberOfConsumerTasks.length, 2), null);
 	}
 	
-	private void runTestEmitFieldsGroupingViaDirectEmit(int[] numberOfConsumerTasks, String[] outputStreams) {
+	@Test
+	public void testEmitFieldGroupingViaDirectEmitRandomOutputStreamsDifferentBatchSizes() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(3, 3);
+		String[] streamIds = this.generateStreamIds(numberOfConsumerTasks.length, 2);
+		this.runTestEmitFieldsGroupingViaDirectEmit(numberOfConsumerTasks, streamIds,
+			this.generateBatchSizes(streamIds));
+	}
+	
+	private void runTestEmitFieldsGroupingViaDirectEmit(int[] numberOfConsumerTasks, String[] outputStreams, HashMap<String, Integer> batchSizes) {
 		assert (numberOfConsumerTasks.length == outputStreams.length);
 		assert (numberOfConsumerTasks.length < 100);
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
@@ -523,7 +632,14 @@ public class AbstractBatchCollectorTest {
 			for(int j = 0; j < numberOfConsumerTasks[i]; ++j) {
 				Integer tid = new Integer(i * 100 + j);
 				consumerTasks.add(tid);
-				currentBatch.put(tid, new Batch(batchSize, 1));
+				if(batchSizes == null) {
+					currentBatch.put(tid, new Batch(batchSize, 1));
+				} else {
+					int bS = batchSizes.get(outputStreams[i]).intValue();
+					if(bS > 0) {
+						currentBatch.put(tid, new Batch(batchSizes.get(outputStreams[i]).intValue(), 1));
+					}
+				}
 			}
 			when(context.getComponentTasks(consumerId)).thenReturn(consumerTasks);
 			taskIds.put(consumerId, consumerTasks);
@@ -564,21 +680,34 @@ public class AbstractBatchCollectorTest {
 		
 		
 		
-		Map<Integer, List<Batch>> expectedResultPerTask = new HashMap<Integer, List<Batch>>();
+		Map<Integer, List<Object>> expectedResultPerTask = new HashMap<Integer, List<Object>>();
 		for(List<Integer> ids : taskIds.values()) {
 			for(Integer i : ids) {
-				expectedResultPerTask.put(i, new LinkedList<Batch>());
+				expectedResultPerTask.put(i, new LinkedList<Object>());
 			}
 		}
 		
 		
 		
-		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		TestBatchCollector collector;
+		int maxBatchSize = 0;
+		if(batchSizes == null) {
+			collector = new TestBatchCollector(context, batchSize);
+			maxBatchSize = batchSize;
+		} else {
+			collector = new TestBatchCollector(context, batchSizes);
+			for(Integer b : batchSizes.values()) {
+				int bS = b.intValue();
+				if(bS > maxBatchSize) {
+					maxBatchSize = bS;
+				}
+			}
+		}
 		
 		
 		
-		final int numberOfTuples = numberOfDistinctValues * batchSize * 20
-			+ this.r.nextInt(numberOfDistinctValues * batchSize * 10);
+		final int numberOfTuples = numberOfDistinctValues * maxBatchSize * 20
+			+ this.r.nextInt(numberOfDistinctValues * maxBatchSize * 10);
 		for(int i = 0; i < numberOfTuples; ++i) {
 			final int index = this.r.nextInt(numberOfConsumerTasks.length);
 			
@@ -595,10 +724,18 @@ public class AbstractBatchCollectorTest {
 								((Integer)tuple.get(0)).intValue() % numberOfConsumerTasks[k]);
 							
 							Batch batch = currentBatch.get(tid);
-							batch.addTuple(tuple);
-							if(batch.isFull()) {
-								expectedResultPerTask.get(tid).add(batch);
-								currentBatch.put(tid, new Batch(batchSize, 1));
+							if(batch != null) {
+								batch.addTuple(tuple);
+								if(batch.isFull()) {
+									expectedResultPerTask.get(tid).add(batch);
+									if(batchSizes == null) {
+										currentBatch.put(tid, new Batch(batchSize, 1));
+									} else {
+										currentBatch.put(tid, new Batch(batchSizes.get(outputStream).intValue(), 1));
+									}
+								}
+							} else {
+								expectedResultPerTask.get(tid).add(tuple);
 							}
 						}
 					}
@@ -609,18 +746,18 @@ public class AbstractBatchCollectorTest {
 		
 		
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			Assert.assertNull(collector.batchBuffer.get(outputStreams[i]));
+			Assert.assertNull(collector.resultBuffer.get(outputStreams[i]));
 			
 			for(String consumer : streams.get(outputStreams[i])) {
 				for(Integer tid : taskIds.get(consumer)) {
-					List<Batch> resultPerStream = new LinkedList<Batch>();
+					List<Object> resultPerStream = new LinkedList<Object>();
 					
 					Iterator<Integer> t = collector.taskBuffer.get(
 						BatchingOutputFieldsDeclarer.STREAM_PREFIX + outputStreams[i]).iterator();
-					for(Batch b : collector.batchBuffer.get(BatchingOutputFieldsDeclarer.STREAM_PREFIX
+					for(Object tupleOfBatch : collector.resultBuffer.get(BatchingOutputFieldsDeclarer.STREAM_PREFIX
 						+ outputStreams[i])) {
 						if(t.next().intValue() == tid.intValue()) {
-							resultPerStream.add(b);
+							resultPerStream.add(tupleOfBatch);
 						}
 					}
 					Assert.assertEquals(expectedResultPerTask.get(tid), resultPerStream);
@@ -650,22 +787,29 @@ public class AbstractBatchCollectorTest {
 	}
 	
 	private void prepareAndRunTestEmitDirectDefaultOutputStream(int[] numberOfConsumerTasks) {
-		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0));
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 0), null);
 	}
 	
 	@Test
 	public void testEmitDirectDistinctOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
-		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1));
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 1), null);
 	}
 	
 	@Test
 	public void testEmitDirectRandomOutputStreams() {
 		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
-		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2));
+		this.runTestEmitDirect(numberOfConsumerTasks, this.generateStreamIds(numberOfConsumerTasks.length, 2), null);
 	}
 	
-	private void runTestEmitDirect(int[] numberOfConsumerTasks, String[] outputStreams) {
+	@Test
+	public void testEmitDirectRandomOutputStreamsDifferentBatchSizes() {
+		int[] numberOfConsumerTasks = this.generateConsumerTasks(5, 5);
+		String[] streamIds = this.generateStreamIds(numberOfConsumerTasks.length, 2);
+		this.runTestEmitDirect(numberOfConsumerTasks, streamIds, this.generateBatchSizes(streamIds));
+	}
+	
+	private void runTestEmitDirect(int[] numberOfConsumerTasks, String[] outputStreams, HashMap<String, Integer> batchSizes) {
 		assert (numberOfConsumerTasks.length == outputStreams.length);
 		assert (numberOfConsumerTasks.length < 100);
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
@@ -684,7 +828,7 @@ public class AbstractBatchCollectorTest {
 		final int[][] taskIds = new int[numberOfConsumerTasks.length][];
 		
 		final int batchSize = 1 + this.r.nextInt(5);
-		Map<String, List<Batch>> expectedResult = new HashMap<String, List<Batch>>();
+		Map<String, List<Object>> expectedResult = new HashMap<String, List<Object>>();
 		Map<Integer, Batch> currentBatch = new HashMap<Integer, Batch>();
 		
 		Map<String, Map<String, Grouping>> targets = new HashMap<String, Map<String, Grouping>>();
@@ -725,20 +869,40 @@ public class AbstractBatchCollectorTest {
 				numberOfAttributes[i] = schema.size();
 			}
 			
-			expectedResult.put(outputStreams[i], new LinkedList<Batch>());
+			expectedResult.put(outputStreams[i], new LinkedList<Object>());
 			for(int j = 0; j < taskIds[i].length; ++j) {
-				currentBatch.put(new Integer(taskIds[i][j]), new Batch(batchSize, numberOfAttributes[i]));
+				if(batchSizes == null) {
+					currentBatch.put(new Integer(taskIds[i][j]), new Batch(batchSize, numberOfAttributes[i]));
+				} else {
+					int bS = batchSizes.get(outputStreams[i]).intValue();
+					if(bS > 0) {
+						currentBatch.put(new Integer(taskIds[i][j]), new Batch(bS, numberOfAttributes[i]));
+					}
+				}
 			}
 		}
 		when(context.getThisTargets()).thenReturn(targets);
 		
 		
 		
-		TestBatchCollector collector = new TestBatchCollector(context, batchSize);
+		TestBatchCollector collector;
+		int maxBatchSize = 0;
+		if(batchSizes == null) {
+			collector = new TestBatchCollector(context, batchSize);
+			maxBatchSize = batchSize;
+		} else {
+			collector = new TestBatchCollector(context, batchSizes);
+			for(Integer b : batchSizes.values()) {
+				int bS = b.intValue();
+				if(bS > maxBatchSize) {
+					maxBatchSize = bS;
+				}
+			}
+		}
 		
 		
 		
-		final int numberOfTuples = batchSize * 20 + this.r.nextInt(batchSize * 10);
+		final int numberOfTuples = maxBatchSize * 20 + this.r.nextInt(maxBatchSize * 10);
 		for(int i = 0; i < numberOfTuples; ++i) {
 			final int index = this.r.nextInt(numberOfConsumerTasks.length);
 			
@@ -761,16 +925,25 @@ public class AbstractBatchCollectorTest {
 			String outputStream = outputStreams[index];
 			
 			for(int j = 0; j < numberOfConsumerTasks.length; ++j) {
-				if(outputStreams[index].equals(outputStreams[j])) {
+				if(outputStream.equals(outputStreams[j])) {
 					int tid = taskIds[j][this.r.nextInt(taskIds[j].length)];
 					collector.tupleEmitDirect(tid, outputStream, null, tuple, null);
 					
 					Integer tidO = new Integer(tid);
 					Batch b = currentBatch.get(tidO);
-					b.addTuple(tuple);
-					if(b.isFull()) {
-						expectedResult.get(outputStream).add(b);
-						currentBatch.put(tidO, new Batch(batchSize, numberOfAttributes[j]));
+					if(b != null) {
+						b.addTuple(tuple);
+						if(b.isFull()) {
+							expectedResult.get(outputStream).add(b);
+							if(batchSizes == null) {
+								currentBatch.put(tidO, new Batch(batchSize, numberOfAttributes[j]));
+							} else {
+								currentBatch.put(tidO, new Batch(batchSizes.get(outputStream).intValue(),
+									numberOfAttributes[j]));
+							}
+						}
+					} else {
+						expectedResult.get(outputStream).add(tuple);
 					}
 				}
 			}
@@ -779,12 +952,12 @@ public class AbstractBatchCollectorTest {
 		
 		
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.batchBuffer.get(outputStreams[i]));
+			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.resultBuffer.get(outputStreams[i]));
 		}
 	}
 	
 	@Test
-	public void testFlush() {
+	public void testFlushSimple() {
 		final String secondStream = "stream-2";
 		final String thirdStream = "stream-3";
 		final String directStream = "direct";
@@ -829,17 +1002,86 @@ public class AbstractBatchCollectorTest {
 		collector.tupleEmit(secondStream, null, new Values(new Integer(40)), null);
 		collector.tupleEmit(secondStream, null, new Values(new Integer(41)), null);
 		
-		Assert.assertEquals(8, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
-		Assert.assertEquals(8, collector.batchBuffer.get(secondStream).size());
-		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
-		Assert.assertEquals(6, collector.batchBuffer.get(directStream).size());
+		Assert.assertEquals(8, collector.resultBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(8, collector.resultBuffer.get(secondStream).size());
+		Assert.assertEquals(8, collector.resultBuffer.get(thirdStream).size());
+		Assert.assertEquals(6, collector.resultBuffer.get(directStream).size());
 		
 		collector.flush();
 		
-		Assert.assertEquals(9, collector.batchBuffer.get(Utils.DEFAULT_STREAM_ID).size());
-		Assert.assertEquals(9, collector.batchBuffer.get(secondStream).size());
-		Assert.assertEquals(8, collector.batchBuffer.get(thirdStream).size());
-		Assert.assertEquals(9, collector.batchBuffer.get(directStream).size());
+		Assert.assertEquals(9, collector.resultBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(9, collector.resultBuffer.get(secondStream).size());
+		Assert.assertEquals(8, collector.resultBuffer.get(thirdStream).size());
+		Assert.assertEquals(9, collector.resultBuffer.get(directStream).size());
+	}
+	
+	@Test
+	public void testFlushAdvanced() {
+		final String secondStream = "stream-2";
+		final String thirdStream = "stream-3";
+		final String directStream = "direct-1";
+		final String directStream2 = "direct-2";
+		
+		HashMap<String, Grouping> consumer = new HashMap<String, Grouping>();
+		consumer.put("receiver", mock(Grouping.class));
+		
+		HashMap<String, Grouping> directConsumer = new HashMap<String, Grouping>();
+		Grouping direct = mock(Grouping.class);
+		when(new Boolean(direct.is_set_direct())).thenReturn(new Boolean(true));
+		directConsumer.put("directReceiver", direct);
+		
+		Map<String, Map<String, Grouping>> targets = new HashMap<String, Map<String, Grouping>>();
+		targets.put(Utils.DEFAULT_STREAM_ID, consumer);
+		targets.put(secondStream, consumer);
+		targets.put(thirdStream, consumer);
+		targets.put(directStream, directConsumer);
+		targets.put(directStream2, directConsumer);
+		
+		TopologyContext context = mock(TopologyContext.class);
+		when(context.getThisTargets()).thenReturn(targets);
+		when(context.getComponentOutputFields(null, Utils.DEFAULT_STREAM_ID)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, secondStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, thirdStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, directStream)).thenReturn(new Fields("dummy"));
+		when(context.getComponentOutputFields(null, directStream2)).thenReturn(new Fields("dummy"));
+		when(context.getComponentTasks("directReceiver")).thenReturn(
+			Arrays.asList(new Integer[] {new Integer(0), new Integer(1), new Integer(2)}));
+		
+		HashMap<String, Integer> batchSizes = new HashMap<String, Integer>();
+		batchSizes.put(Utils.DEFAULT_STREAM_ID, new Integer(5));
+		batchSizes.put(secondStream, new Integer(0));
+		batchSizes.put(thirdStream, new Integer(3));
+		batchSizes.put(directStream, new Integer(5));
+		TestBatchCollector collector = new TestBatchCollector(context, batchSizes);
+		
+		final int numberOfTuples = 42;
+		for(int i = 0; i < numberOfTuples - 2; ++i) {
+			collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(i)), null);
+			collector.tupleEmit(secondStream, null, new Values(new Integer(i)), null);
+			collector.tupleEmit(thirdStream, null, new Values(new Integer(i)), null);
+			collector.tupleEmitDirect(i % 3, directStream, null, new Values(new Integer(i)), null);
+			collector.tupleEmitDirect(i % 3, directStream2, null, new Values(new Integer(i)), null);
+		}
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(40)), null);
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(41)), null);
+		collector.tupleEmit(Utils.DEFAULT_STREAM_ID, null, new Values(new Integer(42)), null);
+		
+		collector.tupleEmit(secondStream, null, new Values(new Integer(40)), null);
+		collector.tupleEmit(secondStream, null, new Values(new Integer(41)), null);
+		
+		Assert.assertEquals(8, collector.resultBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(42, collector.resultBuffer.get(secondStream).size());
+		Assert.assertEquals(13, collector.resultBuffer.get(thirdStream).size());
+		Assert.assertEquals(6, collector.resultBuffer.get(directStream).size());
+		Assert.assertEquals(40, collector.resultBuffer.get(directStream2).size());
+		
+		collector.flush();
+		
+		Assert.assertEquals(9, collector.resultBuffer.get(Utils.DEFAULT_STREAM_ID).size());
+		Assert.assertEquals(42, collector.resultBuffer.get(secondStream).size());
+		Assert.assertEquals(14, collector.resultBuffer.get(thirdStream).size());
+		Assert.assertEquals(9, collector.resultBuffer.get(directStream).size());
+		Assert.assertEquals(40, collector.resultBuffer.get(directStream2).size());
 	}
 	
 	@Test

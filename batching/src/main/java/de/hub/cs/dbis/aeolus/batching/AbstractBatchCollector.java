@@ -109,8 +109,8 @@ abstract class AbstractBatchCollector {
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
 	 */
-	AbstractBatchCollector(TopologyContext context, int batchSize) {
-		this(context, new SingleBatchSizeMap(batchSize));
+	public AbstractBatchCollector(TopologyContext context, int batchSize) {
+		this(context, new SingleBatchSizeHashMap(batchSize));
 	}
 	
 	/**
@@ -121,7 +121,7 @@ abstract class AbstractBatchCollector {
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
 	 */
-	AbstractBatchCollector(TopologyContext context, Map<String, Integer> batchSizes) {
+	public AbstractBatchCollector(TopologyContext context, Map<String, Integer> batchSizes) {
 		this(context, new HashMap<String, Integer>(batchSizes));
 	}
 	
@@ -137,6 +137,20 @@ abstract class AbstractBatchCollector {
 		for(Entry<String, Map<String, Grouping>> outputStream : context.getThisTargets().entrySet()) {
 			final String streamId = outputStream.getKey();
 			logger.trace("output-stream: {}", streamId);
+			
+			// if current stream is an Aeolus-defined direct stream, we add the user defined batch size for the stream:
+			// ie, user-defined stream == "userStream"; current (Aeolus-defined) stream == "aeolus::userStream"
+			// -> we take the batch size specified for "userStream" and add an entry for "aeolus::userStream" with the
+			// same batch size value
+			if(streamId.startsWith(BatchingOutputFieldsDeclarer.STREAM_PREFIX)) {
+				this.batchSizes.put(streamId,
+					this.batchSizes.get(streamId.substring(BatchingOutputFieldsDeclarer.STREAM_PREFIX.length())));
+			}
+			Integer bS = this.batchSizes.get(streamId);
+			if(bS == null || bS.intValue() <= 0) {
+				logger.trace("batching disabled");
+				continue;
+			}
 			final Map<String, Grouping> streamReceivers = outputStream.getValue();
 			
 			final int numAttributes = context.getComponentOutputFields(this.componentId, streamId).size();
@@ -229,6 +243,11 @@ abstract class AbstractBatchCollector {
 	 *         inserted into an output batch but not actual emit happens
 	 */
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
+		Integer bS = this.batchSizes.get(streamId);
+		if(bS == null || bS.intValue() <= 0) {
+			this.doEmit(streamId, anchors, tuple, messageId);
+		}
+		
 		int bufferIndex = 0;
 		
 		final Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
@@ -257,7 +276,7 @@ abstract class AbstractBatchCollector {
 				buffer.addTuple(tuple);
 				
 				if(buffer.isFull()) {
-					this.batchEmit(streamId, null, buffer, null);
+					this.doEmit(streamId, null, buffer, null);
 					this.outputBuffers.get(streamId)[bufferIndex] = new Batch(this.batchSizes.get(streamId).intValue(),
 						this.numberOfAttributes.get(streamId).intValue());
 				}
@@ -287,6 +306,11 @@ abstract class AbstractBatchCollector {
 	 *            The ID of the output tuple (spouts only).
 	 */
 	public void tupleEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
+		Integer bS = this.batchSizes.get(streamId);
+		if(bS == null || bS.intValue() <= 0) {
+			this.doEmitDirect(taskId, streamId, anchors, tuple, messageId);
+		}
+		
 		Integer tid = new Integer(taskId);
 		final Map<Integer, Batch> streamBuffers = this.directOutputBuffers.get(streamId);
 		if(streamBuffers != null) {
@@ -295,7 +319,7 @@ abstract class AbstractBatchCollector {
 				buffer.addTuple(tuple);
 				
 				if(buffer.isFull()) {
-					this.batchEmitDirect(taskId, streamId, null, buffer, null);
+					this.doEmitDirect(taskId, streamId, null, buffer, null);
 					this.directOutputBuffers.get(streamId).put(
 						tid,
 						new Batch(this.batchSizes.get(streamId).intValue(), this.numberOfAttributes.get(streamId)
@@ -310,27 +334,33 @@ abstract class AbstractBatchCollector {
 	 */
 	public void flush() {
 		for(String streamId : this.outputBuffers.keySet()) {
-			for(int i = 0; i < this.outputBuffers.get(streamId).length; ++i) {
-				Batch batch = this.outputBuffers.get(streamId)[i];
-				if(!batch.isEmpty()) {
-					this.batchEmit(streamId, null, batch, null);
-					this.outputBuffers.get(streamId)[i] = new Batch(this.batchSizes.get(streamId).intValue(),
-						this.numberOfAttributes.get(streamId).intValue());
+			Integer bS = this.batchSizes.get(streamId);
+			if(bS != null && bS.intValue() > 0) {
+				for(int i = 0; i < this.outputBuffers.get(streamId).length; ++i) {
+					Batch batch = this.outputBuffers.get(streamId)[i];
+					if(!batch.isEmpty()) {
+						this.doEmit(streamId, null, batch, null);
+						this.outputBuffers.get(streamId)[i] = new Batch(this.batchSizes.get(streamId).intValue(),
+							this.numberOfAttributes.get(streamId).intValue());
+					}
 				}
 			}
 		}
 		
 		for(String streamId : this.directOutputBuffers.keySet()) {
-			for(Integer taskId : this.directOutputBuffers.get(streamId).keySet()) {
-				Batch batch = this.directOutputBuffers.get(streamId).get(taskId);
-				if(!batch.isEmpty()) {
-					this.batchEmitDirect(taskId.intValue(), streamId, null, batch, null);
-					this.directOutputBuffers.get(streamId).put(
-						taskId,
-						new Batch(this.batchSizes.get(streamId).intValue(), this.numberOfAttributes.get(streamId)
-							.intValue()));
+			Integer bS = this.batchSizes.get(streamId);
+			if(bS != null && bS.intValue() > 0) {
+				for(Integer taskId : this.directOutputBuffers.get(streamId).keySet()) {
+					Batch batch = this.directOutputBuffers.get(streamId).get(taskId);
+					if(!batch.isEmpty()) {
+						this.doEmitDirect(taskId.intValue(), streamId, null, batch, null);
+						this.directOutputBuffers.get(streamId).put(
+							taskId,
+							new Batch(this.batchSizes.get(streamId).intValue(), this.numberOfAttributes.get(streamId)
+								.intValue()));
+					}
+					
 				}
-				
 			}
 		}
 	}
@@ -348,23 +378,23 @@ abstract class AbstractBatchCollector {
 	}
 	
 	/**
-	 * Is called each time a batch is full and should be emitted.
+	 * Is called each time tuple or batch should be emitted.
 	 * 
 	 * @param streamId
 	 *            The name of the output stream the batch is appended.
 	 * @param anchors
 	 *            The anchor tuples of the emitted batch (bolts only).
-	 * @param batch
-	 *            The output batch to be emitted.
+	 * @param tupleOrBatch
+	 *            The output tuple or batch to be emitted.
 	 * @param messageId
 	 *            The ID of the output batch (spouts only).
 	 * 
 	 * @return the task IDs that received the batch
 	 */
-	protected abstract List<Integer> batchEmit(String streamId, Collection<Tuple> anchors, Batch batch, Object messageId);
+	protected abstract List<Integer> doEmit(String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId);
 	
 	/**
-	 * Is called each time a batch is full and should be emitted.
+	 * Is called each time tuple or batch should be emitted.
 	 * 
 	 * @param taskId
 	 *            The ID of the receiver task.
@@ -372,11 +402,11 @@ abstract class AbstractBatchCollector {
 	 *            The name of the output stream the batch is appended.
 	 * @param anchors
 	 *            The anchor tuples of the emitted batch (bolts only).
-	 * @param batch
-	 *            The output batch to be emitted.
+	 * @param tupleOrBatch
+	 *            The output tuple or batch to be emitted.
 	 * @param messageId
 	 *            The ID of the output batch (spouts only).
 	 */
-	protected abstract void batchEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Batch batch, Object messageId);
+	protected abstract void doEmitDirect(int taskId, String streamId, Collection<Tuple> anchors, Object tupleOrBatch, Object messageId);
 	
 }

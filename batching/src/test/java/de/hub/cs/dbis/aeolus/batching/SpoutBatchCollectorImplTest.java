@@ -56,7 +56,7 @@ public class SpoutBatchCollectorImplTest {
 		Object messageId = mock(Object.class);
 		
 		collector.batchEmitted = false;
-		collectorImpl.batchEmit(streamId, null, batch, messageId);
+		collectorImpl.doEmit(streamId, null, batch, messageId);
 		
 		verify(col).emit(streamId, (List)batch, messageId);
 		Assert.assertTrue(collector.batchEmitted);
@@ -67,7 +67,7 @@ public class SpoutBatchCollectorImplTest {
 	public void testBatchEmitAnchors() {
 		BatchSpoutOutputCollector collector = mock(BatchSpoutOutputCollector.class);
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
-		collectorImpl.batchEmit(null, mock(Collection.class), null, null);
+		collectorImpl.doEmit(null, mock(Collection.class), null, null);
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -85,7 +85,7 @@ public class SpoutBatchCollectorImplTest {
 		Object messageId = mock(Object.class);
 		
 		collector.batchEmitted = false;
-		collectorImpl.batchEmitDirect(taskId, streamId, null, batch, messageId);
+		collectorImpl.doEmitDirect(taskId, streamId, null, batch, messageId);
 		
 		verify(col).emitDirect(taskId, streamId, (List)batch, messageId);
 		Assert.assertTrue(collector.batchEmitted);
@@ -96,6 +96,6 @@ public class SpoutBatchCollectorImplTest {
 	public void testBatchEmitDirectAnchors() {
 		BatchSpoutOutputCollector collector = mock(BatchSpoutOutputCollector.class);
 		SpoutBatchCollectorImpl collectorImpl = new SpoutBatchCollectorImpl(collector, mock(TopologyContext.class), 0);
-		collectorImpl.batchEmitDirect(0, null, mock(Collection.class), null, null);
+		collectorImpl.doEmitDirect(0, null, mock(Collection.class), null, null);
 	}
 }

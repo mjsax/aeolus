@@ -30,7 +30,7 @@ import org.junit.Test;
 /**
  * @author Matthias J. Sax
  */
-public class SingleBatchSizeTest {
+public class SingleBatchSizeHashMapTest {
 	
 	@Test
 	public void testGet() {
@@ -39,61 +39,71 @@ public class SingleBatchSizeTest {
 		Random r = new Random(seed);
 		
 		final int batchSize = r.nextInt();
-		Assert.assertEquals(new Integer(batchSize), new SingleBatchSizeMap(batchSize).get(null));
+		Assert.assertEquals(new Integer(batchSize), new SingleBatchSizeHashMap(batchSize).get(null));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testSize() {
-		new SingleBatchSizeMap(0).size();
+		new SingleBatchSizeHashMap(0).size();
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testIsEmpty() {
-		new SingleBatchSizeMap(0).isEmpty();
+		new SingleBatchSizeHashMap(0).isEmpty();
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testContainsKey() {
-		new SingleBatchSizeMap(0).containsKey(null);
+		new SingleBatchSizeHashMap(0).containsKey(null);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testContainsValue() {
-		new SingleBatchSizeMap(0).containsValue(null);
+		new SingleBatchSizeHashMap(0).containsValue(null);
+	}
+	
+	@Test
+	public void testPut() {
+		new SingleBatchSizeHashMap(0).put(null, new Integer(0));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
-	public void testPut() {
-		new SingleBatchSizeMap(0).put(null, null);
+	public void testPutFail1() {
+		new SingleBatchSizeHashMap(0).put(null, null);
+	}
+	
+	@Test(expected = UnsupportedOperationException.class)
+	public void testPutFail2() {
+		new SingleBatchSizeHashMap(0).put(null, new Integer(1));
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testRemove() {
-		new SingleBatchSizeMap(0).remove(null);
+		new SingleBatchSizeHashMap(0).remove(null);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testPutAll() {
-		new SingleBatchSizeMap(0).putAll(null);
+		new SingleBatchSizeHashMap(0).putAll(null);
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testClear() {
-		new SingleBatchSizeMap(0).clear();
+		new SingleBatchSizeHashMap(0).clear();
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testKeySet() {
-		new SingleBatchSizeMap(0).keySet();
+		new SingleBatchSizeHashMap(0).keySet();
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testValues() {
-		new SingleBatchSizeMap(0).values();
+		new SingleBatchSizeHashMap(0).values();
 	}
 	
 	@Test(expected = UnsupportedOperationException.class)
 	public void testEntrySet() {
-		new SingleBatchSizeMap(0).entrySet();
+		new SingleBatchSizeHashMap(0).entrySet();
 	}
 }

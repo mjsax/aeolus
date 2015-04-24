@@ -51,7 +51,7 @@ class SpoutReportingThread extends AbstractReportingThread {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Reporting is do via {@link ThroughputCounterSpoutOutputCollector#reportCount(long)}.
+	 * Reporting is do via {@link ThroughputCounterSpoutOutputCollector#reportCount(long, double)}.
 	 */
 	@Override
 	void doReport(long reportTimestamp, double factor) {
