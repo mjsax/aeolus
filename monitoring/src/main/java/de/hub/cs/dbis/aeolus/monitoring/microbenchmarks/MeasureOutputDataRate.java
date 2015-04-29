@@ -247,6 +247,7 @@ public class MeasureOutputDataRate {
 				}
 			}
 			System.out.println("Aeolus.MeasureOutputDataRate.spoutHost=" + spoutHost);
+			System.out.println("Aeolus.MeasureOutputDataRate.sinkHost=" + sinkHost);
 			System.out.println("Aeolus.MeasureOutputDataRate.spoutStatsHost=" + spoutStatsHost);
 			System.out.println("Aeolus.MeasureOutputDataRate.spoutStatsFile=" + spoutStatsFile);
 			System.out.println("Aeolus.MeasureOutputDataRate.sinkStatsHost=" + sinkStatsHost);
