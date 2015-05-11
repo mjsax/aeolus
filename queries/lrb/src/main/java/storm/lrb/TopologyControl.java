@@ -80,6 +80,10 @@ public class TopologyControl {
 	public final static String TUPLE_FIELD_NAME = "tuple";
 	public final static String TIMER_FIELD_NAME = "StormTimer";
 	public final static String BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME = "balancenotification";
+	/**
+	 * the identifier of the exit lane
+	 */
+	public final static int EXIT_LANE = 4;
 	
 	private TopologyControl() {}
 }

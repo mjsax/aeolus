@@ -77,22 +77,6 @@ public class AccidentImmutable implements Serializable {
 		return this.position;
 	}
 	
-	public String getAccNotification(PosReport pos) {
-		
-		String notification = "1," + pos.getTime() + "," + pos.getEmitTime() / 1000 + "," + pos.getVidAsString() + ","
-			+ (this.position / 5280) + "***" + pos.getTime() + "," + pos.getProcessingTime() + "###" + pos.toString()
-			+ "###";
-		
-		if(pos.getProcessingTimeSec() > 5) {
-			LOG.error("Time Requirement not met: " + pos.getProcessingTimeSec() + " for " + pos + "\n" + notification);
-			if(LOG.isDebugEnabled()) {
-				throw new IllegalArgumentException("Time Requirement not met:" + pos + "\n" + notification);
-			}
-		}
-		return notification;
-		
-	}
-	
 	public boolean isOver() {
 		return this.over;
 	}
