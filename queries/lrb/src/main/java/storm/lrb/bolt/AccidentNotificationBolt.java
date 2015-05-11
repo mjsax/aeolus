@@ -140,10 +140,8 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 		}
 		// only emit notification if vehicle crosses new segment and lane is not exit lane
 		if(!prevXsd.equals(prevXsd) && pos.getLane() != 4) {
-			String notification = accident.getAccNotification(pos);
-			if(!notification.isEmpty()) {
-				this.collector.emit(new Values(notification));
-			}
+			AccidentImmutable.validatePositionReport(pos);
+			this.collector.emit(new Values(pos));
 		} else {
 			LOG.debug("no acc notification because vehicle exits or was previously informed");
 		}

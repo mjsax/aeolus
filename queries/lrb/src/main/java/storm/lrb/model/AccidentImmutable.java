@@ -77,6 +77,13 @@ public class AccidentImmutable implements Serializable {
 		return this.position;
 	}
 	
+	public static void validatePositionReport(PosReport pos) {
+		if(pos.getProcessingTimeSec() > 5) {
+			throw new IllegalArgumentException("Time Requirement not met: " + pos.getProcessingTimeSec() + " for " + pos);
+		}
+		
+	}
+	
 	public boolean isOver() {
 		return this.over;
 	}
