@@ -956,7 +956,13 @@ public class AbstractBatchCollectorTest {
 		
 		
 		for(int i = 0; i < numberOfConsumerTasks.length; ++i) {
-			Assert.assertEquals(expectedResult.get(outputStreams[i]), collector.resultBuffer.get(outputStreams[i]));
+			List<Object> result = expectedResult.get(outputStreams[i]);
+			if(result.size() == 0) {
+				Assert.assertNull(collector.resultBuffer.get(outputStreams[i]));
+			} else {
+				Assert.assertEquals(result, collector.resultBuffer.get(outputStreams[i]));
+			}
+			
 		}
 	}
 	
