@@ -80,9 +80,8 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	
 	private static final long serialVersionUID = 5537727428628598519L;
 	private static final Logger LOG = LoggerFactory.getLogger(AccidentDetectionBolt.class);
-	public static final Fields FIELDS_OUTGOING = new Fields(TopologyControl.XWAY_FIELD_NAME,
-		TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
-		TopologyControl.ACCIDENT_INFO_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME);
+	public static final Fields FIELDS_OUTGOING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME,
+		TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.ACCIDENT_INFO_FIELD_NAME);
 	public static final Fields FIELDS_INCOMING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME);
 	
 	/**
@@ -247,10 +246,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 		Set<SegmentIdentifier> segmensts = accident.getInvolvedSegs();
 		for(SegmentIdentifier xsd : segmensts) {
 			AccidentImmutable acc = new AccidentImmutable(accident);
-			collector.emit(new Values(processed_xway, xsd.getxWay(), // xway
-				xsd.getSegment(), // segment
-				xsd.getDirection(), // dir
-				acc));
+			collector.emit(new Values(xsd, acc));
 		}
 	}
 	
