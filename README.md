@@ -1,6 +1,8 @@
 # Aeolus
 Aeolus is a batching and optimization framework on top of [Apache Storm](https://storm.apache.org/) (see also https://github.com/apache/storm).
 
+[![Build Status](https://travis-ci.org/mjsax/aeolus.svg?branch=master)](https://travis-ci.org/mjsax/aeolus)
+
 Aeolus was originally developed at [HP Lab](http://www.hpl.hp.com/) (Palo Alto, CA) in colaboration of [Humboldt-Universität zu Berlin](https://www.hu-berlin.de/?set_language=en&cl=en) ([DBIS Group](http://www.dbis.informatik.hu-berlin.de/index.php?id=5&L=1)). This is a re-implementation inspired by the following publications:
 * [Building a Transparent Batching Layer for Storm](http://www.hpl.hp.com/techreports/2013/HPL-2013-69.html) (HP Labs Technical Report)
 * [Performance Optimization for Distributed Intra-Node-Parallel Streaming Systems](https://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=6547428&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6547428) (SMDB WS at ICDE 2013)
