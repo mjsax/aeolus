@@ -113,19 +113,23 @@ public class AbstractBatchCollectorTest {
 	private HashMap<String, Integer> generateBatchSizes(String[] streamIds) {
 		HashMap<String, Integer> batchSizes = new HashMap<String, Integer>();
 		
-		boolean notZero;
+		boolean foundZero;
 		do {
 			for(String id : streamIds) {
 				batchSizes.put(id, new Integer(this.r.nextInt(6)));
 			}
 			
-			notZero = false;
+			foundZero = false;
 			for(Integer bS : batchSizes.values()) {
-				if(bS.intValue() > 0) {
-					notZero = true;
+				if(bS.intValue() == 0) {
+					foundZero = true;
 				}
 			}
-		} while(!notZero);
+		} while(foundZero);
+		
+		for(Integer bS : batchSizes.values()) {
+			assert (bS.intValue() > 0);
+		}
 		
 		return batchSizes;
 	}
@@ -750,17 +754,17 @@ public class AbstractBatchCollectorTest {
 			
 			for(String consumer : streams.get(outputStreams[i])) {
 				for(Integer tid : taskIds.get(consumer)) {
-					List<Object> resultPerStream = new LinkedList<Object>();
+					List<Object> resultPerTask = new LinkedList<Object>();
 					
 					Iterator<Integer> t = collector.taskBuffer.get(
 						BatchingOutputFieldsDeclarer.STREAM_PREFIX + outputStreams[i]).iterator();
-					for(Object tupleOfBatch : collector.resultBuffer.get(BatchingOutputFieldsDeclarer.STREAM_PREFIX
+					for(Object tupleOrBatch : collector.resultBuffer.get(BatchingOutputFieldsDeclarer.STREAM_PREFIX
 						+ outputStreams[i])) {
 						if(t.next().intValue() == tid.intValue()) {
-							resultPerStream.add(tupleOfBatch);
+							resultPerTask.add(tupleOrBatch);
 						}
 					}
-					Assert.assertEquals(expectedResultPerTask.get(tid), resultPerStream);
+					Assert.assertEquals(expectedResultPerTask.get(tid), resultPerTask);
 				}
 			}
 		}
