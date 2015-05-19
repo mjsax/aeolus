@@ -83,8 +83,7 @@ public class LRBTopology {
 		builder
 			.setBolt(
 				TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
-				new TollNotificationBolt(stormTimer, TopologyControl.TOLL_NOTIFICATION_STREAM_ID,
-					TopologyControl.TOLL_ASSESSMENT_STREAM_ID), executors)
+				new TollNotificationBolt(stormTimer), executors)
 			.setNumTasks(tasks)
 			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,
 				new Fields(fields))
