@@ -88,12 +88,14 @@ public class AccountBalanceBolt extends BaseRichBolt {
 			account = new VehicleAccount(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos);
 			this.allVehicles.put(tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME), account);
 		} else {
-			account.assessToll(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos.getEmitTime());
+			account.assessToll(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos.getStormTimer()
+				.getOffset());
 		}
 	}
 	
 	private void getBalanceAndSend(Tuple tuple) {
-		AccountBalanceRequest bal = (AccountBalanceRequest)tuple.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
+		AccountBalanceRequest bal = (AccountBalanceRequest)tuple
+			.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
 		VehicleAccount account = this.allVehicles.get(bal.getVehicleIdentifier());
 		
 		if(account == null) {

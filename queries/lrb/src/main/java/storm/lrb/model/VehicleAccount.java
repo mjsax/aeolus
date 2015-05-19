@@ -49,12 +49,11 @@ public class VehicleAccount implements Serializable {
 		this.vid = pos.getVehicleIdentifier();
 		this.xWay = pos.getSegmentIdentifier().getxWay();
 		
-		this.assessToll(calculatedToll, pos.getEmitTime());
+		this.assessToll(calculatedToll, pos.getStormTimer().getOffset());
 	}
 	
 	public VehicleAccount(AccountBalanceRequest bal) {
 		this.vid = bal.getVehicleIdentifier();
-		this.xWay = bal.getSegmentIdentifier().getxWay();
 	}
 	
 	@Override

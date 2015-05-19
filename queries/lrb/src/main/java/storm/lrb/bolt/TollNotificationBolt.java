@@ -202,7 +202,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * @param minute
 	 * @return toll amount to charge the vehicle with
 	 */
-	protected int calcToll(SegmentIdentifier position, int minute) {
+	protected int calcToll(SegmentIdentifier position, long minute) {
 		int toll = DRIVE_EASY;
 		int nov = 0;
 		if(this.allNovLavs.containsKey(position)) {
@@ -261,7 +261,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	 * @param minute
 	 * @return
 	 */
-	protected boolean tollConditionSatisfied(SegmentIdentifier segment, int minute) {
+	protected boolean tollConditionSatisfied(SegmentIdentifier segment, long minute) {
 		double segmentSpeed = 0;
 		int carsOnSegment = 0;
 		if(this.allNovLavs.containsKey(segment) && this.allNovLavs.get(segment).getMinute() == minute) {

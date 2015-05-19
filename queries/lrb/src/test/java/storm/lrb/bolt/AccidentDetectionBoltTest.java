@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,28 +72,28 @@ import storm.lrb.tools.EntityHelper;
 
 
 /**
- *
+ * 
  * @author richter
  */
 @RunWith(PowerMockRunner.class)
 public class AccidentDetectionBoltTest {
-
+	
 	private static final Random random = new Random();
-
+	
 	public AccidentDetectionBoltTest() {}
-
+	
 	@BeforeClass
 	public static void setUpClass() {}
-
+	
 	@AfterClass
 	public static void tearDownClass() {}
-
+	
 	@Before
 	public void setUp() {}
-
+	
 	@After
 	public void tearDown() {}
-
+	
 	/**
 	 * Test of execute method, of class AccidentDetectionBolt. Tests the size of
 	 * {@link AccidentDetectionBolt#getAllAccidentCars() } after different tuples have been passed simulating the
@@ -105,9 +105,9 @@ public class AccidentDetectionBoltTest {
 		GeneralTopologyContext generalContextMock = mock(GeneralTopologyContext.class);
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
-
+		
 		Fields schema = AccidentDetectionBolt.FIELDS_INCOMING;
-
+		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(schema);
 		int vehicleID0 = (int)(random.nextDouble() * 10000); // set max. value to increase readability
 		PosReport posReport0Stopped = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
@@ -124,11 +124,11 @@ public class AccidentDetectionBoltTest {
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
 		when(contextMock.getThisTaskIndex()).thenReturn(0);
-
+		
 		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
 		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
 		when(context.getComponentId(anyInt())).thenReturn("componentID");
-
+		
 		instance.prepare(new Config(), contextMock, new OutputCollector(collector));
 		OutputFieldsDeclarer outputFieldsDeclarer = Mockito.mock(OutputFieldsDeclarer.class);
 		// initial setup
@@ -136,7 +136,7 @@ public class AccidentDetectionBoltTest {
 		instance.execute(tuple);
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-
+		
 		// test that a running car (with speed > 1) is not recorded (different vehicleID)
 		int vehicleID1 = vehicleID0;
 		while(vehicleID1 == vehicleID0) {
@@ -148,7 +148,7 @@ public class AccidentDetectionBoltTest {
 		instance.execute(tuple);
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-
+		
 		// test that an accident (4 consecutive pos reports with speed 0 of two
 		// vehicles)
 		PosReport posReport0Stopped1 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
@@ -210,7 +210,7 @@ public class AccidentDetectionBoltTest {
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(2, instance.getStopInformationPerPosition().get(1).size());
 		assertEquals(1, instance.getAccidentsPerPosition().size());
-
+		
 		// test that stopped car is removed from accident status collection when resumes driving
 		PosReport posReport0Running = EntityHelper.createPosReport(random, vehicleID0);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Running), vehicleID0, null);

@@ -37,9 +37,9 @@ public class AccidentImmutable implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(AccidentImmutable.class);
-	private int startTime;
-	private int startMinute;
-	private int lastUpdateTime;
+	private long startTime;
+	private long startMinute;
+	private long lastUpdateTime;
 	private int position;
 	private boolean over = false;
 	private HashSet<SegmentIdentifier> involvedSegs = new HashSet<SegmentIdentifier>();
@@ -61,7 +61,7 @@ public class AccidentImmutable implements Serializable {
 		this.over = accident.isOver();
 	}
 	
-	public boolean active(int minute) {
+	public boolean active(long minute) {
 		if(this.isOver()) {
 			return minute <= Time.getMinute(this.lastUpdateTime);
 		} else {

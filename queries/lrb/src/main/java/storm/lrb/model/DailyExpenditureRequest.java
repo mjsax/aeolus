@@ -28,31 +28,78 @@ import storm.lrb.tools.StopWatch;
 
 /**
  * Object to represent daily expnditure requests
+ * 
+ * LRB format: (Type = 3, Time, VID, XWay, QID, Day)
  */
 /*
  * internal implementation notes: - does not implement clone because Values doesn't
  */
 @SuppressWarnings("CloneableImplementsClone")
-public class DaiExpRequest extends LRBtuple implements Serializable {
+public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	public static final int TYPE = 3;
 	
-	protected DaiExpRequest() {
+	private int time;
+	private int vehicleIdentifier;
+	private int xWay;
+	private int queryIdentifier;
+	/**
+	 * day (1 is yesterday, 69 is 10 weeks ago)
+	 */
+	private Integer day;
+	
+	protected DailyExpenditureRequest() {
 		super();
-		
 	}
 	
-	public DaiExpRequest(String tupel, StopWatch time) {
-		super(TYPE, tupel, time);
-		
+	public DailyExpenditureRequest(int time, int vehicleIdentifier, int xWay, int queryIdentifier, int day,
+		StopWatch systemTimer) {
+		super(LRBtuple.TYPE_DAILY_EXPEDITURE, System.currentTimeMillis(), systemTimer);
+		this.time = time;
+		this.vehicleIdentifier = vehicleIdentifier;
+		this.xWay = xWay;
+		this.queryIdentifier = queryIdentifier;
+		this.day = day;
 	}
 	
-	@Override
-	public String toString() {
-		return "ExpenditureReq [time=" + this.getTime() + ", vid=" + this.getVehicleIdentifier() + ", xway="
-			+ this.getSegmentIdentifier().getxWay() + ", qid=" + this.getQueryIdentifier() + ", day=" + this.getDay()
-			+ "]";
+	public void setDay(int day) {
+		this.day = day;
+	}
+	
+	public int getDay() {
+		return day;
+	}
+	
+	public void setQueryIdentifier(int queryIdentifier) {
+		this.queryIdentifier = queryIdentifier;
+	}
+	
+	public int getQueryIdentifier() {
+		return queryIdentifier;
+	}
+	
+	public void setxWay(int xWay) {
+		this.xWay = xWay;
+	}
+	
+	public int getxWay() {
+		return xWay;
+	}
+	
+	public void setVehicleIdentifier(int vehicleIdentifier) {
+		this.vehicleIdentifier = vehicleIdentifier;
+	}
+	
+	public int getVehicleIdentifier() {
+		return vehicleIdentifier;
+	}
+	
+	public void setTime(int time) {
+		this.time = time;
+	}
+	
+	public int getTime() {
+		return time;
 	}
 	
 }

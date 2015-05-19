@@ -126,9 +126,10 @@ public class VehicleInfo implements Serializable {
 		if(this.posreport.getTime() == this.lastSendToll) {
 			return "";// getEmptyNotification("duplicate");
 		}
-		String notification = "0," + this.vid + "," + this.posreport.getTime() + "," + this.posreport.getEmitTime()
-			+ "," + (int)lav + "," + toll + "***" + this.posreport.getTime() + "," + this.posreport.getProcessingTime()
-			+ "###" + this.posreport.toString() + "###" + nov;
+		String notification = "0," + this.vid + "," + this.posreport.getTime() + ","
+			+ this.posreport.getStormTimer().getOffset() + "," + (int)lav + "," + toll + "***"
+			+ this.posreport.getTime() + "," + this.posreport.getProcessingTime() + "###" + this.posreport.toString()
+			+ "###" + nov;
 		
 		// check if time requirements are met if not stop computation
 		long diff;

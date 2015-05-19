@@ -40,13 +40,11 @@ public class Accident implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(Accident.class);
-	private int startTime;
-	private int startMinute;
-	private int endMinute;
+	private long startTime;
 	/**
 	 * timestamp of last positionreport indicating that the accident is still active
 	 */
-	private volatile int lastUpdateTime = Integer.MAX_VALUE - 1;
+	private volatile long lastUpdateTime = Integer.MAX_VALUE - 1;
 	private int position = -1;
 	private boolean over = false;
 	private final HashSet<SegmentIdentifier> involvedSegs = new HashSet<SegmentIdentifier>();
@@ -59,7 +57,6 @@ public class Accident implements Serializable {
 	
 	public Accident(PosReport report) {
 		this.startTime = report.getTime();
-		this.startMinute = Time.getMinute(this.startTime);
 		this.position = report.getPosition();
 		this.lastUpdateTime = report.getTime();
 		this.assignSegments(report.getSegmentIdentifier().getxWay(), report.getPosition(), report
@@ -168,8 +165,7 @@ public class Accident implements Serializable {
 		this.over = true;
 	}
 	
-	public void setOver(int timeinseconds) {
-		this.endMinute = Time.getMinute(timeinseconds);
+	public void setOver(long timeinseconds) {
 		this.over = true;
 	}
 	
@@ -177,20 +173,12 @@ public class Accident implements Serializable {
 		return this.over;
 	}
 	
-	public int getStartTime() {
+	public long getStartTime() {
 		return this.startTime;
 	}
 	
-	public int getLastUpdateTime() {
+	public long getLastUpdateTime() {
 		return this.lastUpdateTime;
-	}
-	
-	@Override
-	public String toString() {
-		return "Accident [startTime=" + this.startTime + ", startMinute=" + this.startMinute + ", endMinute="
-			+ this.endMinute + ", lastUpdateTime=" + this.lastUpdateTime + ", position=" + this.position + ", over="
-			+ this.over + ", involvedSegs=" + this.involvedSegs + ", involvedCars=" + this.involvedCars + "]";
-		// ", maxPos=" + maxPos + ", minPos=" + minPos + "]";
 	}
 	
 }

@@ -110,11 +110,29 @@ public class SegmentStatistics implements Serializable {
 		return minuteStatistics;
 	}
 	
+	/**
+	 * 
+	 * @param minute
+	 * @param xsd
+	 * @return
+	 */
+	/*
+	 * internal implementation notes: - needs to be long because is unsed for list index access later
+	 */
 	public int vehicleCount(int minute, SegmentIdentifier xsd) {
 		MinuteStatistics minuteStatistics = this.findMinuteStatistics(minute, xsd);
 		return minuteStatistics.vehicleCount();
 	}
 	
+	/**
+	 * 
+	 * @param minute
+	 * @param xsd
+	 * @return
+	 */
+	/*
+	 * internal implementation notes: - needs to be long because is unsed for list index access later
+	 */
 	public double speedAverage(int minute, SegmentIdentifier xsd) {
 		MinuteStatistics minuteStatistics = this.findMinuteStatistics(minute, xsd);
 		return minuteStatistics.speedAverage();

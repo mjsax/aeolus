@@ -28,6 +28,8 @@ import storm.lrb.tools.StopWatch;
 
 /**
  * object to represent time travel requests
+ * 
+ * LRB format: (Type = 4, Time, VID, XWay, QID, S init , S end , DOW, TOD)
  */
 /*
  * internal implementation notes: - does not implement clone because Values doesn't
@@ -36,23 +38,65 @@ import storm.lrb.tools.StopWatch;
 public class TravelTimeRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	public static final int TYPE = 4;
+	
+	private int time;
+	private int vehicleIdentifier;
+	private int xWay;
+	private int queryIdentifier;
+	private int sinit;
+	private int send;
+	private int dayOfWeek;
+	private int minuteOfDay;
 	
 	protected TravelTimeRequest() {
 		super();
-		
 	}
 	
-	public TravelTimeRequest(String tupel, StopWatch time) {
-		super(TYPE, tupel, time);
-		
+	public TravelTimeRequest(int time, int vehicleIdentifier, int xWay, int queryIdentifier, int sinit, int send,
+		int dayOfWeek, int minuteOfDay, StopWatch systemTimer) {
+		super(LRBtuple.TYPE_TRAVEL_TIME_REQUEST, System.currentTimeMillis(), systemTimer);
+		this.time = time;
+		this.vehicleIdentifier = vehicleIdentifier;
+		this.xWay = xWay;
+		this.queryIdentifier = queryIdentifier;
+		this.sinit = sinit;
+		this.send = send;
+		this.dayOfWeek = dayOfWeek;
+		this.minuteOfDay = minuteOfDay;
+	}
+	
+	public int getMinuteOfDay() {
+		return minuteOfDay;
+	}
+	
+	public int getDayOfWeek() {
+		return dayOfWeek;
 	}
 	
 	@Override
-	public String toString() {
-		return "TTimeReq [time=" + this.getTime() + ", vid=" + this.getVehicleIdentifier() + ", xway="
-			+ this.getSegmentIdentifier().getxWay() + ", qid=" + this.getQueryIdentifier() + ", sInit="
-			+ this.getSinit() + ", sEnd=" + this.getSend() + ", dow=" + this.getDow() + ", tod=" + this.getTod() + "]";
+	public Integer getSend() {
+		return super.getSend(); // To change body of generated methods, choose Tools | Templates.
+	}
+	
+	@Override
+	public Integer getSinit() {
+		return super.getSinit(); // To change body of generated methods, choose Tools | Templates.
+	}
+	
+	public int getQueryIdentifier() {
+		return queryIdentifier;
+	}
+	
+	public int getxWay() {
+		return xWay;
+	}
+	
+	public int getVehicleIdentifier() {
+		return vehicleIdentifier;
+	}
+	
+	public int getTime() {
+		return time;
 	}
 	
 }

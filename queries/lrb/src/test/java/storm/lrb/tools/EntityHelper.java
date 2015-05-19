@@ -108,12 +108,12 @@ public class EntityHelper {
 		int direction = SegmentIdentifier.DIRECTION_EASTBOUND;
 		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(1, // xWay
 			segment, direction);
-		int postion = 1;
-		int queryIdentifier = 1;
-		int sinit = 0, send = 0, dow = 0, tod = 0, day = 0;
+		int position = 1;
 		StopWatch timer = new StopWatch(System.currentTimeMillis());
-		PosReport posReport = new PosReport(time, vehicleID, currentSpeed, 1,// lane
-			segmentIdentifier, postion, queryIdentifier, sinit, send, dow, tod, day, timer);
+		PosReport posReport = new PosReport(time, vehicleID, currentSpeed, 1, // xWay
+			1,// lane
+			PosReport.DIRECTION_EASTBOUND, // direction
+			segmentIdentifier, position, timer);
 		return posReport;
 	}
 	

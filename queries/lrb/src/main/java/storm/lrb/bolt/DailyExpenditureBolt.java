@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.DaiExpRequest;
+import storm.lrb.model.DailyExpenditureRequest;
 import storm.lrb.model.LRBtuple;
 import storm.lrb.tools.Constants;
 import backtype.storm.task.OutputCollector;
@@ -79,24 +79,24 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 		
 		if(fields.contains(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME)) {
 			
-			DaiExpRequest exp = (DaiExpRequest)tuple
+			DailyExpenditureRequest exp = (DailyExpenditureRequest)tuple
 				.getValueByField(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
 			String out;
 			int vehicleIdentifier = exp.getVehicleIdentifier();
 			Values values;
 			if(this.tollAccounts.containsKey(vehicleIdentifier)) {
 				LOG.debug("ExpenditureRequest: found vehicle identifier %d", vehicleIdentifier);
-				Pair<Integer, Integer> key = new MutablePair<Integer, Integer>(exp.getSegmentIdentifier().getxWay(),
-					exp.getDay());
+				Pair<Integer, Integer> key = new MutablePair<Integer, Integer>(exp.getxWay(), exp.getDay());
 				
 				int toll = this.tollAccounts.get(exp.getVehicleIdentifier()).get(key);
 				
-				LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getEmitTime(), exp.getQueryIdentifier(), toll);
+				LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getStormTimer().getOffset(),
+					exp.getQueryIdentifier(), toll);
 				
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getEmitTime(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getStormTimer().getOffset(),
 					exp.getQueryIdentifier(), toll);
 			} else {
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getEmitTime(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getStormTimer().getOffset(),
 					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
 				
 			}
