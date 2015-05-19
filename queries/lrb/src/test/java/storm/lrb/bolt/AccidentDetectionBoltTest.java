@@ -133,7 +133,6 @@ public class AccidentDetectionBoltTest {
 		OutputFieldsDeclarer outputFieldsDeclarer = Mockito.mock(OutputFieldsDeclarer.class);
 		// initial setup
 		instance.declareOutputFields(outputFieldsDeclarer);
-		assertEquals(0, instance.getStopInformationPerPosition().size());
 		instance.execute(tuple);
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());

@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.AccBalRequest;
+import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.model.DaiExpRequest;
 import storm.lrb.model.LRBtuple;
 import storm.lrb.model.PosReport;
@@ -92,7 +92,7 @@ public class DispatcherBolt extends BaseRichBolt {
 				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
 				break;
 			case LRBtuple.TYPE_ACCOUNT_BALANCE:
-				AccBalRequest acc = new AccBalRequest(line, this.timer);
+				AccountBalanceRequest acc = new AccountBalanceRequest(line, this.timer);
 				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple, acc);
 				break;
 			case LRBtuple.TYPE_DAILY_EXPEDITURE:

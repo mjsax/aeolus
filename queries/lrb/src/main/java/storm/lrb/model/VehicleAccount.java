@@ -52,7 +52,7 @@ public class VehicleAccount implements Serializable {
 		this.assessToll(calculatedToll, pos.getEmitTime());
 	}
 	
-	public VehicleAccount(AccBalRequest bal) {
+	public VehicleAccount(AccountBalanceRequest bal) {
 		this.vid = bal.getVehicleIdentifier();
 		this.xWay = bal.getSegmentIdentifier().getxWay();
 	}
@@ -79,7 +79,7 @@ public class VehicleAccount implements Serializable {
 		
 	}
 	
-	public String getAccBalanceNotification(AccBalRequest accBalReq) {
+	public String getAccBalanceNotification(AccountBalanceRequest accBalReq) {
 		// TODO nach zweiter meinung fragen: Benchmarkspezifikation
 		// widerspricht sich bei der Reihenfolge der Werte des Outputtuples.
 		

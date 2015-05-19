@@ -67,7 +67,7 @@ public class LRBtuple extends Values implements Serializable {
 	}
 	
 	private static final Set<Integer> ALLOWED_TYPES = Collections.unmodifiableSet(new HashSet<Integer>(Arrays.asList(
-		PosReport.TYPE, AccBalRequest.TYPE, DaiExpRequest.TYPE, TravelTimeRequest.TYPE)));
+		PosReport.TYPE, AccountBalanceRequest.TYPE, DaiExpRequest.TYPE, TravelTimeRequest.TYPE)));
 	
 	/**
 	 * tuple type 0=Position report 2=Account balance requests 3=daily expenditure request 4=Travel time request
