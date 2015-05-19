@@ -1,16 +1,29 @@
 #!/bin/bash
 
-latexFile=main.tex
+fileName=main
+latexFile=$fileName.tex
 
 workingDir=`pwd`
 cd results
 
 
+
 for benchmark in `ls`
 do
+  if [ ! -d $benchmark ]
+  then
+    continue
+  fi
+
   cd $benchmark
+
   for run in `ls`
   do
+    if [ ! -d $run ]
+    then
+      continue
+    fi
+
     cd $run
 
     # preprocessing: generate .res files from .stats files
@@ -53,6 +66,7 @@ do
   xlabel={time in s},
   legend columns=3,
   legend style={at={(0.5,-0.3)},anchor=north},
+  ymax=100,
 ]" >> $latexFile
 
       # add plots
@@ -84,6 +98,7 @@ do
   xlabel={time in s},
   legend columns=3,
   legend style={at={(0.5,-0.3)},anchor=north},
+  ymax=75000,
 ]" >> $latexFile
 
       # add plots
