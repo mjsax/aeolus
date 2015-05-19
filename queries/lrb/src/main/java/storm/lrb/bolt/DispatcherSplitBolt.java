@@ -51,7 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.AccBalRequest;
+import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.model.DaiExpRequest;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.TravelTimeRequest;
@@ -126,7 +126,7 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 				tupleCnt++;
 				break;
 			case 2:
-				AccBalRequest acc = new AccBalRequest(line, timer);
+				AccountBalanceRequest acc = new AccountBalanceRequest(line, timer);
 				collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple,
 					new Values(acc.getVehicleIdentifier(), acc));
 				break;

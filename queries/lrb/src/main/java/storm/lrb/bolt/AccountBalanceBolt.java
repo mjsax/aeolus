@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.AccBalRequest;
+import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.VehicleAccount;
 import backtype.storm.task.OutputCollector;
@@ -93,7 +93,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	}
 	
 	private void getBalanceAndSend(Tuple tuple) {
-		AccBalRequest bal = (AccBalRequest)tuple.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
+		AccountBalanceRequest bal = (AccountBalanceRequest)tuple.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
 		VehicleAccount account = this.allVehicles.get(bal.getVehicleIdentifier());
 		
 		if(account == null) {

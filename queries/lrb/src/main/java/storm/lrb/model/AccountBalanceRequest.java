@@ -32,17 +32,17 @@ import storm.lrb.tools.StopWatch;
  * internal implementation notes: - does not implement clone because Values doesn't
  */
 @SuppressWarnings("CloneableImplementsClone")
-public class AccBalRequest extends LRBtuple {
+public class AccountBalanceRequest extends LRBtuple {
 	
 	private static final long serialVersionUID = 1L;
 	public static final int TYPE = 2;
 	
-	protected AccBalRequest() {
+	protected AccountBalanceRequest() {
 		super();
 		
 	}
 	
-	public AccBalRequest(String tupel, StopWatch time) {
+	public AccountBalanceRequest(String tupel, StopWatch time) {
 		super(TYPE, tupel, time);
 		
 	}
