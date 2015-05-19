@@ -60,6 +60,9 @@ public class SegmentStatsBolt extends BaseRichBolt {
 	private final SegmentStatistics segmentStats = new SegmentStatistics();
 	
 	private OutputCollector collector;
+	/*
+	 * internal implementation notes: - needs to be long because is unsed for list index access later
+	 */
 	private int curMinute = 0;
 	private String tmpname;
 	
@@ -87,7 +90,7 @@ public class SegmentStatsBolt extends BaseRichBolt {
 	
 	private void emitCurrentWindowCounts() {
 		
-		int prevMinute = Math.max(this.curMinute - 1, START_MINUTE);
+		long prevMinute = Math.max(this.curMinute - 1, START_MINUTE);
 		
 		Set<SegmentIdentifier> segmentList = this.segmentStats.getXsdList();
 		if(LOG.isDebugEnabled()) {
@@ -123,10 +126,10 @@ public class SegmentStatsBolt extends BaseRichBolt {
 		SegmentIdentifier segment = new SegmentIdentifier(pos.getSegmentIdentifier().getxWay(), pos
 			.getSegmentIdentifier().getSegment(), pos.getSegmentIdentifier().getDirection());
 		
-		int newMinute = Time.getMinute(pos.getTime());
+		long newMinute = Time.getMinute(pos.getTime());
 		if(newMinute > this.curMinute) {
 			this.emitCurrentWindowCounts();
-			this.curMinute = Time.getMinute(pos.getTime());
+			this.curMinute = (int)Time.getMinute(pos.getTime());
 			
 		}
 		this.segmentStats.addVehicleSpeed(this.curMinute, segment, pos.getVehicleIdentifier(), pos.getCurrentSpeed());

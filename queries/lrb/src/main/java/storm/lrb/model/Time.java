@@ -24,7 +24,7 @@ package storm.lrb.model;
  */
 public class Time {
 	
-	public static int getMinute(int sec) {
+	public static long getMinute(long sec) {
 		return ((sec / 60) + 1);
 	}
 	

@@ -25,7 +25,8 @@ import storm.lrb.tools.StopWatch;
 
 
 /**
- * Object representing account balance requests
+ * Object representing account balance requests. Balance requests have the form (Type = 2, Time, VID, QID) where QID is
+ * a query identifier.
  * 
  */
 /*
@@ -35,22 +36,52 @@ import storm.lrb.tools.StopWatch;
 public class AccountBalanceRequest extends LRBtuple {
 	
 	private static final long serialVersionUID = 1L;
-	public static final int TYPE = 2;
+	/**
+	 * QID is an integer query identiﬁer
+	 */
+	private Integer queryIdentifier;
+	/**
+	 * VID (0. . . MAXINT) is an integer vehicle identifier i
+	 */
+	private Integer vehicleIdentifier;
+	
+	/**
+	 * Time (0. . .10799)^3 is a timestamp identifying the time at which the position report was emitted
+	 */
+	private int time;
 	
 	protected AccountBalanceRequest() {
 		super();
 		
 	}
 	
-	public AccountBalanceRequest(String tupel, StopWatch time) {
-		super(TYPE, tupel, time);
-		
+	public AccountBalanceRequest(int time, int vehicleIdentifier, int queryIdentifier, StopWatch systemTimer) {
+		super(LRBtuple.TYPE_ACCOUNT_BALANCE, System.currentTimeMillis(), systemTimer);
+		this.time = time;
+		this.vehicleIdentifier = vehicleIdentifier;
+		this.queryIdentifier = queryIdentifier;
 	}
 	
-	@Override
-	public String toString() {
-		return "BalanceReq [time=" + this.getTime() + ", vid=" + this.getVehicleIdentifier() + ", qid="
-			+ this.getQueryIdentifier() + "]";
+	public int getTime() {
+		return this.time;
+	}
+	
+	public Integer getVehicleIdentifier() {
+		return this.vehicleIdentifier;
+	}
+	
+	public Integer getQueryIdentifier() {
+		return this.queryIdentifier;
+	}
+	
+	/**
+	 * get the emit time for notification output
+	 * 
+	 * @return (time+processing time)
+	 */
+	public long getEmitTime() {
+		
+		return this.time + this.getProcessingTimeSec();
 	}
 	
 }

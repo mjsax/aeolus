@@ -53,7 +53,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	/**
 	 * contains the time of the last reports of each segment (xsd, timeinsec)
 	 */
-	private final Map<SegmentIdentifier, Integer> timeOfLastReportsMap;
+	private final Map<SegmentIdentifier, Long> timeOfLastReportsMap;
 	/**
 	 * contains all avgs of each vehicle driving in the given segment for the current minute. gets resetted every minute
 	 * (xsd -> Map(minute ->avgsvehiclespeeds))
@@ -65,12 +65,12 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	// vehicles
 	// speeds>
 	
-	private volatile Integer lastEmitMinute = 0;
+	private volatile long lastEmitMinute = 0;
 	private OutputCollector collector;
 	private int processed_xway = -1;
 	
 	public AverageSpeedBolt(int xway) {
-		this.timeOfLastReportsMap = new HashMap<SegmentIdentifier, Integer>();
+		this.timeOfLastReportsMap = new HashMap<SegmentIdentifier, Long>();
 		this.avgSpeedsMap = new HashMap<SegmentIdentifier, AvgVehicleSpeeds>();
 		this.processed_xway = xway;
 	}
@@ -89,7 +89,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		SegmentIdentifier accidentIdentifier = new SegmentIdentifier(pos.getSegmentIdentifier().getxWay(), pos
 			.getSegmentIdentifier().getSegment(), pos.getSegmentIdentifier().getDirection());
 		
-		int curminute = Time.getMinute(pos.getTime());
+		long curminute = Time.getMinute(pos.getTime());
 		
 		// synchronized (lastEmitMinute) {
 		// if a new minute starts emit all previous accumulated avgs
@@ -100,7 +100,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		}
 		// }
 		
-		Integer timeOfLastReports = this.timeOfLastReportsMap.get(accidentIdentifier);
+		Long timeOfLastReports = this.timeOfLastReportsMap.get(accidentIdentifier);
 		if(timeOfLastReports == null) {
 			timeOfLastReports = curminute;
 			this.timeOfLastReportsMap.put(accidentIdentifier, timeOfLastReports);
@@ -120,7 +120,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		this.collector.ack(tuple);
 	}
 	
-	private void emitAllAndRemove(int minute) {
+	private void emitAllAndRemove(long minute) {
 		
 		Set<SegmentIdentifier> segmentList = this.avgSpeedsMap.keySet();
 		

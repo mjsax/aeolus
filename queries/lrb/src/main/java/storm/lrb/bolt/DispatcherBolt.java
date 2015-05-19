@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.model.AccountBalanceRequest;
-import storm.lrb.model.DaiExpRequest;
+import storm.lrb.model.DailyExpenditureRequest;
 import storm.lrb.model.LRBtuple;
 import storm.lrb.model.PosReport;
 import storm.lrb.model.TravelTimeRequest;
@@ -72,35 +72,30 @@ public class DispatcherBolt extends BaseRichBolt {
 	
 	private void splitAndEmit(Tuple tuple) {
 		
-		String line = tuple.getStringByField(TopologyControl.TUPLE_FIELD_NAME);
+		LRBtuple line = (LRBtuple)tuple.getValueByField(TopologyControl.TUPLE_FIELD_NAME);
 		if(this.firstrun) {
 			this.firstrun = false;
 			this.timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
 			LOG.info("Set timer: " + this.timer);
 		}
-		String typeString = line.substring(0, 1);
-		if(!typeString.matches("^[0-4]")) {
-			return;
-		}
 		
 		try {
-			int type = Integer.parseInt(typeString);
+			int type = line.getType();
 			switch(type) {
 			case LRBtuple.TYPE_POSITION_REPORT:
-				PosReport pos = new PosReport(line, this.timer);
-				
+				PosReport pos = (PosReport)line;
 				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
 				break;
 			case LRBtuple.TYPE_ACCOUNT_BALANCE:
-				AccountBalanceRequest acc = new AccountBalanceRequest(line, this.timer);
+				AccountBalanceRequest acc = (AccountBalanceRequest)line;
 				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple, acc);
 				break;
 			case LRBtuple.TYPE_DAILY_EXPEDITURE:
-				DaiExpRequest exp = new DaiExpRequest(line, this.timer);
+				DailyExpenditureRequest exp = (DailyExpenditureRequest)line;
 				this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple, exp);
 				break;
 			case LRBtuple.TYPE_TRAVEL_TIME_REQUEST:
-				TravelTimeRequest est = new TravelTimeRequest(line, this.timer);
+				TravelTimeRequest est = (TravelTimeRequest)line;
 				this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple, est);
 				break;
 			default:
