@@ -48,21 +48,21 @@ public class AccountBalanceRequest extends LRBtuple {
 	/**
 	 * Time (0. . .10799)^3 is a timestamp identifying the time at which the position report was emitted
 	 */
-	private int time;
+	private long time;
 	
 	protected AccountBalanceRequest() {
 		super();
 		
 	}
 	
-	public AccountBalanceRequest(int time, int vehicleIdentifier, int queryIdentifier, StopWatch systemTimer) {
-		super(LRBtuple.TYPE_ACCOUNT_BALANCE, System.currentTimeMillis(), systemTimer);
+	public AccountBalanceRequest(long time, int vehicleIdentifier, int queryIdentifier, StopWatch systemTimer) {
+		super(LRBtuple.TYPE_ACCOUNT_BALANCE_REQUEST, System.currentTimeMillis(), systemTimer);
 		this.time = time;
 		this.vehicleIdentifier = vehicleIdentifier;
 		this.queryIdentifier = queryIdentifier;
 	}
 	
-	public int getTime() {
+	public long getTime() {
 		return this.time;
 	}
 	
