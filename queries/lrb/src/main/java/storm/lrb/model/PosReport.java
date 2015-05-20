@@ -89,7 +89,7 @@ public class PosReport extends LRBtuple implements Serializable {
 	 * @param position
 	 * @param timer
 	 */
-	public PosReport(int time, Integer vehicleIdentifier, int currentSpeed, Integer xWay, Integer lane,
+	public PosReport(long time, Integer vehicleIdentifier, int currentSpeed, Integer xWay, Integer lane,
 		Integer direction, SegmentIdentifier segmentIdentifier, Integer position, StopWatch timer) {
 		super(LRBtuple.TYPE_POSITION_REPORT, System.currentTimeMillis(), timer);
 		this.time = time;
@@ -182,4 +182,38 @@ public class PosReport extends LRBtuple implements Serializable {
 		return time;
 	}
 	
+	protected void setTime(long time) {
+		this.time = time;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == null) {
+			return false;
+		}
+		if(getClass() != obj.getClass()) {
+			return false;
+		}
+		final PosReport other = (PosReport)obj;
+		if(this.segmentIdentifier != other.segmentIdentifier
+			&& (this.segmentIdentifier == null || !this.segmentIdentifier.equals(other.segmentIdentifier))) {
+			return false;
+		}
+		if(this.xWay != other.xWay && (this.xWay == null || !this.xWay.equals(other.xWay))) {
+			return false;
+		}
+		if(this.direction != other.direction && (this.direction == null || !this.direction.equals(other.direction))) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		int hash = 3;
+		hash = 89 * hash + (this.segmentIdentifier != null ? this.segmentIdentifier.hashCode() : 0);
+		hash = 89 * hash + (this.xWay != null ? this.xWay.hashCode() : 0);
+		hash = 89 * hash + (this.direction != null ? this.direction.hashCode() : 0);
+		return hash;
+	}
 }

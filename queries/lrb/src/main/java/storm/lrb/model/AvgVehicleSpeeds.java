@@ -71,9 +71,4 @@ public class AvgVehicleSpeeds {
 		return this.avgsPerVehicle.size();
 	}
 	
-	@Override
-	public String toString() {
-		return " [avgsPerVehicle=" + this.avgsPerVehicle + ", speedAverage=" + this.speedAverage + "]";
-	}
-	
 }

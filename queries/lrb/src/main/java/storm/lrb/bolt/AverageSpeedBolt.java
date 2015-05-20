@@ -43,7 +43,8 @@ import backtype.storm.tuple.Values;
 
 /**
  * This bolt computes the average speed of a vehicle in a given segment and direction and emits these every minute.
- * 
+ * Therefore it reads {@link PosReport}s and emits (xWay, segmentIdentifier, direction, carCount, averageSpeed, minute)
+ * on {@link TopologyControl#LAST_AVERAGE_SPEED_STREAM_ID}.
  */
 public class AverageSpeedBolt extends BaseRichBolt {
 	
@@ -124,12 +125,12 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		
 		Set<SegmentIdentifier> segmentList = this.avgSpeedsMap.keySet();
 		
-		for(SegmentIdentifier xsd : segmentList) {
-			AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(xsd);
+		for(SegmentIdentifier segmentIdentifier : segmentList) {
+			AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(segmentIdentifier);
 			if(lastSpeeds != null) {
-				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(this.processed_xway, xsd,
-					lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
-				this.avgSpeedsMap.put(xsd, new AvgVehicleSpeeds());
+				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(this.processed_xway,
+					segmentIdentifier, lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
+				this.avgSpeedsMap.put(segmentIdentifier, new AvgVehicleSpeeds());
 			}
 			
 		}
@@ -151,9 +152,8 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Fields(
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.CAR_COUNT_FIELD_NAME, TopologyControl.AVERAGE_SPEED_FIELD_NAME,
-			TopologyControl.MINUTE_FIELD_NAME));
+			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.CAR_COUNT_FIELD_NAME,
+			TopologyControl.AVERAGE_SPEED_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME));
 	}
 	
 }
