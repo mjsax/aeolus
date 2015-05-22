@@ -9,7 +9,7 @@ Aeolus was originally developed at [HP Lab](http://www.hpl.hp.com/) (Palo Alto, 
 * [Aeolus: An Optimizer for Distributed Intra-Node-Parallel Streaming Systems](https://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=6544924&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6544924) (Demo at ICDE 2013)
 
 Additionally, this framework contains Storm Topologies for benchmarking purpose:
-* [Linear Road Benachmark](http://www.cs.brandeis.edu/~linearroad/)
+* [Linear Road Benachmark](http://www.cs.brandeis.edu/~linearroad/) (in progress; code is in beta state)
   * [Linear Road: A Stream Data Management Benchmark](https://dl.acm.org/citation.cfm?id=1316732) (VLDB 2004)
 * DEBS Grand Challange (planned)
   * [2011](http://debs2011.fzi.de/index.php/challenge)
