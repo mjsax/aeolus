@@ -44,9 +44,9 @@ import backtype.storm.tuple.Values;
 
 
 /**
- * This bolt calculates the actual toll for each vehicle depending on the
- * congestion and accident status of the segment
- * the vehicle is driving on. It can process streams containing position reports, accident information and novLavs.
+ * This bolt calculates the actual toll for each vehicle and reports it back to the data driver. The toll depends on the
+ * congestion and accident status of the segment the vehicle is driving on. It can process streams containing position
+ * reports, accident information and novLavs.
  */
 public class TollNotificationBolt extends BaseRichBolt {
 
@@ -56,6 +56,11 @@ public class TollNotificationBolt extends BaseRichBolt {
 	protected static final int MAX_SPEED_FOR_TOLL = 40;
 	protected static final int MIN_CARS_FOR_TOLL = 50;
 	private final static int DRIVE_EASY = 0;
+	public static final Fields FIELDS_OUTGOING_TOLL_NOTIFICATION = new Fields(
+		TopologyControl.TOLL_NOTIFICATION_FIELD_NAME);
+	public static final Fields FIELDS_OUTGOING_TOLL_ASSESSMENT = new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME,
+		TopologyControl.XWAY_FIELD_NAME, TopologyControl.TOLL_ASSESSED_FIELD_NAME,
+		TopologyControl.POS_REPORT_FIELD_NAME);
 
 	/**
 	 * Holds all lavs (avgs of preceeding minute) and novs (number of vehicles) of the preceeding minute in a segment
@@ -239,8 +244,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 				LOG.debug("assess toll:" + vehicle);
 			}
 			// assess previous toll by emitting toll info to be processed by accountbaancebolt
-			this.collector.emit(TopologyControl.TOLL_ASSESSMENT_STREAM_ID,
-				new Values(posReport.getVehicleIdentifier(), vehicle.getXway(), vehicle.getToll(), posReport));
+			this.collector.emit(TopologyControl.TOLL_ASSESSMENT_STREAM_ID, new Values(posReport.getVehicleIdentifier(),
+				vehicle.getXway(), vehicle.getToll(), posReport));
 
 			vehicle.updateInfo(posReport);
 		}
@@ -283,11 +288,9 @@ public class TollNotificationBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 
-		declarer.declareStream(TopologyControl.TOLL_ASSESSMENT_STREAM_ID, new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME,
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.TOLL_ASSESSED_FIELD_NAME,
-			TopologyControl.POS_REPORT_FIELD_NAME));
+		declarer.declareStream(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, FIELDS_OUTGOING_TOLL_ASSESSMENT);
 
-		declarer.declareStream(TopologyControl.TOLL_NOTIFICATION_STREAM_ID, new Fields(TopologyControl.TOLL_NOTIFICATION_FIELD_NAME));
+		declarer.declareStream(TopologyControl.TOLL_NOTIFICATION_STREAM_ID, FIELDS_OUTGOING_TOLL_NOTIFICATION);
 
 	}
 

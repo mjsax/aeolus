@@ -48,16 +48,20 @@ import java.util.Set;
 @SuppressWarnings("CloneableImplementsClone")
 public abstract class LRBtuple extends Values implements Serializable {
 	
+	// official LRB types
 	public final static int TYPE_POSITION_REPORT = 0;
-	public final static int TYPE_ACCOUNT_BALANCE = 2;
+	public final static int TYPE_ACCOUNT_BALANCE_REQUEST = 2;
 	public final static int TYPE_DAILY_EXPEDITURE = 3;
 	public final static int TYPE_TRAVEL_TIME_REQUEST = 4;
+	// additional (non-LRB) types
+	public final static int TYPE_ACCOUNT_BALANCE = 5;
 	
 	private final static long serialVersionUID = 1L;
 	private final static Logger LOGGER = LoggerFactory.getLogger(LRBtuple.class);
 	
 	private static final Set<Integer> ALLOWED_TYPES = Collections.unmodifiableSet(new HashSet<Integer>(Arrays.asList(
-		TYPE_POSITION_REPORT, TYPE_ACCOUNT_BALANCE, TYPE_DAILY_EXPEDITURE, TYPE_TRAVEL_TIME_REQUEST)));
+		TYPE_POSITION_REPORT, TYPE_ACCOUNT_BALANCE_REQUEST, TYPE_DAILY_EXPEDITURE, TYPE_TRAVEL_TIME_REQUEST,
+		TYPE_ACCOUNT_BALANCE)));
 	
 	/**
 	 * tuple type 0=Position report 2=Account balance requests 3=daily expenditure request 4=Travel time request
@@ -87,8 +91,6 @@ public abstract class LRBtuple extends Values implements Serializable {
 	 * TOD (1. . .1440) specifies the day of the week and minute number in the day when the journey would take place
 	 */
 	private Integer tod;
-	
-	private StopWatch stormTimer = null;
 	
 	public LRBtuple() {
 		// kryo needs empty constructor
@@ -136,10 +138,6 @@ public abstract class LRBtuple extends Values implements Serializable {
 	 */
 	public Long getCreated() {
 		return this.created;
-	}
-	
-	public StopWatch getStormTimer() {
-		return this.stormTimer;
 	}
 	
 	/**

@@ -52,7 +52,6 @@ package storm.lrb.tools;
  * limitations under the License.
  * #L%
  */
-
 import java.util.Random;
 import storm.lrb.bolt.SegmentIdentifier;
 import storm.lrb.model.PosReport;
@@ -83,9 +82,29 @@ public class EntityHelper {
 	}
 	
 	/**
+	 * creates a {@link PosReport} like {@link #createPosReport(long, java.util.Random, int, int, int) } does, except for
+	 * the {@code time} and {@code segment} which is randomly generated.
+	 * 
+	 * @param random
+	 * @param vehicleID
+	 * @param minSpeed
+	 * @param maxSpeed
+	 * @return
+	 */
+	public static PosReport createPosReport(Random random, int vehicleID, int minSpeed, int maxSpeed) {
+		int time = (int)(System.currentTimeMillis() - random.nextDouble() * System.currentTimeMillis());
+		int segment = (int)(random.nextDouble() * 100000); // set max. value to increase readability;
+		return createPosReport(time, segment, random, vehicleID, minSpeed, maxSpeed);
+	}
+	
+	/**
 	 * Creates instances of {@link PosReport} which can be used in tests. Values of properties are chosen randomly
 	 * within bounds which are there to ensure a certain readability in trace logging and/or debugging.
 	 * 
+	 * @param time
+	 *            the {@code time} property in seconds of the report (pay attention to bolt which are minute
+	 * @param segment
+	 *            the {@code segment} property of the report
 	 * @param random
 	 *            the instance of {@link Random} used to create property values within bounds
 	 * @param vehicleID
@@ -100,11 +119,9 @@ public class EntityHelper {
 	/*
 	 * internal implementation notes: - pass vehicleID because it is shared in Accident
 	 */
-	public static PosReport createPosReport(Random random, int vehicleID, int minSpeed, int maxSpeed) {
-		int time = (int)(System.currentTimeMillis() - random.nextDouble() * System.currentTimeMillis());
+	public static PosReport createPosReport(long time, int segment, Random random, int vehicleID, int minSpeed, int maxSpeed) {
 		int currentSpeed = (int)(minSpeed + (maxSpeed - minSpeed) * random.nextDouble());// set max. value to increase
-																							// readability
-		int segment = (int)(random.nextDouble() * 100000); // set max. value to increase readability;
+		// readability
 		int direction = SegmentIdentifier.DIRECTION_EASTBOUND;
 		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(1, // xWay
 			segment, direction);

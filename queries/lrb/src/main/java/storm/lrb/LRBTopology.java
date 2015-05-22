@@ -81,9 +81,7 @@ public class LRBTopology {
 		// builder.setBolt("lavBolt", new SegmentStatsBolt(0), cmd.xways*3)
 		// .fieldsGrouping("SplitStreamBolt", "PosReports", new Fields("xsd"));
 		builder
-			.setBolt(
-				TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
-				new TollNotificationBolt(stormTimer), executors)
+			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, new TollNotificationBolt(stormTimer), executors)
 			.setNumTasks(tasks)
 			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,
 				new Fields(fields))
