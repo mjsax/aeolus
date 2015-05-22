@@ -90,13 +90,13 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 				
 				int toll = this.tollAccounts.get(exp.getVehicleIdentifier()).get(key);
 				
-				LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getStormTimer().getOffset(),
-					exp.getQueryIdentifier(), toll);
+				LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
+					toll);
 				
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getStormTimer().getOffset(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getTimer().getOffset(),
 					exp.getQueryIdentifier(), toll);
 			} else {
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getStormTimer().getOffset(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getTimer().getOffset(),
 					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
 				
 			}

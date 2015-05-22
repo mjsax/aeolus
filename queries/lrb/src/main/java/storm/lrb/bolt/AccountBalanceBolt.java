@@ -34,7 +34,9 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
+import storm.lrb.model.AccountBalance;
+import storm.lrb.model.LRBtuple;
+import storm.lrb.tools.Helper;
 
 
 
@@ -42,7 +44,9 @@ import backtype.storm.tuple.Values;
 
 /**
  * 
- * This bolt recieves the toll values assesed by the tollnotificationbolt and answers to account balance queries.
+ * This bolt recieves the toll values assesed by the {@link TollNotificationBolt} and answers to account balance
+ * queries. Therefore it processes the streams {@link TopologyControl#TOLL_ASSESSMENT_STREAM_ID} (for the former) and
+ * {@link TopologyControl#ACCOUNT_BALANCE_REQUESTS_STREAM_ID} (for the latter)
  * 
  */
 public class AccountBalanceBolt extends BaseRichBolt {
@@ -51,6 +55,8 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	private static final Logger LOG = LoggerFactory.getLogger(AccountBalanceBolt.class);
 	
 	private OutputCollector collector;
+	public static final Fields FIELDS_INCOMING_TOLL_NOTIFICATION = TollNotificationBolt.FIELDS_OUTGOING_TOLL_NOTIFICATION;
+	public static final Fields FIELDS_INCOMING_TOLL_ASSESSMENT = TollNotificationBolt.FIELDS_OUTGOING_TOLL_ASSESSMENT;
 	
 	/**
 	 * Contains all vehicles and the accountinformation of the current day.
@@ -65,16 +71,13 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple tuple) {
-		
-		Fields fields = tuple.getFields();
-		
-		if(fields.contains(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME)) {
+		if(tuple.getSourceStreamId().equals(TopologyControl.TOLL_ASSESSMENT_STREAM_ID)) {
 			this.getBalanceAndSend(tuple);
-		}
-		
-		if(tuple.contains(TopologyControl.TOLL_ASSESSED_FIELD_NAME)) {
-			
+		} else if(tuple.getSourceStreamId().equals(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID)) {
 			this.updateBalance(tuple);
+		} else {
+			throw new RuntimeException(String.format("Errornous stream subscription. Please report a bug at %s",
+				Helper.ISSUE_REPORT_URL));
 		}
 		
 		this.collector.ack(tuple);
@@ -85,10 +88,11 @@ public class AccountBalanceBolt extends BaseRichBolt {
 		VehicleAccount account = this.allVehicles.get(vid);
 		PosReport pos = (PosReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
 		if(account == null) {
-			account = new VehicleAccount(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos);
+			int assessedToll = tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME);
+			account = new VehicleAccount(assessedToll, pos);
 			this.allVehicles.put(tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME), account);
 		} else {
-			account.assessToll(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos.getStormTimer()
+			account.assessToll(tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME), pos.getTimer()
 				.getOffset());
 		}
 	}
@@ -100,12 +104,18 @@ public class AccountBalanceBolt extends BaseRichBolt {
 		
 		if(account == null) {
 			LOG.debug("No account information available yet: at:" + bal.getTime() + " for request" + bal);
-			String notification = "2," + bal.getTime() + "," + bal.getEmitTime() + "," + bal.getQueryIdentifier() + ","
-				+ 0 + "," + 0 + "###" + bal.toString() + "###";
-			this.collector.emit(new Values(notification));
+			AccountBalance accountBalance = new AccountBalance(bal.getCreated(), bal.getQueryIdentifier(), 0, // balance
+				0, // tollTime
+				bal.getCreated(), bal.getTimer());
+			this.collector.emit(accountBalance);
 		} else {
-			this.collector.emit(new Values(account.getAccBalanceNotification(bal)));
+			AccountBalance accountBalance = account.getAccBalanceNotification(bal);
+			this.collector.emit(accountBalance);
 		}
+	}
+	
+	public Map<Integer, VehicleAccount> getAllVehicles() {
+		return allVehicles;
 	}
 	
 	@Override

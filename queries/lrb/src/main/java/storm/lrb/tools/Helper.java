@@ -44,5 +44,7 @@ public class Helper {
 		return tmp.toString();
 	}
 	
+	public final static String ISSUE_REPORT_URL = "https://github.com/mjsax/aeolus/issues/new";
+	
 	private Helper() {}
 }

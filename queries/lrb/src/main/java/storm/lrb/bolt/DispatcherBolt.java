@@ -86,7 +86,7 @@ public class DispatcherBolt extends BaseRichBolt {
 				PosReport pos = (PosReport)line;
 				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
 				break;
-			case LRBtuple.TYPE_ACCOUNT_BALANCE:
+			case LRBtuple.TYPE_ACCOUNT_BALANCE_REQUEST:
 				AccountBalanceRequest acc = (AccountBalanceRequest)line;
 				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple, acc);
 				break;
