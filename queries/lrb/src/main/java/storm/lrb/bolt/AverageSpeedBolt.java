@@ -126,11 +126,8 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		for(SegmentIdentifier segmentIdentifier : segmentList) {
 			AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(segmentIdentifier);
 			if(lastSpeeds != null) {
-				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, 
-						new Values(segmentIdentifier, 
-								lastSpeeds.vehicleCount(), 
-								lastSpeeds.speedAverage(), 
-								minute));
+				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(segmentIdentifier,
+					lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
 				this.avgSpeedsMap.put(segmentIdentifier, new AvgVehicleSpeeds());
 			}
 			
@@ -138,17 +135,14 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		
 	}
 	
-	private void emitAndRemove(SegmentIdentifier xsd, int minute) {
+	private void emitAndRemove(SegmentIdentifier segmentIdentifier, int minute) {
 		
-		AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(xsd);
+		AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(segmentIdentifier);
 		if(lastSpeeds != null) {
 			synchronized(lastSpeeds) {
-				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, 
-						new Values(xsd,
-								lastSpeeds.vehicleCount(), 
-								lastSpeeds.speedAverage(), 
-								minute));
-				this.avgSpeedsMap.put(xsd, new AvgVehicleSpeeds());
+				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(segmentIdentifier,
+					lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
+				this.avgSpeedsMap.put(segmentIdentifier, new AvgVehicleSpeeds());
 			}
 		}
 	}
@@ -156,7 +150,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Fields(
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.CAR_COUNT_FIELD_NAME,
+			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.CAR_COUNT_FIELD_NAME,
 			TopologyControl.AVERAGE_SPEED_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME));
 	}
 	
