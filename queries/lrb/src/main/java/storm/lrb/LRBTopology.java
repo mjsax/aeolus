@@ -38,6 +38,8 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import storm.lrb.bolt.PersistenceTollDataStore;
+import storm.lrb.bolt.TollDataStore;
 
 
 
@@ -53,6 +55,7 @@ public class LRBTopology {
 	private final static Logger LOGGER = LoggerFactory.getLogger(LRBTopology.class);
 	private final StormTopology stormTopology;
 	private final Config stormConfig;
+	private final TollDataStore tollDataStore = PersistenceTollDataStore.getInstance();
 	
 	public LRBTopology(String nameext, List<String> fields, int xways, int workers, int tasks, int executors,
 		int offset, IRichSpout spout, StopWatch stormTimer, boolean local, String histFile, String topologyNamePrefix) {
@@ -125,7 +128,7 @@ public class LRBTopology {
 			new FileWriterBolt(topologyNamePrefix + "_bal", xways * 4, local), 1).allGrouping(
 			TopologyControl.ACCOUNT_BALANCE_BOLT_NAME);
 		
-		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(histFile), xways * 1)
+		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(tollDataStore), xways * 1)
 			.shuffleGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME,
 				TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID);
 		
