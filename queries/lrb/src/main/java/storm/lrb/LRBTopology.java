@@ -78,6 +78,11 @@ public class LRBTopology {
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
+		
+		builder.setBolt(TopologyControl.TOLL_FILE_WRITER_BOLT_NAME,
+			new FileWriterBolt(topologyNamePrefix + "_toll", xways * 8, local), 1).allGrouping(
+			TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_NOTIFICATION_STREAM_ID);
+		
 		// builder.setBolt("lavBolt", new SegmentStatsBolt(0), cmd.xways*3)
 		// .fieldsGrouping("SplitStreamBolt", "PosReports", new Fields("xsd"));
 		builder
@@ -90,10 +95,6 @@ public class LRBTopology {
 			new Fields(fields))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
 				new Fields(fields));
-		
-		builder.setBolt(TopologyControl.TOLL_FILE_WRITER_BOLT_NAME,
-			new FileWriterBolt(topologyNamePrefix + "_toll", xways * 8, local), 1).allGrouping(
-			TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_NOTIFICATION_STREAM_ID);
 		
 		builder.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, new AccidentDetectionBolt(0), xways)
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
