@@ -39,7 +39,6 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private int time;
 	private int vehicleIdentifier;
 	private int xWay;
 	private int queryIdentifier;
@@ -52,10 +51,9 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 		super();
 	}
 	
-	public DailyExpenditureRequest(int time, int vehicleIdentifier, int xWay, int queryIdentifier, int day,
+	public DailyExpenditureRequest(long created, int vehicleIdentifier, int xWay, int queryIdentifier, int day,
 		StopWatch systemTimer) {
-		super(LRBtuple.TYPE_DAILY_EXPEDITURE, System.currentTimeMillis(), systemTimer);
-		this.time = time;
+		super(LRBtuple.TYPE_DAILY_EXPEDITURE, created, systemTimer);
 		this.vehicleIdentifier = vehicleIdentifier;
 		this.xWay = xWay;
 		this.queryIdentifier = queryIdentifier;
@@ -92,14 +90,6 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	
 	public int getVehicleIdentifier() {
 		return vehicleIdentifier;
-	}
-	
-	public void setTime(int time) {
-		this.time = time;
-	}
-	
-	public int getTime() {
-		return time;
 	}
 	
 }
