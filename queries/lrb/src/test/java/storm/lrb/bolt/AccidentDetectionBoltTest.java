@@ -116,8 +116,7 @@ public class AccidentDetectionBoltTest {
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(posReport0Stopped), 1, // taskId
 			null // streamID
 		);
-		AccidentDetectionBolt instance = new AccidentDetectionBolt(0 // xway
-		);
+		AccidentDetectionBolt instance = new AccidentDetectionBolt();
 		TestOutputCollector collector = new TestOutputCollector();
 		List<Integer> taskMock = new LinkedList<Integer>();
 		taskMock.add(0);
