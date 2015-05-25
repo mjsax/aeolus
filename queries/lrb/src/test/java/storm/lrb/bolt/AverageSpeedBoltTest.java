@@ -103,8 +103,7 @@ public class AverageSpeedBoltTest {
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(
 			new Fields(TopologyControl.POS_REPORT_FIELD_NAME));
-		AverageSpeedBolt instance = new AverageSpeedBolt(1 // xWay
-		);
+		AverageSpeedBolt instance = new AverageSpeedBolt();
 		TestOutputCollector collector = new TestOutputCollector();
 		List<Integer> taskMock = new LinkedList<Integer>();
 		taskMock.add(0);
