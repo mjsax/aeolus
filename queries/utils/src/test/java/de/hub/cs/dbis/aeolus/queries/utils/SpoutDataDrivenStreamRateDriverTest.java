@@ -37,7 +37,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.queries.utils.DataDrivenStreamRateDriverSpout.TIME_UNIT;
+import de.hub.cs.dbis.aeolus.queries.utils.DataDrivenStreamRateDriverSpout.TimeUnit;
 import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
@@ -68,7 +68,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	public void testForwardCalls() {
 		IRichSpout worker = mock(IRichSpout.class);
 		@SuppressWarnings("rawtypes")
-		DataDrivenStreamRateDriverSpout driver = new DataDrivenStreamRateDriverSpout(worker, 0, TIME_UNIT.SECONDS);
+		DataDrivenStreamRateDriverSpout driver = new DataDrivenStreamRateDriverSpout(worker, 0, TimeUnit.SECONDS);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -108,7 +108,7 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	public void testNextTupleFixedSecond() {
 		IRichSpout worker = new IncSpout();
 		DataDrivenStreamRateDriverSpout<Integer> driver = new DataDrivenStreamRateDriverSpout<Integer>(worker, 0,
-			TIME_UNIT.SECONDS);
+			TimeUnit.SECONDS);
 		
 		Config cfg = mock(Config.class);
 		TopologyContext c = mock(TopologyContext.class);
@@ -129,19 +129,19 @@ public class SpoutDataDrivenStreamRateDriverTest {
 	@SuppressWarnings("null")
 	@Test
 	public void testNextTuple() {
-		TIME_UNIT units = null;
+		TimeUnit units = null;
 		switch(this.r.nextInt(4)) {
 		case 0:
-			units = TIME_UNIT.SECONDS;
+			units = TimeUnit.SECONDS;
 			break;
 		case 1:
-			units = TIME_UNIT.MICROSECONDS;
+			units = TimeUnit.MICROSECONDS;
 			break;
 		case 2:
-			units = TIME_UNIT.MILLISECONDS;
+			units = TimeUnit.MILLISECONDS;
 			break;
 		case 3:
-			units = TIME_UNIT.NANOSECONDS;
+			units = TimeUnit.NANOSECONDS;
 			break;
 		}
 		
