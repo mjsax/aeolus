@@ -54,15 +54,15 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 	/**
 	 * map xsd to list of avg speeds for every segment and minute (TODO: change to hold only last five minutes)
 	 */
-	private final Map<Triple<Integer, Integer, Integer>, List<Double>> listOfavgs;
+	private final Map<Triple<Integer, SegmentIdentifier, Integer>, List<Double>> listOfavgs;
 	
-	private final Map<Triple<Integer, Integer, Integer>, List<Integer>> listOfVehicleCounts;
+	private final Map<Triple<Integer, SegmentIdentifier, Integer>, List<Integer>> listOfVehicleCounts;
 	
 	private OutputCollector collector;
 	
 	public LastAverageSpeedBolt() {
-		this.listOfavgs = new HashMap<Triple<Integer, Integer, Integer>, List<Double>>();
-		this.listOfVehicleCounts = new HashMap<Triple<Integer, Integer, Integer>, List<Integer>>();
+		this.listOfavgs = new HashMap<Triple<Integer, SegmentIdentifier, Integer>, List<Double>>();
+		this.listOfVehicleCounts = new HashMap<Triple<Integer, SegmentIdentifier, Integer>, List<Integer>>();
 	}
 	
 	@Override
@@ -75,12 +75,14 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 		
 		int minuteOfTuple = tuple.getIntegerByField(TopologyControl.MINUTE_FIELD_NAME);
 		int xway = tuple.getIntegerByField(TopologyControl.XWAY_FIELD_NAME);
-		int seg = tuple.getIntegerByField(TopologyControl.SEGMENT_FIELD_NAME);
-		int dir = tuple.getIntegerByField(TopologyControl.DIRECTION_FIELD_NAME);
+		SegmentIdentifier segmentIdentifier = (SegmentIdentifier)tuple
+			.getValueByField(TopologyControl.SEGMENT_FIELD_NAME);
+		int direction = tuple.getIntegerByField(TopologyControl.DIRECTION_FIELD_NAME);
 		int carcnt = tuple.getIntegerByField(TopologyControl.CAR_COUNT_FIELD_NAME);
 		double avgs = tuple.getDoubleByField(TopologyControl.AVERAGE_SPEED_FIELD_NAME);
 		
-		Triple<Integer, Integer, Integer> segmentKey = new MutableTriple<Integer, Integer, Integer>(xway, seg, dir);
+		Triple<Integer, SegmentIdentifier, Integer> segmentKey = new MutableTriple<Integer, SegmentIdentifier, Integer>(
+			xway, segmentIdentifier, direction);
 		List<Double> latestAvgSpeeds = this.listOfavgs.get(segmentKey);
 		List<Integer> latestCarCnt = this.listOfVehicleCounts.get(segmentKey);
 		
@@ -99,7 +101,7 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 		}
 		
 		latestCarCnt.add(minuteOfTuple, carcnt);
-		this.emitLav(segmentKey, latestCarCnt, latestAvgSpeeds, minuteOfTuple);
+		this.emitLav(xway, direction, segmentIdentifier, latestCarCnt, latestAvgSpeeds, minuteOfTuple);
 		
 		this.collector.ack(tuple);
 		
@@ -110,12 +112,21 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 	 * 
 	 * @param speedValues
 	 * @param minute
-	 * @return lav for the currentminute
+	 * @return lav for the currentminute of {@code 0} if {@code minute} is {@code <=0}
 	 */
 	protected double calcLav(List<Double> speedValues, int minute) {
+		if(speedValues == null || speedValues.isEmpty()) {
+			throw new IllegalArgumentException("speedValues mustn't be null or empty");
+		}
+		if(minute >= speedValues.size()) {
+			throw new IllegalArgumentException(String.format("minute %d must be less than items in speedValues %d",
+				minute, speedValues.size()));
+		}
 		double sumOfAvgSpeeds = 0;
 		int divide = 0;
-		for(int i = Math.max(minute - 4, 1); i <= minute; i++) {
+		int indexMax = Math.max(minute - 4, 1);
+		for(int i = indexMax; i <= minute; i++) {
+			// start at 1 because only the 5 preceeding items count
 			sumOfAvgSpeeds += speedValues.get(i);
 			if(speedValues.get(i) != 0.0) {
 				divide++;
@@ -125,13 +136,12 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 		
 	}
 	
-	private void emitLav(Triple<Integer, Integer, Integer> xsd, List<Integer> vehicleCounts, List<Double> speedValues, int minute) {
+	private void emitLav(int xWay, int direction, SegmentIdentifier segmentIdentifier, List<Integer> vehicleCounts, List<Double> speedValues, int minute) {
 		
 		double speedAverage = this.calcLav(speedValues, minute);
 		int segmentCarCount = vehicleCounts.get(minute);
 		
-		this.collector.emit(new Values(xsd.getLeft(), xsd.getMiddle(), xsd.getRight(), segmentCarCount, speedAverage,
-			minute + 1));
+		this.collector.emit(new Values(xWay, direction, segmentIdentifier, segmentCarCount, speedAverage, minute + 1));
 	}
 	
 	@Override
