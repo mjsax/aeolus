@@ -64,12 +64,11 @@ public class LRBTopology {
 			.shuffleGrouping(TopologyControl.START_SPOUT_NAME, TopologyControl.SPOUT_STREAM_ID);// .allGrouping("Spout",
 																								// "stormtimer");
 		
-		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageSpeedBolt(), xways * 3)
-			.fieldsGrouping(
-				TopologyControl.SPLIT_STREAM_BOLT_NAME,
-				TopologyControl.POS_REPORTS_STREAM_ID,
-				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
-					TopologyControl.DIRECTION_FIELD_NAME));
+		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageSpeedBolt(), xways * 3).fieldsGrouping(
+			TopologyControl.SPLIT_STREAM_BOLT_NAME,
+			TopologyControl.POS_REPORTS_STREAM_ID,
+			new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+				TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LastAverageSpeedBolt(), xways * 3)
 			.fieldsGrouping(

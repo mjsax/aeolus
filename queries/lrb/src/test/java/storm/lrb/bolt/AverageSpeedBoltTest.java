@@ -151,14 +151,12 @@ public class AverageSpeedBoltTest {
 		// after one minute
 		
 		List<Object> result = collector.output.get(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID).get(0);
-		Integer resultXWay = (Integer)result.get(0);
-		SegmentIdentifier resultSegmentIdentifier = (SegmentIdentifier)result.get(1);
-		Integer resultCarCount = (Integer)result.get(2);
-		Double resultAverageSpeed = (Double)result.get(3);
-		Long resultMinute = (Long)result.get(4);
-		assertEquals((int)1, (int)resultXWay); // @TODO: suppress warning
+		SegmentIdentifier resultSegmentIdentifier = (SegmentIdentifier)result.get(0);
+		Integer resultCarCount = (Integer)result.get(1);
+		Double resultAverageSpeed = (Double)result.get(2);
+		Long resultMinute = (Long)result.get(3);
 		assertEquals(posReport1Stopped.getSegmentIdentifier(), resultSegmentIdentifier);
-		assertEquals((int)1, (int)resultCarCount);
+		assertEquals((int)1, (int)resultCarCount);// @TODO: suppress warning
 		assertEquals(0, resultAverageSpeed, 0.0);
 		assertEquals((long)time1, (long)resultMinute * 60);
 		
@@ -195,14 +193,12 @@ public class AverageSpeedBoltTest {
 		assertEquals(1, collector.output.size()); // one stream only
 		assertEquals(2, collector.output.get(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID).size());
 		result = collector.output.get(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID).get(1);
-		resultXWay = (Integer)result.get(0);
-		resultSegmentIdentifier = (SegmentIdentifier)result.get(1);
-		resultCarCount = (Integer)result.get(2);
-		resultAverageSpeed = (Double)result.get(3);
-		resultMinute = (Long)result.get(4);
-		assertEquals((int)1, (int)resultXWay); // @TODO: suppress warning
+		resultSegmentIdentifier = (SegmentIdentifier)result.get(0);
+		resultCarCount = (Integer)result.get(1);
+		resultAverageSpeed = (Double)result.get(2);
+		resultMinute = (Long)result.get(3);
 		assertEquals(posReport1Stopped.getSegmentIdentifier(), resultSegmentIdentifier);
-		assertEquals((int)3, (int)resultCarCount);
+		assertEquals((int)3, (int)resultCarCount);// @TODO: suppress warning
 		assertEquals((0 + speed2 + speed3) / 3, resultAverageSpeed, 0.0); // average update only occurs after emission
 		assertEquals((long)time2, (long)resultMinute * 60);
 	}
