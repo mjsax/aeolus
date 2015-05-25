@@ -41,8 +41,6 @@ import storm.lrb.tools.StopWatch;
 public class PosReport extends LRBtuple implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	public static final int DIRECTION_EASTBOUND = 1;
-	public static final int DIRECTION_WESTBOUND = 2;
 	
 	private SegmentIdentifier segmentIdentifier;
 	/**
