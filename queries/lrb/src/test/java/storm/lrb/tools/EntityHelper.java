@@ -55,7 +55,6 @@ package storm.lrb.tools;
 import java.util.Random;
 import storm.lrb.bolt.SegmentIdentifier;
 import storm.lrb.model.PosReport;
-import storm.lrb.tools.StopWatch;
 
 
 
@@ -129,7 +128,7 @@ public class EntityHelper {
 		StopWatch timer = new StopWatch(System.currentTimeMillis());
 		PosReport posReport = new PosReport(time, vehicleID, currentSpeed, 1, // xWay
 			1,// lane
-			PosReport.DIRECTION_EASTBOUND, // direction
+			Constants.DIRECTION_EASTBOUND, // direction
 			segmentIdentifier, position, timer);
 		return posReport;
 	}

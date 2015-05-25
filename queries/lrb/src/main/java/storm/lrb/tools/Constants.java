@@ -37,5 +37,8 @@ public class Constants {
 	 */
 	public final static int INITIAL_TOLL = 20;
 	
+	public static final int DIRECTION_EASTBOUND = 1;
+	public static final int DIRECTION_WESTBOUND = 2;
+	
 	private Constants() {}
 }
