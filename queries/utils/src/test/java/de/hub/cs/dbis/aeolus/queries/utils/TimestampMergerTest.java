@@ -93,7 +93,8 @@ public class TimestampMergerTest {
 	
 	@BeforeClass
 	public static void prepareStatic() {
-		long seed = System.currentTimeMillis();
+		// final long seed = System.currentTimeMillis();
+		final long seed = 1432597577997L;
 		Random r = new Random(seed);
 		System.out.println("Static test seed: " + seed);
 		
@@ -115,6 +116,7 @@ public class TimestampMergerTest {
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
+		this.seed = 1432597581706L;
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 		forwarder.prepare(TimestampMergerTest.boltConfig, null, null);
