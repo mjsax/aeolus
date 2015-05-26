@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -59,7 +58,6 @@ public class LRBTopologyMainTest {
 	 * @throws java.lang.Exception
 	 */
 	@Test
-	@Ignore
 	public void testMain0() throws Exception {
 		String histFilePath = File.createTempFile("lrb-test", null).getAbsolutePath();
 		LRBTopologyMain.main0(

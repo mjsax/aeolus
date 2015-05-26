@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,7 +39,7 @@ import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 /**
  * @author Matthias J. Sax
  */
-public class BatchingFieldsGroupingITCase {
+public class BatchingShuffleITCase {
 	private long seed;
 	private Random r;
 	
@@ -56,37 +56,24 @@ public class BatchingFieldsGroupingITCase {
 	
 	@SuppressWarnings("rawtypes")
 	@Test(timeout = 30000)
-	public void testFieldsGrouping() {
+	public void testShuffle() {
 		final String topologyName = "testTopology";
 		final int maxValue = 1000;
 		final int batchSize = 1 + this.r.nextInt(5);
-		final int numberOfAttributes = 1 + this.r.nextInt(10);
-		final Integer boltDop = new Integer(2 + this.r.nextInt(4));
-		
-		LinkedList<String> attributes = new LinkedList<String>();
-		for(int i = 0; i < numberOfAttributes; ++i) {
-			attributes.add("" + (char)('a' + i));
-		}
-		
-		String[] schema = new String[1 + this.r.nextInt(numberOfAttributes)];
-		for(int i = 0; i < schema.length; ++i) {
-			schema[i] = new String(attributes.remove(this.r.nextInt(attributes.size())));
-		}
-		Fields groupingFiels = new Fields(schema);
-		
-		
+		final int numberOfAttributes = 1;
+		final Integer spoutDop = new Integer(1);
+		final Integer boltDop = new Integer(1);
 		
 		LocalCluster cluster = new LocalCluster();
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout(VerifyBolt.SPOUT_ID, new RandomSpout(numberOfAttributes, maxValue, new String[] {"stream1"},
-			this.seed));
+			this.seed), spoutDop);
 		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
-			maxValue, new String[] {"stream2"}, this.seed), batchSize));
+			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
 		
-		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields(schema), groupingFiels)), boltDop)
-			.fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels)
-			.fieldsGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2", groupingFiels);
+		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields("a"), null)), boltDop)
+			.shuffleGrouping(VerifyBolt.SPOUT_ID, "stream1").shuffleGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2");
 		
 		cluster.submitTopology(topologyName, new HashMap(), builder.createTopology());
 		
@@ -98,4 +85,5 @@ public class BatchingFieldsGroupingITCase {
 		Assert.assertEquals(new LinkedList<String>(), VerifyBolt.errorMessages);
 		Assert.assertTrue(VerifyBolt.matchedTuples > 0);
 	}
+	
 }

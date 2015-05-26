@@ -31,9 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import backtype.storm.Config;
+import backtype.storm.generated.GlobalStreamId;
 import backtype.storm.generated.Grouping;
+import backtype.storm.grouping.CustomStreamGrouping;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.utils.Utils;
 
 
 
@@ -48,7 +51,7 @@ import backtype.storm.tuple.Tuple;
  * 
  * @author Matthias J. Sax
  */
-abstract class AbstractBatchCollector {
+public abstract class AbstractBatchCollector {
 	protected final static Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);
 	
 	/**
@@ -75,6 +78,14 @@ abstract class AbstractBatchCollector {
 	 * Contains all receivers, that use fields-grouping.
 	 */
 	private final Set<String> fieldsGroupingReceivers = new HashSet<String>();
+	/**
+	 * Maps all receivers, that use custom-grouping, to the user defined grouping.
+	 */
+	private final Map<String, CustomStreamGrouping> customGroupingReceivers = new HashMap<String, CustomStreamGrouping>();
+	/**
+	 * Stores the dop of each receiver.
+	 */
+	private final Map<String, Integer> numberOfReceiverTasks = new HashMap<String, Integer>();
 	/**
 	 * Maps each output stream to a task-id-to-batch-index map.
 	 * 
@@ -165,7 +176,10 @@ abstract class AbstractBatchCollector {
 				receiverIds.add(receiverId);
 				final List<Integer> taskIds = context.getComponentTasks(receiverId);
 				logger.trace("receiver and tasks: {} - {}", receiverId, taskIds);
-				if(receiver.getValue().is_set_direct()) {
+				
+				final Grouping receiverGrouping = receiver.getValue();
+				
+				if(receiverGrouping.is_set_direct()) {
 					logger.trace("directGrouping");
 					
 					Map<Integer, Batch> outputBatches = this.directOutputBuffers.get(streamId);
@@ -178,8 +192,8 @@ abstract class AbstractBatchCollector {
 					}
 					
 					numberOfBatches = 0; // mark as direct output stream
-				} else if(receiver.getValue().is_set_fields()) {
-					// do not consider as regular fieldsGrouping if emulated by directGrouping
+				} else if(receiverGrouping.is_set_fields()) {
+					// do not consider as regular fields- or custom-Grouping if emulated by directGrouping
 					for(Entry<String, Map<String, Grouping>> outputStream2 : context.getThisTargets().entrySet()) {
 						if(outputStream2.getKey().equals(BatchingOutputFieldsDeclarer.STREAM_PREFIX + streamId)) {
 							final Map<String, Grouping> streamReceivers2 = outputStream2.getValue();
@@ -193,11 +207,11 @@ abstract class AbstractBatchCollector {
 					}
 					
 					if(numberOfBatches != 0) {
-						// TODO we could reduce number of output buffers, if two logical consumers use the same output
-						// fields for partitioning AND have the same dop
-						this.fieldsGroupingReceivers.add(receiverId);
+						// TODO we could reduce number of output buffers, if two logical consumers use the same
+						// output fields for partitioning AND have the same dop
 						logger.trace("fieldsGrouping");
 						
+						this.fieldsGroupingReceivers.add(receiverId);
 						this.weights.put(receiverId, new Integer(numberOfBatches));
 						numberOfBatches *= taskIds.size();
 						
@@ -212,6 +226,15 @@ abstract class AbstractBatchCollector {
 							++i;
 						}
 					}
+				} else if(receiverGrouping.is_set_custom_serialized()) {
+					logger.trace("customGrouping");
+					
+					CustomStreamGrouping customGrouping = (CustomStreamGrouping)Utils.deserialize(receiver.getValue()
+						.get_custom_serialized());
+					customGrouping.prepare(context, new GlobalStreamId(this.componentId, streamId), taskIds);
+					
+					this.customGroupingReceivers.put(receiverId, customGrouping);
+					this.numberOfReceiverTasks.put(receiverId, new Integer(taskIds.size()));
 				}
 			}
 			
@@ -245,31 +268,41 @@ abstract class AbstractBatchCollector {
 	public List<Integer> tupleEmit(String streamId, Collection<Tuple> anchors, List<Object> tuple, Object messageId) {
 		Integer bS = this.batchSizes.get(streamId);
 		if(bS == null || bS.intValue() <= 0) {
-			this.doEmit(streamId, anchors, tuple, messageId);
+			return this.doEmit(streamId, anchors, tuple, messageId);
 		}
 		
-		int bufferIndex = 0;
-		
-		final Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
-		if(taskIndex != null) {
-			for(String receiverComponentId : this.receivers.get(streamId)) {
-				if(this.fieldsGroupingReceivers.contains(receiverComponentId)) {
-					Integer taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext,
-						this.componentId, streamId, receiverComponentId, tuple);
-					bufferIndex += (this.weights.get(receiverComponentId).intValue() * taskIndex.get(taskId).intValue());
+		String directStream = BatchingOutputFieldsDeclarer.STREAM_PREFIX + streamId;
+		if(this.directOutputBuffers.containsKey(directStream)) { // emulate by direct emit
+			for(String receiverComponentId : this.receivers.get(directStream)) {
+				final CustomStreamGrouping customGrouping = this.customGroupingReceivers.get(receiverComponentId);
+				if(customGrouping != null) {
+					List<Integer> taskIds = customGrouping.chooseTasks(
+						this.numberOfReceiverTasks.get(receiverComponentId).intValue(), tuple);
+					
+					for(Integer taskId : taskIds) {
+						this.tupleEmitDirect(taskId.intValue(), directStream, anchors, tuple, messageId);
+					}
+				} else {
+					int taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext, this.componentId,
+						streamId, receiverComponentId, tuple).intValue();
+					this.tupleEmitDirect(taskId, directStream, anchors, tuple, messageId);
 				}
 			}
-		}
-		String directStream = BatchingOutputFieldsDeclarer.STREAM_PREFIX + streamId;
-		if(this.directOutputBuffers.containsKey(directStream)) {
-			// emulate fieldsGrouping by direct emit
-			for(String receiverComponentId : this.receivers.get(directStream)) {
-				int taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext, this.componentId,
-					streamId, receiverComponentId, tuple).intValue();
-				this.tupleEmitDirect(taskId, directStream, anchors, tuple, messageId);
+		} else { // regular batching
+			int bufferIndex = 0;
+			
+			final Map<Integer, Integer> taskIndex = this.streamBatchIndexMapping.get(streamId);
+			if(taskIndex != null) { // fields grouping for at least one receiver
+				for(String receiverComponentId : this.receivers.get(streamId)) {
+					if(this.fieldsGroupingReceivers.contains(receiverComponentId)) {
+						Integer taskId = StormConnector.getFieldsGroupingReceiverTaskId(this.topologyContext,
+							this.componentId, streamId, receiverComponentId, tuple);
+						bufferIndex += (this.weights.get(receiverComponentId).intValue() * taskIndex.get(taskId)
+							.intValue());
+					}
+				}
 			}
-		} else {
-			// regular fieldsGrouping
+			
 			Batch[] streamBuffers = this.outputBuffers.get(streamId);
 			if(streamBuffers != null) {
 				final Batch buffer = streamBuffers[bufferIndex];
@@ -372,7 +405,7 @@ abstract class AbstractBatchCollector {
 	 * @param stormConfig
 	 *            The storm config the which the classes should be registered to.
 	 */
-	static void registerKryoClasses(Config stormConfig) {
+	public static void registerKryoClasses(Config stormConfig) {
 		stormConfig.registerSerialization(Batch.class);
 		stormConfig.registerSerialization(BatchColumn.class);
 	}

@@ -770,6 +770,11 @@ public class AbstractBatchCollectorTest {
 		}
 	}
 	
+	// @Test
+	// public void testCustomGrouping() {
+	// Assert.fail();
+	// }
+	
 	@Test
 	public void testEmitDirectSimple() {
 		this.prepareAndRunTestEmitDirectDefaultOutputStream(this.generateConsumerTasks(1, 1));

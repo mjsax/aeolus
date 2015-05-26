@@ -24,6 +24,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 import backtype.storm.spout.ISpoutOutputCollector;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -39,7 +40,7 @@ import backtype.storm.utils.Utils;
  * 
  * @author Matthias J. Sax
  */
-class BatchSpoutOutputCollector extends SpoutOutputCollector {
+public class BatchSpoutOutputCollector extends SpoutOutputCollector {
 	private final static Logger logger = LoggerFactory.getLogger(BatchSpoutOutputCollector.class);
 	
 	/**
@@ -55,12 +56,12 @@ class BatchSpoutOutputCollector extends SpoutOutputCollector {
 	 * {@link BatchSpoutOutputCollector} is called. Needs to be reset to {@code false} externally (see
 	 * {@link SpoutOutputBatcher#nextTuple()}.
 	 */
-	boolean tupleEmitted;
+	public boolean tupleEmitted;
 	/**
 	 * Is set to {@code true} (by {@link SpoutBatchCollectorImpl}), each time a batch is emitted by {@link #batcher}.
 	 * Needs to be reset to {@code false} externally (see {@link SpoutOutputBatcher#nextTuple()}.
 	 */
-	boolean batchEmitted;
+	public boolean batchEmitted;
 	
 	
 	

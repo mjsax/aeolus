@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * 
  * @author Matthias J. Sax
  */
-class BatchColumn extends ArrayList<Object> {
+public class BatchColumn extends ArrayList<Object> {
 	private final static long serialVersionUID = -2215147192473477343L;
 	
 	

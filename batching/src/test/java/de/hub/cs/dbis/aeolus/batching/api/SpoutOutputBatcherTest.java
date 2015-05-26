@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
@@ -44,6 +44,10 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.batching.Batch;
+import de.hub.cs.dbis.aeolus.batching.BatchColumn;
+import de.hub.cs.dbis.aeolus.batching.BatchSpoutOutputCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
@@ -59,6 +63,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 @PrepareForTest(SpoutOutputBatcher.class)
 public class SpoutOutputBatcherTest {
 	private IRichSpout spoutMock;
+	private final HashMap<String, Integer> noBatching = new HashMap<String, Integer>();
 	
 	private long seed;
 	private Random r;
@@ -78,7 +83,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testOpen() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
@@ -93,7 +98,7 @@ public class SpoutOutputBatcherTest {
 		BatchSpoutOutputCollector collectorMock = mock(BatchSpoutOutputCollector.class);
 		PowerMockito.whenNew(BatchSpoutOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
 		
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		spout.open(null, null, null);
 		spout.close();
 		
@@ -103,7 +108,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testActivate() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		spout.activate();
 		verify(this.spoutMock).activate();
 	}
@@ -113,7 +118,7 @@ public class SpoutOutputBatcherTest {
 		BatchSpoutOutputCollector collectorMock = mock(BatchSpoutOutputCollector.class);
 		PowerMockito.whenNew(BatchSpoutOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
 		
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		spout.open(null, null, null);
 		
 		spout.deactivate();
@@ -123,7 +128,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testAck() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		
 		Object messageId = mock(Object.class);
 		spout.ack(messageId);
@@ -133,7 +138,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testFail() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		
 		Object messageId = mock(Object.class);
 		spout.fail(messageId);
@@ -143,7 +148,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testDeclareOutputFields() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
 		spout.declareOutputFields(declarer);
@@ -153,7 +158,7 @@ public class SpoutOutputBatcherTest {
 	
 	@Test
 	public void testGetComponentConfiguration() {
-		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, null);
+		SpoutOutputBatcher spout = new SpoutOutputBatcher(this.spoutMock, this.noBatching);
 		
 		final Map<String, Object> conf = new HashMap<String, Object>();
 		when(spout.getComponentConfiguration()).thenReturn(conf);

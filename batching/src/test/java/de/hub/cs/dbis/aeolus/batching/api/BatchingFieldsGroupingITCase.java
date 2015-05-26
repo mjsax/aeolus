@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,7 +39,7 @@ import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 /**
  * @author Matthias J. Sax
  */
-public class BatchingFieldsGroupingMultipleITCase {
+public class BatchingFieldsGroupingITCase {
 	private long seed;
 	private Random r;
 	
@@ -56,31 +56,23 @@ public class BatchingFieldsGroupingMultipleITCase {
 	
 	@SuppressWarnings("rawtypes")
 	@Test(timeout = 30000)
-	public void testFieldsGroupingMultiple() {
+	public void testFieldsGrouping() {
 		final String topologyName = "testTopology";
 		final int maxValue = 1000;
 		final int batchSize = 1 + this.r.nextInt(5);
 		final int numberOfAttributes = 1 + this.r.nextInt(10);
-		final int numberOfConsumers = 2 + this.r.nextInt(3);
-		final Integer spoutDop = new Integer(1);
-		final Integer[] boltDop = new Integer[numberOfConsumers];
-		final Fields[] groupingFiels = new Fields[numberOfConsumers];
-		final String[][] schema = new String[numberOfConsumers][];
+		final Integer boltDop = new Integer(2 + this.r.nextInt(4));
 		
-		for(int i = 0; i < numberOfConsumers; ++i) {
-			boltDop[i] = new Integer(1 + this.r.nextInt(5));
-			
-			LinkedList<String> attributes = new LinkedList<String>();
-			for(int j = 0; j < numberOfAttributes; ++j) {
-				attributes.add("" + (char)('a' + j));
-			}
-			
-			schema[i] = new String[1 + this.r.nextInt(numberOfAttributes)];
-			for(int j = 0; j < schema[i].length; ++j) {
-				schema[i][j] = new String(attributes.remove(this.r.nextInt(attributes.size())));
-			}
-			groupingFiels[i] = new Fields(schema[i]);
+		LinkedList<String> attributes = new LinkedList<String>();
+		for(int i = 0; i < numberOfAttributes; ++i) {
+			attributes.add("" + (char)('a' + i));
 		}
+		
+		String[] schema = new String[1 + this.r.nextInt(numberOfAttributes)];
+		for(int i = 0; i < schema.length; ++i) {
+			schema[i] = new String(attributes.remove(this.r.nextInt(attributes.size())));
+		}
+		Fields groupingFiels = new Fields(schema);
 		
 		
 		
@@ -88,18 +80,13 @@ public class BatchingFieldsGroupingMultipleITCase {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout(VerifyBolt.SPOUT_ID, new RandomSpout(numberOfAttributes, maxValue, new String[] {"stream1"},
-			this.seed), spoutDop);
+			this.seed));
 		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
-			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
+			maxValue, new String[] {"stream2"}, this.seed), batchSize));
 		
-		for(int i = 0; i < numberOfConsumers; ++i) {
-			builder
-				.setBolt("Bolt-" + i, new InputDebatcher(new VerifyBolt(new Fields(schema[i]), groupingFiels[i])),
-					boltDop[i]).fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels[i])
-				.fieldsGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2", groupingFiels[i])
-				.directGrouping(VerifyBolt.BATCHING_SPOUT_ID, BatchingOutputFieldsDeclarer.STREAM_PREFIX + "stream2");
-			
-		}
+		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields(schema), groupingFiels)), boltDop)
+			.fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels)
+			.fieldsGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2", groupingFiels);
 		
 		cluster.submitTopology(topologyName, new HashMap(), builder.createTopology());
 		
