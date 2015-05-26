@@ -250,7 +250,7 @@ public class AeolusBuilderTest {
 		this.aeolusBuilder.setStateSpout(null, null, null);
 	}
 	
-	@Test(timeout = 20000)
+	@Test(timeout = 30000)
 	public void testShuffleFromSpout() {
 		IRichSpout userSpout = new TestSpout();
 		final Integer spoutDop = new Integer(1 + this.r.nextInt(5));
