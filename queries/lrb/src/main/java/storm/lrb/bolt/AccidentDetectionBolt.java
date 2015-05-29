@@ -101,13 +101,10 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	 * a proper collection. This one holds {@code Position x (Lane x Accicent)}.
 	 */
 	private final Map<Integer, Map<Integer, Accident>> accidentsPerPosition = new HashMap<Integer, Map<Integer, Accident>>();
-	
-	private final int processed_xway;
-	
+
 	private OutputCollector collector;
-	
-	public AccidentDetectionBolt(int xway) {
-		processed_xway = xway;
+
+	public AccidentDetectionBolt() {
 	}
 	
 	@Override

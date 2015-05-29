@@ -56,7 +56,7 @@ public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichS
 	/**
 	 * The time unit used in the timestamp attribute.
 	 */
-	private final TIME_UNIT timeUnit;
+	private final TimeUnit timeUnit;
 	/**
 	 * The timestamp of the first emitted tuple
 	 */
@@ -73,12 +73,12 @@ public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichS
 	 * 
 	 * @author Matthias J. Sax
 	 */
-	public enum TIME_UNIT {
+	public enum TimeUnit {
 		SECONDS(1000 * 1000 * 1000), MICROSECONDS(1000 * 1000), MILLISECONDS(1000), NANOSECONDS(1);
 		
 		private final long factor;
 		
-		private TIME_UNIT(int factor) {
+		private TimeUnit(int factor) {
 			this.factor = factor;
 		}
 		
@@ -97,7 +97,7 @@ public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichS
 	 * @param tsIndex
 	 *            The index of the timestamp attribute.
 	 */
-	public DataDrivenStreamRateDriverSpout(IRichSpout spout, int tsIndex, TIME_UNIT timeUnit) {
+	public DataDrivenStreamRateDriverSpout(IRichSpout spout, int tsIndex, TimeUnit timeUnit) {
 		assert (spout != null);
 		assert (timeUnit != null);
 		assert (tsIndex >= 0);

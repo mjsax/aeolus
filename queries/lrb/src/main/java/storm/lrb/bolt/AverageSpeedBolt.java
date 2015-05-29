@@ -68,12 +68,10 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	
 	private volatile long lastEmitMinute = 0;
 	private OutputCollector collector;
-	private int processed_xway = -1;
 	
-	public AverageSpeedBolt(int xway) {
+	public AverageSpeedBolt() {
 		this.timeOfLastReportsMap = new HashMap<SegmentIdentifier, Long>();
 		this.avgSpeedsMap = new HashMap<SegmentIdentifier, AvgVehicleSpeeds>();
-		this.processed_xway = xway;
 	}
 	
 	@Override
@@ -128,8 +126,11 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		for(SegmentIdentifier segmentIdentifier : segmentList) {
 			AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(segmentIdentifier);
 			if(lastSpeeds != null) {
-				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(this.processed_xway,
-					segmentIdentifier, lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
+				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, 
+						new Values(segmentIdentifier, 
+								lastSpeeds.vehicleCount(), 
+								lastSpeeds.speedAverage(), 
+								minute));
 				this.avgSpeedsMap.put(segmentIdentifier, new AvgVehicleSpeeds());
 			}
 			
@@ -142,8 +143,11 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		AvgVehicleSpeeds lastSpeeds = this.avgSpeedsMap.get(xsd);
 		if(lastSpeeds != null) {
 			synchronized(lastSpeeds) {
-				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, new Values(this.processed_xway, xsd,
-					lastSpeeds.vehicleCount(), lastSpeeds.speedAverage(), minute));
+				this.collector.emit(TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID, 
+						new Values(xsd,
+								lastSpeeds.vehicleCount(), 
+								lastSpeeds.speedAverage(), 
+								minute));
 				this.avgSpeedsMap.put(xsd, new AvgVehicleSpeeds());
 			}
 		}
