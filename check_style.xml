@@ -9,15 +9,15 @@
     <module name="RegexpHeader">
         <property
             name="header"
-            value="^package ([0-9a-zA-Z]+.)*[0-9a-zA-Z]+;\n\n/*\n * #%L\n * [a-zA-Z0-9]+\n * %%\n * Copyright \(C\) 2014 - 2015 Humboldt-Universität zu Berlin\n * %%\n * Licensed under the Apache License, Version 2.0 \(the &quot;License&quot;\);\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n * \n *      http://www.apache.org/licenses/LICENSE-2.0\n * \n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n * #L%\n */"/>
+            value="^/*\n * #!\n * %\n * Copyright \(C\) 2014 - 2015 Humboldt-Universität zu Berlin\n * %\n * Licensed under the Apache License, Version 2.0 \(the &quot;License&quot;\);\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n * \n *      http://www.apache.org/licenses/LICENSE-2.0\n * \n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n * #_\n */\npackage ([0-9a-zA-Z]+.)*[0-9a-zA-Z]+;\n\n"/>
         <property name="fileExtensions" value="java"/>
     </module>
-    <!-- Checks that there are no tab characters ('\t') in the source code. -->
-    <module name="FileTabCharacter">
-        <!-- Report on each line in each file -->
-        <property name="eachLine" value="true"/>
-    </module>
     <module name="TreeWalker">
+        <module name="RegexpSinglelineJava">
+            <property name="format" value="^\t* +\t*\S"/>
+            <property name="message" value="Line has leading space characters; indentation should be performed with tabs only."/>
+            <property name="ignoreComments" value="true"/>
+        </module>
         <!-- No EOL should be placed before block start ('{') -->
         <module name="LeftCurly">
             <property name="option" value="eol"/>
@@ -34,19 +34,19 @@
             <property name="severity" value="error"/>
         </module>
         <!-- Checks the Javadoc of a method or constructor. -->
-        <module name="JavadocMethod">
+        <!--<module name="JavadocMethod">
             <property name="scope" value="public"/>
             <property name="severity" value="warning"/>
-        </module>
+        </module>--><!--reactivate asap-->
         <!-- Checks Javadoc comments for class and interface definitions. -->
-        <module name="JavadocType">
+        <!--<module name="JavadocType">
             <property name="scope" value="public"/>
             <property name="severity" value="warning"/>
-        </module>
+        </module>--><!--reactivate asap-->
         <!-- Checks for Naming Conventions.              -->
         <!-- See http://checkstyle.sourceforge.net/config_naming.html -->
         <!-- Sun Naming Conventions -->
-        <module name="ConstantName"/>
+        <!--<module name="ConstantName"/>--><!--deactivate as long as the plugin ignores the fact that only immutable static final variables ought to be written UPPERCASE-->
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MemberName"/>
@@ -55,15 +55,15 @@
         <module name="ParameterName"/>
         <module name="StaticVariableName"/>
         <module name="TypeName"/>
-        <!-- Checks correct indentation of Java Code. -->
-        <module name="Indentation">
-            <!-- how many spaces to use for new indentation level -->
+        <!-- Checks correct indentation of Java Code. --><!--too much overhead for instance-->
+        <!--<module name="Indentation">
+            <! how many spaces to use for new indentation level >
             <property name="basicOffset" value="4" />
-            <!-- how far brace should be indented when on next line -->
+            <! how far brace should be indented when on next line >
             <property name="braceAdjustment" value="0"/>
-            <!-- how much to indent a case label -->
+            <! how much to indent a case label >
             <property name="caseIndent" value="4"/>
-        </module>
+        </module>-->
         <!-- Specify method parameters code conventions -->
         <!--<module name="MethodParamPad">
              Whitespace is required after method name 
