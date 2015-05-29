@@ -18,20 +18,35 @@
  */
 package storm.lrb.bolt;
 
+import storm.lrb.model.TollEntry;
+
 /**
- * 
+ * An interface for the storage of toll data (encapsulated in {@link TollEntry})
+ * for historical queries. Allows to store and retrieve the toll amount.
  * @author richter
  */
 public interface TollDataStore {
 	
 	/**
-	 * 
-	 * @param xWay
-	 * @param day
-	 * @param vehicleIdentifier
-	 * @return the stored toll for the combination of the parameters or {@code null} if there's no such entry
+	 * Retrieves the toll value of the underlying data store. The way the data
+	 * is retrieved and how efficient and fast this retrieval is depends on
+	 * implementors.
+	 * @param xWay the {@code xWay} field of the query
+	 * @param day the {@code day} field of the query
+	 * @param vehicleIdentifier the {@code vid} field of the query
+	 * @return the stored toll for the combination of the parameters or
+	 * {@code null} if there's no such entry
 	 */
 	Integer retrieveToll(int xWay, int day, int vehicleIdentifier);
 	
+	/**
+	 * Stores the toll value in the underlying data store. The way the data
+	 * is stored and how efficient and fast this storage is depends on
+	 * implementors.
+	 * @param xWay the {@code xWay} field of the query
+	 * @param day the {@code day} field of the query
+	 * @param vehicleIdentifier the {@code vid} field of the query
+	 * @param toll the amount to be stored
+	 */
 	void storeToll(int xWay, int day, int vehicleIdentifier, int toll);
 }

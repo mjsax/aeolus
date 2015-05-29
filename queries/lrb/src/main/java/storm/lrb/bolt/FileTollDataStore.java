@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * 
+ * A {@link TollDataStore} that uses a file for storage including all
+ * disadvantages. Use only in a very simple topology as the file I/O can easily
+ * produce a performance bottleneck.
  * @author richter
  */
 public class FileTollDataStore implements TollDataStore {
