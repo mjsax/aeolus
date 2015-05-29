@@ -18,11 +18,8 @@
  */
 package storm.lrb.bolt;
 
-import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +34,20 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 
 
 
 
 
 /**
- * Stub for daily expenditure queries. TODO either use external distributed database to keep historic data or load it
- * into memory
+ * Stub for daily expenditure queries. Responds to {@link DailyExpenditureRequest}s with tuple in the form of (Type = 3,
+ * Time (specifying the time that d was emitted), Emit (specifying the time the query response is emitted), QID
+ * (identifying the query that issued the request), Bal (the sum of all tolls from expressway x on day n that were
+ * charged to the vehi- cle’s account). Reads from {@link TopologyControl#DAILY_EXPEDITURE_REQUESTS_STREAM_ID} and emits
+ * tuple on {@link Utils#DEFAULT_STREAM_ID}.
+ * 
+ * @TODO either use external distributed database to keep historic data or load it into memory
  * 
  */
 public class DailyExpenditureBolt extends BaseRichBolt {
@@ -52,22 +55,21 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(DailyExpenditureBolt.class);
 	
-	private final String histFile;
-	
-	private final HashMap<Integer, HashMap<Pair<Integer, Integer>, Integer>> tollAccounts = new HashMap<Integer, HashMap<Pair<Integer, Integer>, Integer>>();
+	private final TollDataStore dataStore;
 	
 	private OutputCollector collector;
 	
-	public DailyExpenditureBolt(String file) {
-		this.histFile = file;
+	public DailyExpenditureBolt(TollDataStore dataStore) {
+		this.dataStore = dataStore;
+	}
+	
+	public TollDataStore getDataStore() {
+		return dataStore;
 	}
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
-		if(this.histFile.isEmpty()) {
-			LOG.warn("no filename for historic data given.");
-		}
 		
 		// TODO read histfile with csvreader or connect to db
 	}
@@ -81,22 +83,19 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 			
 			DailyExpenditureRequest exp = (DailyExpenditureRequest)tuple
 				.getValueByField(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
-			String out;
 			int vehicleIdentifier = exp.getVehicleIdentifier();
 			Values values;
-			if(this.tollAccounts.containsKey(vehicleIdentifier)) {
+			Integer toll = this.dataStore.retrieveToll(exp.getxWay(), exp.getDay(), vehicleIdentifier);
+			if(toll != null) {
 				LOG.debug("ExpenditureRequest: found vehicle identifier %d", vehicleIdentifier);
-				Pair<Integer, Integer> key = new MutablePair<Integer, Integer>(exp.getxWay(), exp.getDay());
 				
-				int toll = this.tollAccounts.get(exp.getVehicleIdentifier()).get(key);
-				
-				LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
+				LOG.debug("3, %d, %d, %d, %d", exp.getCreated(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
 					toll);
 				
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getTimer().getOffset(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getCreated(), exp.getTimer().getOffset(),
 					exp.getQueryIdentifier(), toll);
 			} else {
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getTime(), exp.getTimer().getOffset(),
+				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getCreated(), exp.getTimer().getOffset(),
 					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
 				
 			}
