@@ -65,12 +65,23 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 	private long tupleCnt = 0;
 	private boolean firstrun = true;
 	
+	/**
+	 * Creates a {@code SocketClientSpoutPure} listening on the specfied {@code  host} and {@code port}.
+	 * 
+	 * @param host
+	 *            the host the socket is opened on
+	 * @param port
+	 *            the port the socket is opened on
+	 */
 	public SocketClientSpoutPure(String host, int port) {
 		this.host = host;
 		this.port = port;
 		this.cnt = new StopWatch();
 	}
 	
+	/**
+	 * {@inheritDoc }
+	 */
 	@Override
 	@SuppressWarnings("SleepWhileInLoop")
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
@@ -113,6 +124,9 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 		
 	}
 	
+	/**
+	 * {@inheritDoc }
+	 */
 	@Override
 	public void nextTuple() {
 		String line = "";
@@ -148,6 +162,9 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc }
+	 */
 	@Override
 	public void close() {
 		// in.close();
