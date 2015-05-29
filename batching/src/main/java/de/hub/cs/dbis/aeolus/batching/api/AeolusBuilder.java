@@ -82,8 +82,8 @@ public class AeolusBuilder extends TopologyBuilder {
 	}
 	
 	@Override
-	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelism_hint) {
-		return this.setBolt(id, bolt, parallelism_hint, 0);
+	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelismHint) {
+		return this.setBolt(id, bolt, parallelismHint, 0);
 	}
 	
 	/**
@@ -94,7 +94,7 @@ public class AeolusBuilder extends TopologyBuilder {
 	 *            outputs.
 	 * @param bolt
 	 *            The bolt to be added to the topology.
-	 * @param parallelism_hint
+	 * @param parallelismHint
 	 *            The number of tasks that should be assigned to execute this bolt. Each task will run on a thread in a
 	 *            process somewhere around the cluster.
 	 * @param batchSize
@@ -102,14 +102,14 @@ public class AeolusBuilder extends TopologyBuilder {
 	 * 
 	 * @return use the returned object to declare the inputs to this component
 	 */
-	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelism_hint, int batchSize) {
+	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelismHint, int batchSize) {
 		bolt = new InputDebatcher(bolt);
 		if(batchSize > 0) {
 			bolt = new BoltOutputBatcher(bolt, batchSize);
 		} else {
 			bolt = new BoltOutputBatcher(bolt, new HashMap<String, Integer>());
 		}
-		return new BatchedDeclarer(super.setBolt(id, bolt, parallelism_hint));
+		return new BatchedDeclarer(super.setBolt(id, bolt, parallelismHint));
 	}
 	
 	/**
@@ -120,7 +120,7 @@ public class AeolusBuilder extends TopologyBuilder {
 	 *            outputs.
 	 * @param bolt
 	 *            The bolt to be added to the topology.
-	 * @param parallelism_hint
+	 * @param parallelismHint
 	 *            The number of tasks that should be assigned to execute this bolt. Each task will run on a thread in a
 	 *            process somewhere around the cluster.
 	 * @param batchSizes
@@ -130,12 +130,12 @@ public class AeolusBuilder extends TopologyBuilder {
 	 * 
 	 * @return use the returned object to declare the inputs to this component
 	 */
-	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelism_hint, HashMap<String, Integer> batchSizes) {
+	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelismHint, HashMap<String, Integer> batchSizes) {
 		if(batchSizes == null) {
 			batchSizes = new HashMap<String, Integer>();
 		}
 		return new BatchedDeclarer(super.setBolt(id, new BoltOutputBatcher(new InputDebatcher(bolt), batchSizes),
-			parallelism_hint));
+			parallelismHint));
 	}
 	
 	/**
@@ -154,7 +154,7 @@ public class AeolusBuilder extends TopologyBuilder {
 	 * @throws UnsupportedOperationException
 	 */
 	@Override
-	public BoltDeclarer setBolt(String id, IBasicBolt bolt, Number parallelism_hint) {
+	public BoltDeclarer setBolt(String id, IBasicBolt bolt, Number parallelismHint) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -203,18 +203,18 @@ public class AeolusBuilder extends TopologyBuilder {
 	 *            outputs.
 	 * @param spout
 	 *            The spout to be added to the topology.
-	 * @param parallelism_hint
+	 * @param parallelismHint
 	 *            The number of tasks that should be assigned to execute this spout. Each task will run on a thread in a
 	 *            process somewhere around the cluster.
 	 * @param batchSize
 	 *            The batch size to be used for all output streams of the given spout (must not be negative).
 	 */
-	public SpoutDeclarer setSpout(String id, IRichSpout spout, Number parallelism_hint, int batchSize) {
+	public SpoutDeclarer setSpout(String id, IRichSpout spout, Number parallelismHint, int batchSize) {
 		if(batchSize <= 0) {
-			return super.setSpout(id, new SpoutOutputBatcher(spout, new HashMap<String, Integer>()), parallelism_hint);
+			return super.setSpout(id, new SpoutOutputBatcher(spout, new HashMap<String, Integer>()), parallelismHint);
 		}
 		
-		return super.setSpout(id, new SpoutOutputBatcher(spout, batchSize), parallelism_hint);
+		return super.setSpout(id, new SpoutOutputBatcher(spout, batchSize), parallelismHint);
 	}
 	
 	/**
@@ -225,7 +225,7 @@ public class AeolusBuilder extends TopologyBuilder {
 	 *            outputs.
 	 * @param spout
 	 *            The spout to be added to the topology.
-	 * @param parallelism_hint
+	 * @param parallelismHint
 	 *            The number of tasks that should be assigned to execute this spout. Each task will run on a thread in a
 	 *            process somewhere around the cluster.
 	 * @param batchSizes
@@ -233,11 +233,11 @@ public class AeolusBuilder extends TopologyBuilder {
 	 *            stream, that is not specified in this map, the output tuples will not be batched. The specified batch
 	 *            sizes must not be negative.
 	 */
-	public SpoutDeclarer setSpout(String id, IRichSpout spout, Number parallelism_hint, Map<String, Integer> batchSizes) {
+	public SpoutDeclarer setSpout(String id, IRichSpout spout, Number parallelismHint, Map<String, Integer> batchSizes) {
 		if(batchSizes == null) {
 			batchSizes = new HashMap<String, Integer>();
 		}
-		return super.setSpout(id, new SpoutOutputBatcher(spout, batchSizes), parallelism_hint);
+		return super.setSpout(id, new SpoutOutputBatcher(spout, batchSizes), parallelismHint);
 	}
 	
 	@Override
@@ -246,7 +246,7 @@ public class AeolusBuilder extends TopologyBuilder {
 	}
 	
 	@Override
-	public void setStateSpout(String id, IRichStateSpout stateSpout, Number parallelism_hint) {
+	public void setStateSpout(String id, IRichStateSpout stateSpout, Number parallelismHint) {
 		throw new UnsupportedOperationException("Not supported by Storm (0.9.3) yet.");
 	}
 	
