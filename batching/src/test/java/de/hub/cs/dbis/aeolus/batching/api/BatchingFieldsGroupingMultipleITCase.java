@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,6 +30,7 @@ import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 
 
@@ -39,7 +40,7 @@ import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 /**
  * @author Matthias J. Sax
  */
-public class BatchingShuffleITCase {
+public class BatchingFieldsGroupingMultipleITCase {
 	private long seed;
 	private Random r;
 	
@@ -56,13 +57,33 @@ public class BatchingShuffleITCase {
 	
 	@SuppressWarnings("rawtypes")
 	@Test(timeout = 30000)
-	public void testShuffle() {
+	public void testFieldsGroupingMultiple() {
 		final String topologyName = "testTopology";
 		final int maxValue = 1000;
 		final int batchSize = 1 + this.r.nextInt(5);
-		final int numberOfAttributes = 1;
+		final int numberOfAttributes = 1 + this.r.nextInt(10);
+		final int numberOfConsumers = 2 + this.r.nextInt(3);
 		final Integer spoutDop = new Integer(1);
-		final Integer boltDop = new Integer(1);
+		final Integer[] boltDop = new Integer[numberOfConsumers];
+		final Fields[] groupingFiels = new Fields[numberOfConsumers];
+		final String[][] schema = new String[numberOfConsumers][];
+		
+		for(int i = 0; i < numberOfConsumers; ++i) {
+			boltDop[i] = new Integer(1 + this.r.nextInt(5));
+			
+			LinkedList<String> attributes = new LinkedList<String>();
+			for(int j = 0; j < numberOfAttributes; ++j) {
+				attributes.add("" + (char)('a' + j));
+			}
+			
+			schema[i] = new String[1 + this.r.nextInt(numberOfAttributes)];
+			for(int j = 0; j < schema[i].length; ++j) {
+				schema[i][j] = new String(attributes.remove(this.r.nextInt(attributes.size())));
+			}
+			groupingFiels[i] = new Fields(schema[i]);
+		}
+		
+		
 		
 		LocalCluster cluster = new LocalCluster();
 		TopologyBuilder builder = new TopologyBuilder();
@@ -72,8 +93,14 @@ public class BatchingShuffleITCase {
 		builder.setSpout(VerifyBolt.BATCHING_SPOUT_ID, new SpoutOutputBatcher(new RandomSpout(numberOfAttributes,
 			maxValue, new String[] {"stream2"}, this.seed), batchSize), spoutDop);
 		
-		builder.setBolt("Bolt", new InputDebatcher(new VerifyBolt(new Fields("a"), null)), boltDop)
-			.shuffleGrouping(VerifyBolt.SPOUT_ID, "stream1").shuffleGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2");
+		for(int i = 0; i < numberOfConsumers; ++i) {
+			builder
+				.setBolt("Bolt-" + i, new InputDebatcher(new VerifyBolt(new Fields(schema[i]), groupingFiels[i])),
+					boltDop[i]).fieldsGrouping(VerifyBolt.SPOUT_ID, "stream1", groupingFiels[i])
+				.fieldsGrouping(VerifyBolt.BATCHING_SPOUT_ID, "stream2", groupingFiels[i])
+				.directGrouping(VerifyBolt.BATCHING_SPOUT_ID, BatchingOutputFieldsDeclarer.STREAM_PREFIX + "stream2");
+			
+		}
 		
 		cluster.submitTopology(topologyName, new HashMap(), builder.createTopology());
 		
@@ -85,5 +112,4 @@ public class BatchingShuffleITCase {
 		Assert.assertEquals(new LinkedList<String>(), VerifyBolt.errorMessages);
 		Assert.assertTrue(VerifyBolt.matchedTuples > 0);
 	}
-	
 }

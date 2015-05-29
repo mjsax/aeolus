@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -24,6 +24,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hub.cs.dbis.aeolus.batching.AbstractBatchCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchColumn;
 import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;

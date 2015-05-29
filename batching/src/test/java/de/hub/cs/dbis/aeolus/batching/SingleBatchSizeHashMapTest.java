@@ -35,7 +35,7 @@ public class SingleBatchSizeHashMapTest {
 	@Test
 	public void testGet() {
 		final long seed = System.currentTimeMillis();
-		System.out.println("seed: " + seed);
+		System.out.println("Test seed: " + seed);
 		Random r = new Random(seed);
 		
 		final int batchSize = r.nextInt();

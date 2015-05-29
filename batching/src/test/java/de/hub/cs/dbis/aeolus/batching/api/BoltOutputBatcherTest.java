@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
@@ -40,6 +40,10 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import de.hub.cs.dbis.aeolus.batching.Batch;
+import de.hub.cs.dbis.aeolus.batching.BatchColumn;
+import de.hub.cs.dbis.aeolus.batching.BatchOutputCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 
 
 
@@ -52,6 +56,7 @@ import backtype.storm.tuple.Tuple;
 @PrepareForTest(BoltOutputBatcher.class)
 public class BoltOutputBatcherTest {
 	private IRichBolt boltMock;
+	private final HashMap<String, Integer> noBatching = new HashMap<String, Integer>();
 	
 	
 	
@@ -64,7 +69,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testPrepare() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, this.noBatching);
 		
 		@SuppressWarnings("rawtypes")
 		Map conf = new HashMap();
@@ -76,7 +81,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testExecute() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, this.noBatching);
 		
 		Tuple input = mock(Tuple.class);
 		bolt.execute(input);
@@ -86,7 +91,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testCleanup() throws Exception {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, this.noBatching);
 		
 		BatchOutputCollector collectorMock = mock(BatchOutputCollector.class);
 		PowerMockito.whenNew(BatchOutputCollector.class).withAnyArguments().thenReturn(collectorMock);
@@ -100,7 +105,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testDeclareOutputFields() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, this.noBatching);
 		
 		OutputFieldsDeclarer declarer = mock(OutputFieldsDeclarer.class);
 		bolt.declareOutputFields(declarer);
@@ -110,7 +115,7 @@ public class BoltOutputBatcherTest {
 	
 	@Test
 	public void testGetComponentConfiguration() {
-		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, null);
+		BoltOutputBatcher bolt = new BoltOutputBatcher(this.boltMock, this.noBatching);
 		
 		final Map<String, Object> conf = new HashMap<String, Object>();
 		when(bolt.getComponentConfiguration()).thenReturn(conf);

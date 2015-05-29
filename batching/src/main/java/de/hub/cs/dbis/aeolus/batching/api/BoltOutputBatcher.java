@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.Map;
 
@@ -26,6 +26,9 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import de.hub.cs.dbis.aeolus.batching.AbstractBatchCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchOutputCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 
 
 
@@ -46,10 +49,6 @@ public class BoltOutputBatcher implements IRichBolt {
 	private final static long serialVersionUID = 6453060658895879104L;
 	
 	/**
-	 * The used {@link BatchOutputCollector} that wraps the actual {@link OutputCollector}.
-	 */
-	private BatchOutputCollector batchCollector;
-	/**
 	 * The bolt that is wrapped.
 	 */
 	private final IRichBolt wrappedBolt;
@@ -61,6 +60,10 @@ public class BoltOutputBatcher implements IRichBolt {
 	 * The size of the output batches (for all output streams).
 	 */
 	private final int batchSize;
+	/**
+	 * The used {@link BatchOutputCollector} that wraps the actual {@link OutputCollector}.
+	 */
+	private BatchOutputCollector batchCollector;
 	
 	
 	
@@ -72,11 +75,20 @@ public class BoltOutputBatcher implements IRichBolt {
 	 *            The original bolt to be wrapped.
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code bolt} is {@code null} or {@code batchSize} is not positive
 	 */
 	public BoltOutputBatcher(IRichBolt bolt, int batchSize) {
+		if(bolt == null) {
+			throw new IllegalArgumentException("Parameter <bolt> must not be null.");
+		}
+		if(batchSize < 1) {
+			throw new IllegalArgumentException("Parameter <batchSize> must not greater than 0.");
+		}
 		this.wrappedBolt = bolt;
-		this.batchSizes = null;
 		this.batchSize = batchSize;
+		this.batchSizes = null;
 	}
 	
 	/**
@@ -87,11 +99,20 @@ public class BoltOutputBatcher implements IRichBolt {
 	 *            The original bolt to be wrapped.
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code bolt} or {@code batchSizes} is {@code null}
 	 */
 	public BoltOutputBatcher(IRichBolt bolt, Map<String, Integer> batchSizes) {
+		if(bolt == null) {
+			throw new IllegalArgumentException("Parameter <bolt> must not be null.");
+		}
+		if(batchSizes == null) {
+			throw new IllegalArgumentException("Parameter <batchSizes> must not be null.");
+		}
 		this.wrappedBolt = bolt;
-		this.batchSizes = batchSizes;
 		this.batchSize = -1;
+		this.batchSizes = batchSizes;
 	}
 	
 	

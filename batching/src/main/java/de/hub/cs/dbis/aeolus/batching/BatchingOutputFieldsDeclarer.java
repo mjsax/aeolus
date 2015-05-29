@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.aeolus.batching;
 
+import de.hub.cs.dbis.aeolus.batching.api.BoltOutputBatcher;
+import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
@@ -32,7 +34,7 @@ import backtype.storm.utils.Utils;
  * 
  * @author Matthias J. Sax
  */
-class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
+public class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
 	/**
 	 * Stream-ID prefix for automatically declared direct output streams.
 	 */

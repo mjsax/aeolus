@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import java.util.Map;
 
@@ -25,6 +25,9 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import de.hub.cs.dbis.aeolus.batching.AbstractBatchCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchSpoutOutputCollector;
+import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 
 
 
@@ -71,8 +74,17 @@ public class SpoutOutputBatcher implements IRichSpout {
 	 *            The original spout to be wrapped.
 	 * @param batchSize
 	 *            The batch size to be used for all output streams.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code spout} is {@code null} or {@code batchSize} is not positive
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, int batchSize) {
+		if(spout == null) {
+			throw new IllegalArgumentException("Parameter <spout> must not be null.");
+		}
+		if(batchSize < 1) {
+			throw new IllegalArgumentException("Parameter <batchSize> must not greater than 0.");
+		}
 		this.wrappedSpout = spout;
 		this.batchSizes = null;
 		this.batchSize = batchSize;
@@ -86,8 +98,17 @@ public class SpoutOutputBatcher implements IRichSpout {
 	 *            The original spout to be wrapped.
 	 * @param batchSizes
 	 *            The batch sizes for each output stream.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if {@code spout} or {@code batchSizes} is {@code null}
 	 */
 	public SpoutOutputBatcher(IRichSpout spout, Map<String, Integer> batchSizes) {
+		if(spout == null) {
+			throw new IllegalArgumentException("Parameter <spout> must not be null.");
+		}
+		if(batchSizes == null) {
+			throw new IllegalArgumentException("Parameter <batchSizes> must not be null.");
+		}
 		this.wrappedSpout = spout;
 		this.batchSizes = batchSizes;
 		this.batchSize = -1;

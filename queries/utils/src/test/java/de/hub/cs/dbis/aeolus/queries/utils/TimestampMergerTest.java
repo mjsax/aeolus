@@ -93,7 +93,8 @@ public class TimestampMergerTest {
 	
 	@BeforeClass
 	public static void prepareStatic() {
-		long seed = System.currentTimeMillis();
+		// final long seed = System.currentTimeMillis();
+		final long seed = 1432597577997L;
 		Random r = new Random(seed);
 		System.out.println("Static test seed: " + seed);
 		
@@ -115,6 +116,7 @@ public class TimestampMergerTest {
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
+		this.seed = 1432597581706L;
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 		forwarder.prepare(TimestampMergerTest.boltConfig, null, null);
@@ -123,8 +125,8 @@ public class TimestampMergerTest {
 	
 	
 	private int mockInputs(int numberOfProducers, int numberOfTasks, boolean tsIndexOrName, int minNumberOfAttributes, int maxNumberOfAttributes) {
-		assert numberOfProducers > 0;
-		assert numberOfTasks != 0;
+		assert (numberOfProducers > 0);
+		assert (numberOfTasks != 0);
 		
 		int createdTasks = 0;
 		
@@ -291,6 +293,9 @@ public class TimestampMergerTest {
 		
 		
 		int[] max = new int[createdTasks];
+		for(int i = 0; i < max.length; ++i) {
+			max[i] = -1;
+		}
 		int[][] bucketSums = new int[createdTasks][numberDistinctValues];
 		for(int i = 0; i < numberOfTuples; ++i) {
 			int taskId = this.r.nextInt(createdTasks);
@@ -314,9 +319,13 @@ public class TimestampMergerTest {
 				stillBuffered -= bucketSums[i][j];
 			}
 		}
+		List<List<Object>> expectedResult = this.result.subList(0, this.result.size() - stillBuffered);
 		
-		Assert.assertEquals(this.result.subList(0, this.result.size() - stillBuffered),
-			collector.output.get(Utils.DEFAULT_STREAM_ID));
+		if(expectedResult.size() > 0) {
+			Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
+		} else {
+			Assert.assertNull(collector.output.get(Utils.DEFAULT_STREAM_ID));
+		}
 		Assert.assertTrue(collector.acked.size() == numberOfTuples - stillBuffered);
 		Assert.assertTrue(collector.failed.size() == 0);
 		

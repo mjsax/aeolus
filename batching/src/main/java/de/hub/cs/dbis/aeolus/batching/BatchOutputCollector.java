@@ -26,6 +26,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.hub.cs.dbis.aeolus.batching.api.BoltOutputBatcher;
 import backtype.storm.task.IOutputCollector;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -42,7 +43,7 @@ import backtype.storm.utils.Utils;
  * 
  * @author Matthias J. Sax
  */
-class BatchOutputCollector extends OutputCollector {
+public class BatchOutputCollector extends OutputCollector {
 	final static Logger logger = LoggerFactory.getLogger(BatchOutputCollector.class);
 	
 	/**

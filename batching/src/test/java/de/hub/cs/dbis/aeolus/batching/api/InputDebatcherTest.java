@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.batching;
+package de.hub.cs.dbis.aeolus.batching.api;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.same;
@@ -43,6 +43,10 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.batching.Batch;
+import de.hub.cs.dbis.aeolus.batching.BatchColumn;
+import de.hub.cs.dbis.aeolus.batching.BatchOutputCollector;
+import de.hub.cs.dbis.aeolus.batching.api.InputDebatcher;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 

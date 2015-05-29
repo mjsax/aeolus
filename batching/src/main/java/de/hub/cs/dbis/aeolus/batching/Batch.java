@@ -36,7 +36,7 @@ import backtype.storm.tuple.Values;
  * 
  * @author Matthias J. Sax
  */
-class Batch extends ArrayList<BatchColumn> {
+public class Batch extends ArrayList<BatchColumn> {
 	private final static long serialVersionUID = 4904732830895959975L;
 	
 	private final static Logger logger = LoggerFactory.getLogger(Batch.class);
@@ -97,8 +97,9 @@ class Batch extends ArrayList<BatchColumn> {
 	 * @param tuple
 	 *            The tuple to be added.
 	 */
-	void addTuple(List<Object> tuple) { // cannot use backtype.storm.tuple.Tuple or backtype.storm.tuple.Values because
-										// Collector.emit(...) uses "List<Object> tuple" as parameter
+	public void addTuple(List<Object> tuple) { // cannot use backtype.storm.tuple.Tuple or backtype.storm.tuple.Values
+												// because
+		// Collector.emit(...) uses "List<Object> tuple" as parameter
 		assert (tuple != null);
 		assert (tuple.size() == this.numberOfAttributes);
 		assert (this.size < this.batchSize);

@@ -7,24 +7,35 @@ then
   exit -1
 fi
 
-resultDir=$1
+statsDir=$1
 
 ##################################################
-latexFile=main.tex
 tmpFile=/tmp/aeolus-eval.tmp
 outputRates=/tmp/aeolus-eval.rates
 batchSizes=/tmp/aeolus-eval.bS
 
 workingDir=`pwd`
-cd results/$resultDir
-rm main* pdflatex.out
+latexFile=$workingDir/results/batchingBenchmark-$statsDir.tex
+
+cd results/$statsDir
+if [ $? -ne 0 ]
+then
+  echo "ERROR: could not find directory $statsDir in './results/'"
+  exit -1
+fi
 
 
+
+# preprocessing: generate .res files from .stats files
 for run in `ls`
 do
+  if [ ! -d $run ]
+  then
+    continue
+  fi
+
   cd $run
 
-  # preprocessing: generate .res files from .stats files
   for file in `ls *.stats`
   do
     bash $workingDir/processCountFile.sh $file 
@@ -83,6 +94,7 @@ do
   xlabel={time in s},
   legend columns=3,
   legend style={at={(0.5,-0.3)},anchor=north},
+  ymax=75000,
 ]" >> $latexFile
 
   # add spout plots
@@ -92,7 +104,7 @@ do
     spoutHost=`grep -e "spout" $runDirectory/usedHosts | cut -d= -f 2`
 
     # add single plots
-    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-$spoutHost-nwOut.res}; \\addlegendentry{$batchSize};" >> $latexFile
+    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-$spoutHost-nwOut.res}; \\addlegendentry{$batchSize};" >> $latexFile
   done
 
   # close tikz
@@ -125,7 +137,7 @@ do
     sinkHost=`grep -e "sink" $runDirectory/usedHosts | cut -d= -f 2`
 
     # add single plots
-    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-$sinkHost-nwIn.res}; \\addlegendentry{$batchSize};" >> $latexFile
+    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-$sinkHost-nwIn.res}; \\addlegendentry{$batchSize};" >> $latexFile
   done
 
   # close tikz
@@ -158,8 +170,8 @@ do
     spoutHost=`grep -e "spout" $runDirectory/usedHosts | cut -d= -f 2`
 
     # add single plots
-    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-spout-out.res}; \\addlegendentry{$batchSize};" >> $latexFile
-#    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-spout-out::default.res}; \\addlegendentry{default-$batchSize};" >> $latexFile
+    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-spout-out.res}; \\addlegendentry{$batchSize};" >> $latexFile
+#    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-spout-out::default.res}; \\addlegendentry{default-$batchSize};" >> $latexFile
   done
 
   # close tikz
@@ -191,8 +203,8 @@ do
     runDirectory=rate-$rate-bS-$batchSize
 
     # add single plots
-    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-sink-in.res}; \\addlegendentry{$batchSize};" >> $latexFile
-#    echo "\\addplot table[x index=0, y index=1] {$runDirectory/aeolus-benchmark-sink-in::default.res}; \\addlegendentry{default-$batchSize};" >> $latexFile
+    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-sink-in.res}; \\addlegendentry{$batchSize};" >> $latexFile
+#    echo "\\addplot table[x index=0, y index=1] {$statsDir/$runDirectory/aeolus-benchmark-sink-in::default.res}; \\addlegendentry{default-$batchSize};" >> $latexFile
   done
 
   # close tikz
@@ -211,6 +223,7 @@ done
 
 # cleanup
 rm $outputRates
+cd ..
 
 
 
