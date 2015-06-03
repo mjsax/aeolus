@@ -17,6 +17,9 @@
     <pluginRepository>
       <id>sonatype-forge</id>
       <url>https://repository.sonatype.org/content/groups/forge</url>
+      <snapshots>
+          <updatePolicy>daily</updatePolicy>
+      </snapshots>
     </pluginRepository>
   </pluginRepositories>
 
