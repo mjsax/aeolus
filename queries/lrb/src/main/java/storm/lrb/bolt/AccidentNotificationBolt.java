@@ -38,6 +38,7 @@ import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import storm.lrb.model.Accident;
 import storm.lrb.tools.Constants;
+import storm.lrb.tools.Helper;
 
 
 
@@ -117,6 +118,9 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 					TopologyControl.ACCIDENT_INFO_STREAM_ID));
 			}
 			this.updateAccidents(tuple);
+		} else {
+			throw new RuntimeException(String.format("Errornous stream subscription. Please report a bug at %s",
+				Helper.ISSUE_REPORT_URL));
 		}
 		LOG.debug("tuple: %s", tuple);
 		this.collector.ack(tuple);

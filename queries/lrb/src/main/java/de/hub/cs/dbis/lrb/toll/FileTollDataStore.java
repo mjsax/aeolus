@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package storm.lrb.bolt;
+package de.hub.cs.dbis.lrb.toll;
 
 import java.io.File;
 import org.slf4j.Logger;
@@ -27,37 +27,43 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A {@link TollDataStore} that uses a file for storage including all
- * disadvantages. Use only in a very simple topology as the file I/O can easily
- * produce a performance bottleneck.
+ * A {@link TollDataStore} that uses a file for storage including all disadvantages. Use only in a very simple topology
+ * as the file I/O can easily produce a performance bottleneck.
+ *
  * @author richter
  */
 public class FileTollDataStore implements TollDataStore {
 	private static final long serialVersionUID = 1L;
-	private static final Logger LOG = LoggerFactory.getLogger(DailyExpenditureBolt.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FileTollDataStore.class);
 	private File histFile;
-	
+
 	public FileTollDataStore(File histFile) {
 		this.histFile = histFile;
 	}
-	
+
 	public FileTollDataStore(String histFilePath) {
 		if(histFilePath.isEmpty()) {
 			throw new IllegalArgumentException("no filename for historic data given.");
 		}
 		this.histFile = new File(histFilePath);
 	}
-	
+
 	@Override
 	public Integer retrieveToll(int xWay, int day, int vehicleIdentifier) {
 		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
 																		// Tools | Templates.
 	}
-	
+
 	@Override
 	public void storeToll(int xWay, int day, int vehicleIdentifier, int toll) {
 		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
 																		// Tools | Templates.
 	}
-	
+
+	@Override
+	public Integer removeEntry(int xWay, int day, int vehicleIdentifier) {
+		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
+																		// Tools | Templates.
+	}
+
 }

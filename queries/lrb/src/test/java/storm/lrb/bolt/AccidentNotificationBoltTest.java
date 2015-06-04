@@ -151,7 +151,7 @@ public class AccidentNotificationBoltTest {
 		// expect to get the sent accident report back
 
 		// test that there's a notification for reports for the same segment as
-		//well
+		// well
 		int posReport6Segment = posReportAccidentSegment;
 		long posReport6Created = System.currentTimeMillis();
 		PosReport posReport6 = EntityHelper.createPosReport(posReport6Created, posReport6Segment, random,
