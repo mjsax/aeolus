@@ -35,6 +35,8 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.lrb.toll.TollDataStore;
+import storm.lrb.tools.Helper;
 
 
 
@@ -55,23 +57,48 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(DailyExpenditureBolt.class);
 	
-	private final TollDataStore dataStore;
+	private transient TollDataStore dataStore;
 	
 	private OutputCollector collector;
 	
-	public DailyExpenditureBolt(TollDataStore dataStore) {
-		this.dataStore = dataStore;
-	}
+	/**
+	 * 
+	 */
+	public DailyExpenditureBolt() {}
 	
 	public TollDataStore getDataStore() {
 		return dataStore;
 	}
 	
+	/**
+	 * initializes the used {@link TollDataStore} using the string specified as value to the
+	 * {@link Helper#TOLL_DATA_STORE_CONF_KEY} map key.
+	 * 
+	 * @param conf
+	 * @param context
+	 * @param collector
+	 */
+	/*
+	 * internal implementation notes: - due to the fact that storm is incapable of serializing Class property, a String
+	 * has to be passed in conf
+	 */
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
-		
-		// TODO read histfile with csvreader or connect to db
+		@SuppressWarnings("unchecked")
+		String tollDataStoreClass = (String)conf.get(Helper.TOLL_DATA_STORE_CONF_KEY);
+		try {
+			this.dataStore = (TollDataStore)Class.forName(tollDataStoreClass).newInstance();
+		} catch(InstantiationException ex) {
+			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
+				+ "nested exception for details)", dataStore), ex);
+		} catch(IllegalAccessException ex) {
+			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
+				+ "nested exception for details)", dataStore), ex);
+		} catch(ClassNotFoundException ex) {
+			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
+				+ "nested exception for details)", dataStore), ex);
+		}
 	}
 	
 	@Override

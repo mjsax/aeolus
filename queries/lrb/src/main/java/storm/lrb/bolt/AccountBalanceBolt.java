@@ -55,8 +55,8 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	private static final Logger LOG = LoggerFactory.getLogger(AccountBalanceBolt.class);
 
 	private OutputCollector collector;
-	public static final Fields FIELDS_INCOMING_TOLL_NOTIFICATION = TollNotificationBolt.FIELDS_OUTGOING_TOLL_NOTIFICATION;
-	public static final Fields FIELDS_INCOMING_TOLL_ASSESSMENT = TollNotificationBolt.FIELDS_OUTGOING_TOLL_ASSESSMENT;
+	public static final Fields FIELDS_INCOMING_TOLL_NOTIFICATION = TollNotificationBolt.FIELDS_OUTGOING_TOLL_ASSESMENT;
+	public static final Fields FIELDS_INCOMING_TOLL_ASSESSMENT = TollNotificationBolt.FIELDS_OUTGOING_ACCOUNT_BALANCE_REQUESTS;
 
 	/**
 	 * Contains all vehicles and the accountinformation of the current day.
