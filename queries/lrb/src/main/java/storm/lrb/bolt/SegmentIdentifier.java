@@ -21,7 +21,8 @@ package storm.lrb.bolt;
 
 
 /**
- * 
+ * Class encapsulating {@code xWay}, {@code direction} and {@code segment} to be
+ * used as {@code Map} keys.
  * @author richter
  */
 public class SegmentIdentifier {
