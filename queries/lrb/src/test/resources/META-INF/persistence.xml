@@ -3,7 +3,7 @@
   <persistence-unit name="de.hub.cs.dbis.aeolus_lrb_jar_1.0-SNAPSHOTPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.hibernate.ejb.HibernatePersistence</provider>
     <properties>
-      <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/sample"/>
+      <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/aeolus-test"/>
       <property name="javax.persistence.jdbc.user" value="app"/>
       <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.ClientDriver"/>
       <property name="javax.persistence.jdbc.password" value=""/>

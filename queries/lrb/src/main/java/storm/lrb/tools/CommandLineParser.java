@@ -19,8 +19,6 @@
 package storm.lrb.tools;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
@@ -58,8 +56,6 @@ public class CommandLineParser {
 	@Parameter(names = {"-tasks", "-t"}, description = "Number of tasks") private int tasks = 3;
 	
 	@Parameter(names = {"-debug", "-d"}, description = "Set debug mode") private boolean debug = false;
-	
-	@Parameter(names = "-fields", variableArity = true) private List<String> fields = Arrays.asList("xway", "dir");
 	
 	@Parameter(names = {"-n", "-name"}, description = "prefix for topology name") private String nameext = "";
 	
@@ -236,21 +232,6 @@ public class CommandLineParser {
 	 */
 	protected void setDebug(boolean debug) {
 		this.debug = debug;
-	}
-	
-	/**
-	 * @return the fields
-	 */
-	public List<String> getFields() {
-		return Collections.unmodifiableList(this.fields);
-	}
-	
-	/**
-	 * @param fields
-	 *            the fields to set
-	 */
-	protected void setFields(List<String> fields) {
-		this.fields = fields;
 	}
 	
 	/**
