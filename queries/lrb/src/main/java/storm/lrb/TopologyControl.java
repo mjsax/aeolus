@@ -46,6 +46,7 @@ public class TopologyControl {
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
 	
 	public final static String POS_REPORTS_STREAM_ID = "PosReportStream";
+	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
 	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM_ID = "AccountBalanceRequestsStream";
 	public final static String DAILY_EXPEDITURE_REQUESTS_STREAM_ID = "DailyExpeditureRequestsStream";
 	public final static String SPOUT_STREAM_ID = "SpoutStream";
