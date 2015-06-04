@@ -40,5 +40,21 @@ public class Constants {
 	public static final int DIRECTION_EASTBOUND = 1;
 	public static final int DIRECTION_WESTBOUND = 2;
 	
+	/**
+	 * The 0th of the 5 lanes of an express way is the entrance lane
+	 * <ref>p.3 LRB paper</ref>.
+	 */
+	public static final int ENTRANCE_LANE = 0;
+	/**
+	 * The 4th of the 5 lanes (0-based) of an express way is the exit lane
+	 * <ref>p.3 LRB paper</ref>.
+	 */
+	public static final int EXIT_LANE = 4;
+	/**
+	 * each express way consists of 100 segments in each direction
+	 * <ref>p. 3 LRB paper</ref>.
+	 */
+	public static final int SEGMENT_COUNT = 100;
+
 	private Constants() {}
 }
