@@ -19,22 +19,15 @@
 package storm.lrb.model;
 
 import java.io.Serializable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-
-
-
-
 
 /**
  * A data container to be used in {@link PersistenceTollDataStore} which is storable using the Java Persistence API.
  * 
  * @author richter
  */
-@Entity
 public class TollEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
-	@Id/*
+	/*
 		 * internal implementation notes: - integer complies with the range of expected data in the LRB specification
 		 */
 	private Integer vehicleIdentifier;
