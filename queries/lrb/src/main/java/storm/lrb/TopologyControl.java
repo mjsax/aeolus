@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,13 +21,13 @@ package storm.lrb;
 
 
 /**
- * 
+ *
  * @author richter
  */
 public class TopologyControl {
-	
+
 	public final static String TOPOLOGY_NAME = "test_lrb";
-	
+
 	/*
 	 * internal implementation notes: - use java class name notation in order to minimize changes if bolts are actually
 	 * implemented as classes one day
@@ -44,18 +44,19 @@ public class TopologyControl {
 	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "AccountBalanceFileWriterBolt";
 	public final static String DAILY_EXPEDITURE_BOLT_NAME = "DailyExpenditureBolt";
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
-	
+
+	public final static String START_SPOUT_NAME = "StartSpout";
+
 	public final static String POS_REPORTS_STREAM_ID = "PosReportStream";
+	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
 	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM_ID = "AccountBalanceRequestsStream";
 	public final static String DAILY_EXPEDITURE_REQUESTS_STREAM_ID = "DailyExpeditureRequestsStream";
 	public final static String SPOUT_STREAM_ID = "SpoutStream";
-	public final static String TOLL_ASSESSMENT_STREAM_ID = "TollAssessment_";
-	public final static String TOLL_NOTIFICATION_STREAM_ID = "TollNotification_";
-	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "TTEstRequests";
+	public final static String TOLL_ASSESSMENT_STREAM_ID = "TollAssessmentStream";
+	public final static String TOLL_NOTIFICATION_STREAM_ID = "TollNotificationStream";
+	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "TravelTimeRequestRequestsStream";
 	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
-	
-	public final static String START_SPOUT_NAME = "StartSpout";
-	
+
 	/**
 	 * The identifier of the XWay field.
 	 */
@@ -80,10 +81,6 @@ public class TopologyControl {
 	public final static String TUPLE_FIELD_NAME = "tuple";
 	public final static String TIMER_FIELD_NAME = "StormTimer";
 	public final static String BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME = "balancenotification";
-	/**
-	 * the identifier of the exit lane
-	 */
-	public final static int EXIT_LANE = 4;
-	
+
 	private TopologyControl() {}
 }

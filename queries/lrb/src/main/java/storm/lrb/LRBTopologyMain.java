@@ -19,7 +19,6 @@
 package storm.lrb;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 import java.util.Locale;
 
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.bolt.TollNotificationBolt;
 import storm.lrb.tools.CommandLineParser;
-import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
@@ -67,7 +65,7 @@ public class LRBTopologyMain {
 		}
 		int tasks = executors * cmd.getTasks();
 		main0(cmd.getOffset(), executors, cmd.getXways(), cmd.getHost(), cmd.getPort(), cmd.getHistFile(), tasks,
-			cmd.getFields(), cmd.isSubmit(), cmd.isDebug(), cmd.getWorkers(), cmd.getNameext(), cmd.getRuntimeMillis());
+			cmd.isSubmit(), cmd.isDebug(), cmd.getWorkers(), cmd.getNameext(), cmd.getRuntimeMillis());
 	}
 	
 	/**
@@ -80,7 +78,6 @@ public class LRBTopologyMain {
 	 * @param port
 	 * @param histFile
 	 * @param tasks
-	 * @param fields
 	 * @param submit
 	 * @param stormConfigDebug
 	 * @param workers
@@ -90,19 +87,19 @@ public class LRBTopologyMain {
 	 * @throws InvalidTopologyException
 	 * @throws java.io.FileNotFoundException
 	 */
-	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, List<String> fields, boolean submit, boolean stormConfigDebug, int workers, String nameext, int runtimeMillis)
+	public static void main0(int offset, int executors, int xways, String host, int port, String histFile, int tasks, boolean submit, boolean stormConfigDebug, int workers, String nameext, int runtimeMillis)
 		throws AlreadyAliveException, InvalidTopologyException, FileNotFoundException {
 		StopWatch stormTimer = new StopWatch(offset);
-		String topologyNamePrefix = nameext + "_lrbNormal_" + Helper.readable(fields) + "_L" + xways + "_" + workers
-			+ "W_T" + tasks + "_" + executors + "E_O" + offset;
-		LRBTopology lRBTopology = new LRBTopology(nameext, fields, xways, workers, tasks, executors, offset,
+		String topologyNamePrefix = nameext + "_lrbNormal_" + "_L" + xways + "_" + workers + "W_T" + tasks + "_"
+			+ executors + "E_O" + offset;
+		Config conf = new Config();
+		LRBTopology lRBTopology = new LRBTopology(nameext, xways, workers, tasks, executors, offset,
 			new FileReaderSpout(TopologyControl.SPOUT_STREAM_ID), // add AbstractOrderedFileInputSpout.INPUT_FILE_NAME
 																	// and
 																	// AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES
 																	// in Config below
-			stormTimer, submit, histFile, topologyNamePrefix);
+			stormTimer, submit, histFile, topologyNamePrefix, conf);
 		StormTopology topology = lRBTopology.getStormTopology();
-		Config conf = lRBTopology.getStormConfig();
 		conf.setDebug(stormConfigDebug);
 		conf.put(AbstractOrderedFileInputSpout.INPUT_FILE_NAME,
 			LRBTopologyMain.class.getResource("/datafile20seconds.dat").getFile());
