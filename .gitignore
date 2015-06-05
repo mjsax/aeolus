@@ -1,4 +1,6 @@
 target/
+
+# integration test files
 queries/lrb/aeolus-test/
 queries/lrb/derby.log
 queries/lrb/nameext_lrbNormal__L2_2W_T2_1E_O0_acc

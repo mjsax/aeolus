@@ -19,8 +19,17 @@
 package de.hub.cs.dbis.lrb.toll;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import storm.lrb.model.TollEntry;
 
 
 
@@ -35,13 +44,40 @@ import org.slf4j.LoggerFactory;
 public class FileTollDataStore implements TollDataStore {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LoggerFactory.getLogger(FileTollDataStore.class);
-	private File histFile;
+	private final File histFile;
 
+	private boolean firstWriteDone = false;
+
+	/**
+	 * Creates a {@code FileTollDataStore} using a temporary file
+	 *
+	 * @throws java.io.IOException
+	 *             if the creation of the temporary file fails
+	 */
+	public FileTollDataStore() throws IOException {
+		this.histFile = File.createTempFile("aeolus-lrb", null);
+	}
+
+	/**
+	 * Creates a {@code FileTollDataStore} reading from {@code histFile}.
+	 * @param histFile
+	 */
 	public FileTollDataStore(File histFile) {
 		this.histFile = histFile;
 	}
 
-	public FileTollDataStore(String histFilePath) {
+	/**
+	 *
+	 * @param histFilePath
+	 * @throws FileNotFoundException if the file denoted by {@code histFilePath}
+	 * doesn't exist
+	 * @throws IllegalArgumentException if {@code histFilePath} is {@code null}
+	 * or empty.
+	 */
+	public FileTollDataStore(String histFilePath) throws FileNotFoundException {
+		if(histFilePath == null) {
+			throw new IllegalArgumentException("histFilePath mustn't be null.");
+		}
 		if(histFilePath.isEmpty()) {
 			throw new IllegalArgumentException("no filename for historic data given.");
 		}
@@ -50,20 +86,111 @@ public class FileTollDataStore implements TollDataStore {
 
 	@Override
 	public Integer retrieveToll(int xWay, int day, int vehicleIdentifier) {
-		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-																		// Tools | Templates.
+		try {
+			FileInputStream is = new FileInputStream(histFile);
+			ObjectInputStream objectInputStream = new ObjectInputStream(is);
+			Object nextObject = objectInputStream.readObject();
+			while(nextObject != null) {
+				TollEntry next = (TollEntry)nextObject;
+				if(next.getxWay() == xWay && next.getADay() == day && next.getVehicleIdentifier() == vehicleIdentifier) {
+					return next.getToll();
+				}
+			}
+			objectInputStream.close();
+			is.close();
+		} catch(IOException ex) {
+			throw new RuntimeException(ex);
+		} catch(ClassNotFoundException ex) {
+			throw new RuntimeException(ex);
+		}
+		return null;
 	}
 
 	@Override
 	public void storeToll(int xWay, int day, int vehicleIdentifier, int toll) {
-		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-																		// Tools | Templates.
+		try {
+			if(!firstWriteDone) {
+				FileOutputStream os = new FileOutputStream(histFile, true // append
+				);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
+				objectOutputStream.writeObject(null);
+				objectOutputStream.flush();
+				objectOutputStream.close();
+				os.flush();
+				os.close();
+				firstWriteDone = true;
+			}
+			FileInputStream is = new FileInputStream(histFile);
+			ObjectInputStream objectInputStream = new ObjectInputStream(is);
+			File tmpStoreFile = File.createTempFile("aeolus-lrb", null);
+			FileOutputStream os = new FileOutputStream(tmpStoreFile);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
+			Object nextObject = objectInputStream.readObject();
+			Queue<Object> tmpStore = new LinkedList<Object>();
+			while(nextObject != null) {
+				tmpStore.add(nextObject);
+				if(tmpStore.size() > 1000) {
+					while(!tmpStore.isEmpty()) {
+						objectOutputStream.writeObject(tmpStore.poll());
+					}
+				}
+				nextObject = objectInputStream.readObject();
+			}
+			TollEntry newTollEntry = new TollEntry(vehicleIdentifier, xWay, day, toll);
+
+			objectOutputStream.writeObject(newTollEntry);
+			objectOutputStream.writeObject(null);
+			objectInputStream.close();
+			objectOutputStream.close();
+			is.close();
+			os.close();
+			histFile.delete();
+			tmpStoreFile.renameTo(histFile);
+		} catch(IOException ex) {
+			throw new RuntimeException(ex);
+		} catch(ClassNotFoundException ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 
 	@Override
 	public Integer removeEntry(int xWay, int day, int vehicleIdentifier) {
-		throw new UnsupportedOperationException("Not supported yet."); // To change body of generated methods, choose
-																		// Tools | Templates.
+		Integer retValue = null;
+		try {
+			FileInputStream is = new FileInputStream(histFile);
+			ObjectInputStream objectInputStream = new ObjectInputStream(is);
+			File tmpStoreFile = File.createTempFile("aeolus-lrb", null);
+			FileOutputStream os = new FileOutputStream(tmpStoreFile);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
+			Object nextObject = objectInputStream.readObject();
+			Queue<Object> tmpStore = new LinkedList<Object>();
+			while(nextObject != null) {
+				TollEntry next = (TollEntry)nextObject;
+				if(!(next.getxWay() == xWay && next.getADay() == day && next.getVehicleIdentifier() == vehicleIdentifier)) {
+					tmpStore.add(nextObject);
+					if(tmpStore.size() > 1000) {
+						while(!tmpStore.isEmpty()) {
+							objectOutputStream.writeObject(tmpStore.poll());
+						}
+					}
+				} else {
+					retValue = next.getToll();
+				}
+				nextObject = objectInputStream.readObject();
+			}
+			objectOutputStream.writeObject(null);
+			objectInputStream.close();
+			objectOutputStream.close();
+			is.close();
+			os.close();
+			histFile.delete();
+			tmpStoreFile.renameTo(histFile);
+		} catch(IOException ex) {
+			throw new RuntimeException(ex);
+		} catch(ClassNotFoundException ex) {
+			throw new RuntimeException(ex);
+		}
+		return retValue;
 	}
 
 }
