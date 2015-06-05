@@ -38,8 +38,7 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.queries.utils.FileSinkBolt;
-import de.hub.cs.dbis.lrb.toll.PersistenceTollDataStore;
-import de.hub.cs.dbis.lrb.toll.TollDataStore;
+import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 import java.util.Arrays;
 import java.util.LinkedList;
 import storm.lrb.tools.Helper;
@@ -57,7 +56,7 @@ import storm.lrb.tools.Helper;
 public class LRBTopology {
 	private final static Logger LOGGER = LoggerFactory.getLogger(LRBTopology.class);
 	private final StormTopology stormTopology;
-	private final String tollDataStoreClass = PersistenceTollDataStore.class.getName();
+	private final String tollDataStoreClass = MemoryTollDataStore.class.getName();
 	
 	/**
 	 * performs the assembly of the topology which can be retrieved with {@link #getStormTopology() }.
