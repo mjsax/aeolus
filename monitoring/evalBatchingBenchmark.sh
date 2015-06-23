@@ -188,7 +188,7 @@ do
   echo \
 "\begin{tikzpicture}
 \begin{axis}[
-  title=Input Rte Sink ($rate tps) for different BS,
+  title=Input Rate Sink ($rate tps) for different BS,
   width=\textwidth,
   height=0.5\textwidth,
   ylabel={Data Rate in tps},

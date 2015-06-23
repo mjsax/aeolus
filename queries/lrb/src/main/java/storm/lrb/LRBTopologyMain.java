@@ -24,7 +24,6 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.bolt.TollNotificationBolt;
 import storm.lrb.tools.CommandLineParser;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
@@ -36,6 +35,7 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
 import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
+import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 
 
 

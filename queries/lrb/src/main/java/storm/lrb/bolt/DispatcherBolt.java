@@ -26,8 +26,6 @@ import org.slf4j.LoggerFactory;
 import storm.lrb.TopologyControl;
 import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.model.DailyExpenditureRequest;
-import storm.lrb.model.LRBtuple;
-import storm.lrb.model.PosReport;
 import storm.lrb.model.TravelTimeRequest;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.task.OutputCollector;
@@ -36,6 +34,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 
 
 
@@ -72,7 +72,7 @@ public class DispatcherBolt extends BaseRichBolt {
 	
 	private void splitAndEmit(Tuple tuple) {
 		
-		LRBtuple line = (LRBtuple)tuple.getValueByField(TopologyControl.TUPLE_FIELD_NAME);
+		AbstractLRBTuple line = (AbstractLRBTuple)tuple.getValueByField(TopologyControl.TUPLE_FIELD_NAME);
 		if(this.firstrun) {
 			this.firstrun = false;
 			this.timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
@@ -80,21 +80,21 @@ public class DispatcherBolt extends BaseRichBolt {
 		}
 		
 		try {
-			int type = line.getType();
+			short type = line.getType();
 			switch(type) {
-			case LRBtuple.TYPE_POSITION_REPORT:
-				PosReport pos = (PosReport)line;
+			case AbstractLRBTuple.position_report:
+				PositionReport pos = (PositionReport)line;
 				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
 				break;
-			case LRBtuple.TYPE_ACCOUNT_BALANCE_REQUEST:
+			case AbstractLRBTuple.account_balance_request:
 				AccountBalanceRequest acc = (AccountBalanceRequest)line;
 				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple, acc);
 				break;
-			case LRBtuple.TYPE_DAILY_EXPEDITURE:
+			case AbstractLRBTuple.daily_expenditure_request:
 				DailyExpenditureRequest exp = (DailyExpenditureRequest)line;
 				this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple, exp);
 				break;
-			case LRBtuple.TYPE_TRAVEL_TIME_REQUEST:
+			case AbstractLRBTuple.travel_time_request:
 				TravelTimeRequest est = (TravelTimeRequest)line;
 				this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple, est);
 				break;

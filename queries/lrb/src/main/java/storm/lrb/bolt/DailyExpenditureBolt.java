@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.model.DailyExpenditureRequest;
-import storm.lrb.model.LRBtuple;
-import storm.lrb.tools.Constants;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -67,7 +65,7 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	public DailyExpenditureBolt() {}
 	
 	public TollDataStore getDataStore() {
-		return dataStore;
+		return this.dataStore;
 	}
 	
 	/**
@@ -110,23 +108,25 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 			
 			DailyExpenditureRequest exp = (DailyExpenditureRequest)tuple
 				.getValueByField(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
-			int vehicleIdentifier = exp.getVehicleIdentifier();
+			int vehicleIdentifier = exp.getVid();
 			Values values;
 			Integer toll = this.dataStore.retrieveToll(exp.getxWay(), exp.getDay(), vehicleIdentifier);
 			if(toll != null) {
 				LOG.debug("ExpenditureRequest: found vehicle identifier %d", vehicleIdentifier);
 				
-				LOG.debug("3, %d, %d, %d, %d", exp.getCreated(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
-					toll);
+				// LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
+				// toll);
 				
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getCreated(), exp.getTimer().getOffset(),
-					exp.getQueryIdentifier(), toll);
+				// values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getCreated(),
+				// exp.getTimer().getOffset(),
+				// exp.getQueryIdentifier(), toll);
 			} else {
-				values = new Values(LRBtuple.TYPE_DAILY_EXPEDITURE, exp.getCreated(), exp.getTimer().getOffset(),
-					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
+				// values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getCreated(),
+				// exp.getTimer().getOffset(),
+				// exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
 				
 			}
-			this.collector.emit(values);
+			// this.collector.emit(values);
 		}
 		this.collector.ack(tuple);
 	}

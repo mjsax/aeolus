@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.bolt.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 
 
 
@@ -45,7 +46,7 @@ public class VehicleInfo implements Serializable {
 	
 	private final int day = 70; // @TODO: check against specification and document
 	
-	private PosReport posreport;
+	private PositionReport posreport;
 	
 	/**
 	 * TODO load toll history of vehicle keeps toll history as DAy,XWAY,Tolls
@@ -65,10 +66,10 @@ public class VehicleInfo implements Serializable {
 		
 	}
 	
-	public VehicleInfo(PosReport pos) {
+	public VehicleInfo(PositionReport pos) {
 		
 		this.posreport = pos;
-		this.vid = pos.getVehicleIdentifier();
+		this.vid = pos.getVid();
 		
 	}
 	
@@ -78,7 +79,7 @@ public class VehicleInfo implements Serializable {
 	 * @param pos
 	 *            position report
 	 */
-	public void updateInfo(PosReport pos) {
+	public void updateInfo(PositionReport pos) {
 		this.posreport = pos;
 		
 	}
@@ -92,7 +93,7 @@ public class VehicleInfo implements Serializable {
 	}
 	
 	public SegmentIdentifier getSegmentIdentifier() {
-		return this.posreport.getSegmentIdentifier();
+		return new SegmentIdentifier(this.posreport);
 	}
 	
 	public long getLastReportTime() {
@@ -100,22 +101,22 @@ public class VehicleInfo implements Serializable {
 	}
 	
 	public Integer getXway() {
-		return this.posreport.getSegmentIdentifier().getxWay();
+		return this.posreport.getXWay();
 	}
 	
 	/**
-	 * can be used as a placeholder for reacting to postion reports which do not cause emission of toll notifications
+	 * can be used as a placeholder for reacting to position reports which do not cause emission of toll notifications
 	 * 
 	 * @param why
 	 *            reason to fill blank space
 	 * @return notification
 	 */
-	public String getEmptyNotification(String why) {
-		
-		String notification = why + "***" + this.posreport.getTime() + "," + this.posreport.getProcessingTime() + "###"
-			+ this.posreport.toString() + "###";
-		return notification;
-	}
+	// public String getEmptyNotification(String why) {
+	//
+	// String notification = why + "***" + this.posreport.getTime() + "," + this.posreport.getProcessingTime() + "###"
+	// + this.posreport.toString() + "###";
+	// return notification;
+	// }
 	
 	public String getTollNotification(double lav, int toll, int nov) {
 		
@@ -126,19 +127,20 @@ public class VehicleInfo implements Serializable {
 		if(this.posreport.getTime() == this.lastSendToll) {
 			return "";// getEmptyNotification("duplicate");
 		}
-		String notification = "0," + this.vid + "," + this.posreport.getTime() + ","
-			+ this.posreport.getTimer().getOffset() + "," + (int)lav + "," + toll + "***" + this.posreport.getTime()
-			+ "," + this.posreport.getProcessingTime() + "###" + this.posreport.toString() + "###" + nov;
+		String notification = "";
+		// "0," + this.vid + "," + this.posreport.getTime() + ","
+		// + this.posreport.getTimer().getOffset() + "," + (int)lav + "," + toll + "***" + this.posreport.getTime()
+		// + "," + this.posreport.getProcessingTime() + "###" + this.posreport.toString() + "###" + nov;
 		
 		// check if time requirements are met if not stop computation
-		long diff;
-		if(this.posreport.getProcessingTimeSec() > 5) {
-			LOG.error("Time Requirement not met: " + this.posreport.getProcessingTimeSec() + " for " + this.posreport
-				+ "\n" + notification);
-			if(LOG.isDebugEnabled()) {
-				throw new Error("Time Requirement not met:" + this.posreport + "\n" + notification);
-			}
-		}
+		// long diff;
+		// if(this.posreport.getProcessingTimeSec() > 5) {
+		// LOG.error("Time Requirement not met: " + this.posreport.getProcessingTimeSec() + " for " + this.posreport
+		// + "\n" + notification);
+		// if(LOG.isDebugEnabled()) {
+		// throw new Error("Time Requirement not met:" + this.posreport + "\n" + notification);
+		// }
+		// }
 		this.lastSendToll = this.posreport.getTime();
 		return notification;
 	}
@@ -162,7 +164,7 @@ public class VehicleInfo implements Serializable {
 		if(obj == null) {
 			return false;
 		}
-		if(getClass() != obj.getClass()) {
+		if(this.getClass() != obj.getClass()) {
 			return false;
 		}
 		final VehicleInfo other = (VehicleInfo)obj;

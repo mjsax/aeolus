@@ -20,9 +20,13 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 
+
+
+
+
 /**
  * A data container to be used in {@link PersistenceTollDataStore} which is storable using the Java Persistence API.
- *
+ * 
  * @author richter
  */
 public class TollEntry implements Serializable {

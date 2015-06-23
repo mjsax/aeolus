@@ -20,6 +20,8 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+
 
 
 
@@ -45,43 +47,41 @@ public class VehicleAccount implements Serializable {
 		// TODO checken ob er an einem tag nur ein xway belegen kann, evtl auch rausnehmen
 	}
 	
-	public VehicleAccount(int calculatedToll, PosReport pos) {
-		if(pos.getTimer() == null) {
-			throw new IllegalArgumentException("storm timer of the position timer is null");
-		}
-		this.vehicleIdentifier = pos.getVehicleIdentifier();
-		this.xWay = pos.getSegmentIdentifier().getxWay();
+	public VehicleAccount(int calculatedToll, PositionReport pos) {
+		// if(pos.getTimer() == null) {
+		// throw new IllegalArgumentException("storm timer of the position timer is null");
+		// }
+		this.vehicleIdentifier = pos.getVid();
+		this.xWay = pos.getXWay();
 		
-		this.assessToll(calculatedToll, pos.getTimer().getOffset());
+		// this.assessToll(calculatedToll, pos.getTime().getOffset);
 	}
 	
 	public VehicleAccount(AccountBalanceRequest bal) {
-		this.vehicleIdentifier = bal.getVehicleIdentifier();
+		this.vehicleIdentifier = bal.getVid();
 	}
 	
-	/**
-	 * Adds newly assesed toll to the current account.
-	 * 
-	 * @param calculatedToll
-	 *            amount
-	 * @param time
-	 *            of assesment
-	 */
-	@SuppressWarnings("FinalMethod")
-	public final void assessToll(int calculatedToll, Long time) {
-		
-		this.tollToday += calculatedToll;
-		this.tollTime = time;
-		
-	}
+	// /**
+	// * Adds newly assesed toll to the current account.
+	// *
+	// * @param calculatedToll
+	// * amount
+	// * @param time
+	// * of assesment
+	// */
+	// public final void assessToll(int calculatedToll, Long time) {
+	//
+	// this.tollToday += calculatedToll;
+	// this.tollTime = time;
+	//
+	// }
 	
 	public AccountBalance getAccBalanceNotification(AccountBalanceRequest accBalReq) {
 		// TODO nach zweiter meinung fragen: Benchmarkspezifikation
 		// widerspricht sich bei der Reihenfolge der Werte des Outputtuples.
 		
 		AccountBalance retValue = new AccountBalance(accBalReq.getTime(), accBalReq.getQueryIdentifier(),
-			this.tollToday, this.tollTime, accBalReq.getCreated(), accBalReq.getTimer());
+			this.tollToday, this.tollTime, accBalReq.getTime());
 		return retValue;
 	}
-	
 }

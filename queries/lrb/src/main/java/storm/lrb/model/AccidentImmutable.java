@@ -18,42 +18,48 @@
  */
 package storm.lrb.model;
 
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+
+
+
+
+
 /**
  * Immutable version of the Accident object for serialization.
  */
 public class AccidentImmutable extends Accident {
 	private static final long serialVersionUID = 1L;
-
+	
 	protected AccidentImmutable() {
 		super();
 	}
-
+	
 	public AccidentImmutable(Accident accident) {
 		super(accident);
 	}
-
-	public AccidentImmutable(PosReport report) {
+	
+	public AccidentImmutable(PositionReport report) {
 		super(report);
 	}
-
+	
 	public AccidentImmutable(long startMinute, long lastUpdateTime, int position, int maxPos, int minPos,
-		PosReport posReport) {
+		PositionReport posReport) {
 		super(startMinute, lastUpdateTime, position, maxPos, minPos, posReport);
 	}
-
+	
 	@Override
 	public void setOver(boolean over) {
 		throw new UnsupportedOperationException(String.format("instances of %s are immutable", AccidentImmutable.class));
 	}
-
+	
 	@Override
 	public void setLastUpdateTime(long lastUpdateTime) {
 		throw new UnsupportedOperationException(String.format("instances of %s are immutable", AccidentImmutable.class));
 	}
-
+	
 	@Override
-	public void setPosReport(PosReport posReport) {
+	public void setPosReport(PositionReport posReport) {
 		throw new UnsupportedOperationException(String.format("instances of %s are immutable", AccidentImmutable.class));
 	}
-
+	
 }

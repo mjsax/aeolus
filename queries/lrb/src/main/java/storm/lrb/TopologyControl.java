@@ -21,13 +21,15 @@ package storm.lrb;
 
 
 /**
- *
+ * TODO
+ * 
  * @author richter
+ * @author mjsax
  */
 public class TopologyControl {
-
-	public final static String TOPOLOGY_NAME = "test_lrb";
-
+	
+	public final static String TOPOLOGY_NAME = "Linear Road Benchmark";
+	
 	/*
 	 * internal implementation notes: - use java class name notation in order to minimize changes if bolts are actually
 	 * implemented as classes one day
@@ -58,12 +60,22 @@ public class TopologyControl {
 	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
 
 	/**
-	 * The identifier of the XWay field.
+	 * The identifier of tuple attributes.
 	 */
-	public final static String XWAY_FIELD_NAME = "xway";
-	public final static String SEGMENT_FIELD_NAME = "seg";
-	public final static String DIRECTION_FIELD_NAME = "dir";
+	// Position Report
+	public final static String TYPE_FIELD_NAME = "type";
+	public final static String TIMESTAMP_FIELD_NAME = "timestamp";
 	public final static String VEHICLE_ID_FIELD_NAME = "vid";
+	public final static String SPEED_FIELD_NAME = "speed";
+	public final static String XWAY_FIELD_NAME = "xway";
+	public final static String LANE_FIELD_NAME = "lane";
+	public final static String DIRECTION_FIELD_NAME = "dir";
+	public final static String SEGMENT_FIELD_NAME = "seg";
+	public final static String POSITION_FIELD_NAME = "pos";
+	
+	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
+	
+	// TODO check if needed
 	public final static String TOLL_ASSESSED_FIELD_NAME = "tollAssessed";
 	public final static String POS_REPORT_FIELD_NAME = "PosReport";
 	public final static String TOLL_NOTIFICATION_FIELD_NAME = "tollnotification";
@@ -75,10 +87,9 @@ public class TopologyControl {
 	public final static String NUMBER_OF_VEHICLES_FIELD_NAME = "nov"; // @TODO: is that maybe the same as CAR_COUNT?
 	public final static String EXPEDITURE_NOTIFICATION_FIELD_NAME = "expenditurenotification";
 	public final static String CAR_COUNT_FIELD_NAME = "carcnt";
-	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
-	public final static String ACCIDENT_INFO_FIELD_NAME = "accidentInfo";
 	public final static String ACCIDENT_NOTIFICATION_FIELD_NAME = "accnotification";
 	public final static String TUPLE_FIELD_NAME = "tuple";
+	public final static String ACCIDENT_INFO_FIELD_NAME = "accidentInfo";
 	public final static String TIMER_FIELD_NAME = "StormTimer";
 	public final static String BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME = "balancenotification";
 

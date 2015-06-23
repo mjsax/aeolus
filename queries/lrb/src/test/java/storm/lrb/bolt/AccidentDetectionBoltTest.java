@@ -28,24 +28,33 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
+
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+
 import org.mockito.Mockito;
+
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
+
 import org.powermock.modules.junit4.PowerMockRunner;
-import storm.lrb.model.PosReport;
+
 import storm.lrb.tools.EntityHelper;
 
 
@@ -91,7 +100,7 @@ public class AccidentDetectionBoltTest {
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(schema);
 		int vehicleID0 = (int)(random.nextDouble() * 10000); // set max. value to increase readability
-		PosReport posReport0Stopped = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
+		PositionReport posReport0Stopped = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
 			0 // maxSpeed
 			);
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(posReport0Stopped), 1, // taskId
@@ -122,7 +131,7 @@ public class AccidentDetectionBoltTest {
 		while(vehicleID1 == vehicleID0) {
 			vehicleID1 = (int)(random.nextDouble() * 10000); // set max. value to increase readability
 		}
-		PosReport posReport1Running = EntityHelper.createPosReport(random, vehicleID1);
+		PositionReport posReport1Running = EntityHelper.createPosReport(random, vehicleID1);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Running), vehicleID1, null // streamID
 		);
 		instance.execute(tuple);
@@ -131,13 +140,13 @@ public class AccidentDetectionBoltTest {
 		
 		// test that an accident (4 consecutive pos reports with speed 0 of two
 		// vehicles)
-		PosReport posReport0Stopped1 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
+		PositionReport posReport0Stopped1 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Stopped1), vehicleID0, null // streamID
 		);
 		instance.execute(tuple);
-		PosReport posReport0Stopped2 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
+		PositionReport posReport0Stopped2 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Stopped2), vehicleID0, null // streamID
@@ -145,7 +154,7 @@ public class AccidentDetectionBoltTest {
 		instance.execute(tuple);
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-		PosReport posReport0Stopped3 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
+		PositionReport posReport0Stopped3 = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Stopped3), vehicleID0, null // streamID
@@ -154,7 +163,7 @@ public class AccidentDetectionBoltTest {
 		// first car eventually involved in accident
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-		PosReport posReport1Stopped0 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
+		PositionReport posReport1Stopped0 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Stopped0), vehicleID1, null // streamID
@@ -163,7 +172,7 @@ public class AccidentDetectionBoltTest {
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(2, instance.getStopInformationPerPosition().get(1).size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-		PosReport posReport1Stopped1 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
+		PositionReport posReport1Stopped1 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Stopped1), vehicleID1, null // streamID
@@ -172,7 +181,7 @@ public class AccidentDetectionBoltTest {
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(2, instance.getStopInformationPerPosition().get(1).size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-		PosReport posReport1Stopped2 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
+		PositionReport posReport1Stopped2 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Stopped2), vehicleID1, null // streamID
@@ -181,7 +190,7 @@ public class AccidentDetectionBoltTest {
 		assertEquals(1, instance.getStopInformationPerPosition().size());
 		assertEquals(2, instance.getStopInformationPerPosition().get(1).size());
 		assertEquals(0, instance.getAccidentsPerPosition().size());
-		PosReport posReport1Stopped3 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
+		PositionReport posReport1Stopped3 = EntityHelper.createPosReport(random, vehicleID1, 0, // minSpeed
 			0 // maxSpeed
 			);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport1Stopped3), vehicleID1, null // streamID
@@ -192,7 +201,7 @@ public class AccidentDetectionBoltTest {
 		assertEquals(1, instance.getAccidentsPerPosition().size());
 		
 		// test that stopped car is removed from accident status collection when resumes driving
-		PosReport posReport0Running = EntityHelper.createPosReport(random, vehicleID0);
+		PositionReport posReport0Running = EntityHelper.createPosReport(random, vehicleID0);
 		tuple = new TupleImpl(generalContextMock, new Values(posReport0Running), vehicleID0, null);
 		instance.execute(tuple);
 		assertEquals(0, instance.getAccidentsPerPosition().size());

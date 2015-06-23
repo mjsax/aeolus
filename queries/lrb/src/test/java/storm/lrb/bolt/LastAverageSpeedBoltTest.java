@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,22 @@
  */
 package storm.lrb.bolt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import storm.lrb.TopologyControl;
+import storm.lrb.tools.Constants;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.OutputCollector;
@@ -29,24 +45,10 @@ import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Ignore;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import storm.lrb.TopologyControl;
-import storm.lrb.tools.Constants;
+
+
+
+
 
 
 
@@ -54,11 +56,11 @@ import storm.lrb.tools.Constants;
 
 /**
  * Tests {@link LastAverageSpeedBolt} using mocks.
- *
+ * 
  * @author richter
  */
 public class LastAverageSpeedBoltTest {
-
+	
 	/**
 	 * Test of execute method, of class LastAverageSpeedBolt. Tests the calculation of the average of values passed in
 	 * multiple tuples with a certain minute value.
@@ -67,7 +69,7 @@ public class LastAverageSpeedBoltTest {
 	public void testExecute() {
 		GeneralTopologyContext generalContextMock = mock(GeneralTopologyContext.class);
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
-
+		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(
 			new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 				TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
@@ -79,16 +81,16 @@ public class LastAverageSpeedBoltTest {
 		TopologyContext contextMock = mock(TopologyContext.class);
 		when(contextMock.getComponentTasks(anyString())).thenReturn(taskMock);
 		when(contextMock.getThisTaskIndex()).thenReturn(0);
-
+		
 		instance.prepare(new Config(), contextMock, new OutputCollector(collector));
 		OutputFieldsDeclarer outputFieldsDeclarer = Mockito.mock(OutputFieldsDeclarer.class);
 		instance.declareOutputFields(outputFieldsDeclarer);
-
+		
 		// test last average speed calculation
 		int minuteOfTuple = 5;
 		int xway = 1;
-		int segment = 2;
-		int direction = Constants.DIRECTION_EASTBOUND;
+		short segment = 2;
+		short direction = Constants.DIRECTION_EASTBOUND;
 		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(xway, segment, direction);
 		int carcnt = 5;
 		double initialSpeedAverage = 35.3;
@@ -105,16 +107,16 @@ public class LastAverageSpeedBoltTest {
 		Integer resultCarCount = (Integer)result.get(3);
 		Double resultSpeedAverage = (Double)result.get(4);
 		Integer resultMinute = (Integer)result.get(5);
-		assertEquals((int)xway, (int)resultXWay);
+		assertEquals(xway, (int)resultXWay);
 		assertEquals((int)direction, (int)resultDirection);
 		assertEquals(segmentIdentifier, resultSegmentIdentifier);
-		assertEquals((int)carcnt, (int)resultCarCount);
+		assertEquals(carcnt, (int)resultCarCount);
 		double expectedSpeedAverage = initialSpeedAverage;
 		assertEquals(expectedSpeedAverage, resultSpeedAverage, 0.0);
 		int expectedMinute = minuteOfTuple + 1;
 		assertEquals((int)expectedMinute, (int)resultMinute);
 	}
-
+	
 	/**
 	 * Test of calcLav method, of class LastAverageSpeedBolt. Tests refusal of illegal arguments as well as whether
 	 * average is calculated correctly ignoring the latest value.
@@ -139,5 +141,5 @@ public class LastAverageSpeedBoltTest {
 		result = instance.calcLav(speedValues, minute);
 		assertEquals(expResult, result, 0.0);
 	}
-
+	
 }

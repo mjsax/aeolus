@@ -16,24 +16,45 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.operators;
-
-import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.aeolus.queries.utils.AbstractFileOutputBolt;
-
-
+package storm.lrb.model;
 
 
 
 /**
- * @author mjsax
+ * TODO
+ * 
+ * @author Matthias J. Sax
  */
-public class SpoutDataFileOutputBolt extends AbstractFileOutputBolt {
-	private static final long serialVersionUID = 412459844575730202L;
+public class AvgVehicleSpeed {
+	private int speedSum;
+	private int speedCnt;
 	
-	@Override
-	protected String tupleToString(Tuple t) {
-		return t.getLong(0) + "," + t.getString(1) + "\n";
+	
+	
+	/**
+	 * TODO
+	 * 
+	 * @param speed
+	 */
+	public AvgVehicleSpeed(int speed) {
+		this.speedSum = speed;
+		this.speedCnt = 1;
 	}
 	
+	
+	
+	/**
+	 * TODO
+	 * 
+	 * @param vehicleId
+	 * @param vehicleSpeed
+	 */
+	public void updateAverage(int speed) {
+		this.speedSum += speed;
+		++this.speedCnt;
+	}
+	
+	public Integer getAverageSpeed() {
+		return new Integer(this.speedSum / this.speedCnt);
+	}
 }

@@ -30,15 +30,20 @@ public class Constants {
 	/**
 	 * see p. 483
 	 */
-	public final static int MAX_NUMBER_OF_POSITIONS = 5280;
-
+	public final static int MAX_NUMBER_OF_POSITIONS = 528000;
+	
 	/**
 	 * @TODO: search in benchmark specification
 	 */
 	public final static int INITIAL_TOLL = 20;
 
-	public static final int DIRECTION_EASTBOUND = 1;
-	public static final int DIRECTION_WESTBOUND = 2;
+	/**
+	 * see p. 483
+	 */
+	public static final int MAX_SPEED = 100;
+	
+	public static final Short DIRECTION_EASTBOUND = new Short((short)1);
+	public static final Short DIRECTION_WESTBOUND = new Short((short)2);
 
 	/**
 	 * The 0th of the 5 lanes of an express way is the entrance lane <ref>p.3 LRB paper</ref>.
@@ -53,5 +58,7 @@ public class Constants {
 	 */
 	public static final int SEGMENT_COUNT = 100;
 
+	
+	
 	private Constants() {}
 }

@@ -25,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.PosReport;
 import storm.lrb.model.SegmentStatistics;
-import storm.lrb.model.Time;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -35,6 +33,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.util.Time;
 
 
 
@@ -112,7 +112,7 @@ public class SegmentStatsBolt extends BaseRichBolt {
 			if(segmentCarCount != 0) {
 				speedAverage = (speedSum / segmentCarCount);
 			}
-			this.collector.emit(new Values(xsd.getxWay(), xsd.getSegment(), xsd.getDirection(), segmentCarCount,
+			this.collector.emit(new Values(xsd.getXWay(), xsd.getSegment(), xsd.getDirection(), segmentCarCount,
 				speedAverage, prevMinute));
 			
 		}
@@ -121,18 +121,17 @@ public class SegmentStatsBolt extends BaseRichBolt {
 	
 	private void countAndAck(Tuple tuple) {
 		
-		PosReport pos = (PosReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
+		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
 		
-		SegmentIdentifier segment = new SegmentIdentifier(pos.getSegmentIdentifier().getxWay(), pos
-			.getSegmentIdentifier().getSegment(), pos.getSegmentIdentifier().getDirection());
+		SegmentIdentifier segment = new SegmentIdentifier(pos);
 		
 		long newMinute = Time.getMinute(pos.getTime());
 		if(newMinute > this.curMinute) {
 			this.emitCurrentWindowCounts();
-			this.curMinute = (int)Time.getMinute(pos.getTime());
+			this.curMinute = Time.getMinute(pos.getTime());
 			
 		}
-		this.segmentStats.addVehicleSpeed(this.curMinute, segment, pos.getVehicleIdentifier(), pos.getCurrentSpeed());
+		this.segmentStats.addVehicleSpeed(this.curMinute, segment, pos.getVid(), pos.getSpeed());
 		this.collector.ack(tuple);
 	}
 	

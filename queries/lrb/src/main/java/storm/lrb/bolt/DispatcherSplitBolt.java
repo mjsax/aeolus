@@ -38,6 +38,16 @@ package storm.lrb.bolt;
  * #L%
  */
 
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import storm.lrb.TopologyControl;
+import storm.lrb.model.AccountBalanceRequest;
+import storm.lrb.model.DailyExpenditureRequest;
+import storm.lrb.model.TravelTimeRequest;
+import storm.lrb.tools.StopWatch;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -45,18 +55,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import storm.lrb.TopologyControl;
-import storm.lrb.model.AccountBalanceRequest;
-import storm.lrb.model.DailyExpenditureRequest;
-import storm.lrb.model.LRBtuple;
-import storm.lrb.model.PosReport;
-import storm.lrb.model.TravelTimeRequest;
-import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 
 
 
@@ -89,53 +89,53 @@ public class DispatcherSplitBolt extends BaseRichBolt {
 	// TODO evtl buffered wschreiben
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext topologyContext, OutputCollector outputCollector) {
-		collector = outputCollector;
+		this.collector = outputCollector;
 		
 	}
 	
 	@Override
 	public void execute(Tuple tuple) {
 		
-		splitAndEmit(tuple);
+		this.splitAndEmit(tuple);
 		
-		collector.ack(tuple);
+		this.collector.ack(tuple);
 	}
 	
 	private void splitAndEmit(Tuple tuple) {
 		
-		LRBtuple line = (LRBtuple)tuple.getValueByField(TopologyControl.TUPLE_FIELD_NAME);
-		if(firstrun) {
-			firstrun = false;
-			timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
-			LOG.info("Set timer: " + timer);
+		AbstractLRBTuple line = (AbstractLRBTuple)tuple.getValueByField(TopologyControl.TUPLE_FIELD_NAME);
+		if(this.firstrun) {
+			this.firstrun = false;
+			this.timer = (StopWatch)tuple.getValueByField(TopologyControl.TIMER_FIELD_NAME);
+			LOG.info("Set timer: " + this.timer);
 		}
 		
 		try {
 			
 			switch(line.getType()) {
-			case LRBtuple.TYPE_POSITION_REPORT:
-				PosReport pos = (PosReport)line;
+			case AbstractLRBTuple.position_report:
+				PositionReport pos = (PositionReport)line;
 				
-				if(tupleCnt <= 10) {
+				if(this.tupleCnt <= 10) {
 					LOG.debug(String.format("Created: %s", pos));
 				}
-				collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
-				tupleCnt++;
+				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
+				this.tupleCnt++;
 				break;
 			case 2:
 				AccountBalanceRequest acc = (AccountBalanceRequest)line;
-				collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple,
-					new Values(acc.getVehicleIdentifier(), acc));
+				this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, tuple, new Values(acc.getVid(),
+					acc));
 				break;
 			case 3:
 				DailyExpenditureRequest exp = (DailyExpenditureRequest)line;
-				collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple,
-					new Values(exp.getVehicleIdentifier(), exp));
+				this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, tuple, new Values(
+					exp.getVid(), exp));
 				break;
 			case 4:
 				TravelTimeRequest est = (TravelTimeRequest)line;
-				collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple,
-					new Values(est.getVehicleIdentifier(), est));
+				this.collector
+					.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, tuple, new Values(est.getVid(), est));
 				break;
 			default:
 				LOG.debug("Tupel does not match required LRB format" + line);
