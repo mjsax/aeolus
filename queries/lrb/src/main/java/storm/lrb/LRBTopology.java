@@ -18,6 +18,8 @@
  */
 package storm.lrb;
 
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,11 +28,10 @@ import org.slf4j.LoggerFactory;
 import storm.lrb.bolt.AccidentDetectionBolt;
 import storm.lrb.bolt.AccidentNotificationBolt;
 import storm.lrb.bolt.AccountBalanceBolt;
-import storm.lrb.bolt.AverageSpeedBolt;
 import storm.lrb.bolt.DailyExpenditureBolt;
 import storm.lrb.bolt.DispatcherBolt;
 import storm.lrb.bolt.LastAverageSpeedBolt;
-import storm.lrb.bolt.TollNotificationBolt;
+import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
 import backtype.storm.generated.StormTopology;
@@ -38,10 +39,9 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.queries.utils.FileSinkBolt;
+import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
+import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
-import java.util.Arrays;
-import java.util.LinkedList;
-import storm.lrb.tools.Helper;
 
 
 
@@ -52,6 +52,7 @@ import storm.lrb.tools.Helper;
  * allow to manipulate {@link Config} and {@link StormTopology} at will after creation in constructor.
  * 
  * @author richter
+ * @author mjsax
  */
 public class LRBTopology {
 	private final static Logger LOGGER = LoggerFactory.getLogger(LRBTopology.class);
@@ -87,11 +88,12 @@ public class LRBTopology {
 			.shuffleGrouping(TopologyControl.START_SPOUT_NAME, TopologyControl.SPOUT_STREAM_ID);// .allGrouping("Spout",
 																								// "stormtimer");
 		
-		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageSpeedBolt(), xways * 3).fieldsGrouping(
-			TopologyControl.SPLIT_STREAM_BOLT_NAME,
-			TopologyControl.POS_REPORTS_STREAM_ID,
-			new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
-				TopologyControl.DIRECTION_FIELD_NAME));
+		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageVehicleSpeedBolt(), xways * 3)
+			.fieldsGrouping(
+				TopologyControl.SPLIT_STREAM_BOLT_NAME,
+				TopologyControl.POS_REPORTS_STREAM_ID,
+				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+					TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LastAverageSpeedBolt(), xways * 3)
 			.fieldsGrouping(
@@ -149,16 +151,16 @@ public class LRBTopology {
 		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME,
 			new FileSinkBolt(topologyNamePrefix + "_exp"), 1).allGrouping(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME);
 		
-		stormConfig.registerSerialization(storm.lrb.model.PosReport.class);
+		
+		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.datatypes.PositionReport.class);
 		stormConfig.registerSerialization(storm.lrb.model.AccountBalanceRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.DailyExpenditureRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.Accident.class);
 		stormConfig.registerSerialization(storm.lrb.model.VehicleInfo.class);
-		stormConfig.registerSerialization(storm.lrb.model.LRBtuple.class);
 		stormConfig.registerSerialization(storm.lrb.tools.StopWatch.class);
 		stormConfig.registerSerialization(storm.lrb.model.AccidentImmutable.class);
-		stormConfig.put(Helper.TOLL_DATA_STORE_CONF_KEY, tollDataStoreClass);
+		stormConfig.put(Helper.TOLL_DATA_STORE_CONF_KEY, this.tollDataStoreClass);
 		
 		this.stormTopology = builder.createTopology();
 		LOGGER.info(String.format("successfully created storm topology '%s'", TopologyControl.TOPOLOGY_NAME));

@@ -18,7 +18,8 @@
  */
 package storm.lrb.model;
 
-import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.datatypes.AbstractOutputTuple;
 
 
 
@@ -29,23 +30,14 @@ import storm.lrb.tools.StopWatch;
  * 
  * @author richter
  */
-/*
- * internal implementation notes: - does not implement clone because Values doesn't
- */
-@SuppressWarnings("CloneableImplementsClone")
-public class AccountBalance extends LRBtuple {
+public class AccountBalance extends AbstractOutputTuple {
 	private static final long serialVersionUID = 1L;
-	private long time;
-	private StopWatch systemTimer;
 	private int queryIdentifier;
 	private int balance;
 	private long tollTime;
 	
-	public AccountBalance(long time, int queryIdentifier, int balance, long tollTime, Long created,
-		StopWatch systemTimer) {
-		super(LRBtuple.TYPE_ACCOUNT_BALANCE, created, systemTimer);
-		this.time = time;
-		this.systemTimer = systemTimer;
+	public AccountBalance(Long time, int queryIdentifier, int balance, long tollTime, Long created) {
+		super(AbstractLRBTuple.ACCOUNT_BALANCE_REQUEST, time, created);
 		this.queryIdentifier = queryIdentifier;
 		this.balance = balance;
 		this.tollTime = tollTime;
@@ -56,15 +48,7 @@ public class AccountBalance extends LRBtuple {
 	}
 	
 	public long getTollTime() {
-		return tollTime;
-	}
-	
-	protected void setTime(long time) {
-		this.time = time;
-	}
-	
-	protected void setSystemTimer(StopWatch systemTimer) {
-		this.systemTimer = systemTimer;
+		return this.tollTime;
 	}
 	
 	protected void setQueryIdentifier(int queryIdentifier) {
@@ -75,20 +59,12 @@ public class AccountBalance extends LRBtuple {
 		this.balance = balance;
 	}
 	
-	public long getTime() {
-		return time;
-	}
-	
-	public StopWatch getSystemTimer() {
-		return systemTimer;
-	}
-	
 	public int getQueryIdentifier() {
-		return queryIdentifier;
+		return this.queryIdentifier;
 	}
 	
 	public int getBalance() {
-		return balance;
+		return this.balance;
 	}
 	
 	

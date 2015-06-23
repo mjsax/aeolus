@@ -18,9 +18,9 @@
  */
 package storm.lrb.model;
 
-import java.io.Serializable;
-
 import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
 
 
 
@@ -31,20 +31,12 @@ import storm.lrb.tools.StopWatch;
  * 
  * LRB format: (Type = 4, Time, VID, XWay, QID, S init , S end , DOW, TOD)
  */
-/*
- * internal implementation notes: - does not implement clone because Values doesn't
- */
-@SuppressWarnings("CloneableImplementsClone")
-public class TravelTimeRequest extends LRBtuple implements Serializable {
+public class TravelTimeRequest extends AbstractInputTuple {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private int time;
-	private int vehicleIdentifier;
 	private int xWay;
 	private int queryIdentifier;
-	private int sinit;
-	private int send;
 	private int dayOfWeek;
 	private int minuteOfDay;
 	
@@ -52,51 +44,29 @@ public class TravelTimeRequest extends LRBtuple implements Serializable {
 		super();
 	}
 	
-	public TravelTimeRequest(int time, int vehicleIdentifier, int xWay, int queryIdentifier, int sinit, int send,
-		int dayOfWeek, int minuteOfDay, StopWatch systemTimer) {
-		super(LRBtuple.TYPE_TRAVEL_TIME_REQUEST, System.currentTimeMillis(), systemTimer);
-		this.time = time;
-		this.vehicleIdentifier = vehicleIdentifier;
+	public TravelTimeRequest(Long time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int dayOfWeek,
+		int minuteOfDay, StopWatch systemTimer) {
+		super(AbstractLRBTuple.TRAVEL_TIME_REQUEST, time, vehicleIdentifier);
 		this.xWay = xWay;
 		this.queryIdentifier = queryIdentifier;
-		this.sinit = sinit;
-		this.send = send;
 		this.dayOfWeek = dayOfWeek;
 		this.minuteOfDay = minuteOfDay;
 	}
 	
 	public int getMinuteOfDay() {
-		return minuteOfDay;
+		return this.minuteOfDay;
 	}
 	
 	public int getDayOfWeek() {
-		return dayOfWeek;
-	}
-	
-	@Override
-	public Integer getSend() {
-		return super.getSend(); // To change body of generated methods, choose Tools | Templates.
-	}
-	
-	@Override
-	public Integer getSinit() {
-		return super.getSinit(); // To change body of generated methods, choose Tools | Templates.
+		return this.dayOfWeek;
 	}
 	
 	public int getQueryIdentifier() {
-		return queryIdentifier;
+		return this.queryIdentifier;
 	}
 	
 	public int getxWay() {
-		return xWay;
-	}
-	
-	public int getVehicleIdentifier() {
-		return vehicleIdentifier;
-	}
-	
-	public int getTime() {
-		return time;
+		return this.xWay;
 	}
 	
 }

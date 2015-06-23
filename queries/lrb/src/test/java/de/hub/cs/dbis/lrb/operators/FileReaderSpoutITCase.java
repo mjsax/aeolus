@@ -43,7 +43,7 @@ import de.hub.cs.dbis.aeolus.queries.utils.TimestampMerger;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class FileReaderSpoutITCase {
 	private long seed;

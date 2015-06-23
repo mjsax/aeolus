@@ -42,7 +42,7 @@ import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
  * attribute of the record. The number of remaining attributes depends on the record type. The type attribute and the
  * remaining attributes are ignored while parsing an input record.<br/>
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	private final static long serialVersionUID = 8536833427236986702L;

@@ -16,18 +16,31 @@
  * limitations under the License.
  * #_
  */
-package storm.lrb.model;
+package de.hub.cs.dbis.lrb.util;
 
 /**
- * helper class to compute the current minute of given second
+ * Helper class to compute the current minute of given millisecond.
  * 
+ * @author msoyka
+ * @author mjsax
  */
 public class Time {
 	
-	public static long getMinute(long sec) {
-		return ((sec / 60) + 1);
-	}
-	
 	private Time() {}
+	
+	/**
+	 * Computes the 'minute number' if a time (in seconds).
+	 * 
+	 * The 'minute number' m is computed as: {@code m = floor(timestamp / 60) + 1}
+	 * 
+	 * @param timestamp
+	 *            the timestamp value in seconds
+	 * 
+	 * @return the 'minute number' if the given timestamp
+	 */
+	public static short getMinute(long timestamp) {
+		assert (timestamp > 0);
+		return (short)((timestamp / 60) + 1);
+	}
 	
 }

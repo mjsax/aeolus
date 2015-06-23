@@ -33,6 +33,28 @@
  */
 package storm.lrb.bolt;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import storm.lrb.TopologyControl;
+import storm.lrb.model.AccountBalance;
+import storm.lrb.model.AccountBalanceRequest;
+import storm.lrb.tools.EntityHelper;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.OutputCollector;
@@ -43,26 +65,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import storm.lrb.TopologyControl;
-import storm.lrb.model.AccountBalance;
-import storm.lrb.model.AccountBalanceRequest;
-import storm.lrb.model.PosReport;
-import storm.lrb.tools.EntityHelper;
-import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 
 
 
@@ -115,18 +118,17 @@ public class AccountBalanceBoltTest {
 		// test processing of toll assessment stream
 		int queryIdentifier = 1;
 		int expectedTollTime = 1;
-		StopWatch timer = new StopWatch();
 		AccountBalance expResult = new AccountBalance(System.currentTimeMillis(), queryIdentifier, 0, // balance
-			expectedTollTime, System.currentTimeMillis(), timer); // create before execute for
+			expectedTollTime, System.currentTimeMillis()); // create before execute for
 		// timestamp comparison
 		int vehicleID0 = (int)(random.nextDouble() * 10000); // set max. value to increase readability
 		int xWay = 1;
 		int assessedToll = 0;
-		PosReport posReport0Stopped = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
+		PositionReport posReport0Stopped = EntityHelper.createPosReport(random, vehicleID0, 0, // minSpeed
 			0 // maxSpeed
 			);
 		AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest(System.currentTimeMillis(), vehicleID0,
-			queryIdentifier, timer);
+			queryIdentifier);
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(accountBalanceRequest), 1, // taskId
 			TopologyControl.TOLL_ASSESSMENT_STREAM_ID // streamID
 		);

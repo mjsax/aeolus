@@ -18,6 +18,23 @@
  */
 package storm.lrb.bolt;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import storm.lrb.TopologyControl;
+import storm.lrb.model.DailyExpenditureRequest;
+import storm.lrb.tools.Constants;
+import storm.lrb.tools.Helper;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.task.OutputCollector;
@@ -29,23 +46,8 @@ import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import storm.lrb.TopologyControl;
-import storm.lrb.model.DailyExpenditureRequest;
-import storm.lrb.model.LRBtuple;
-import storm.lrb.tools.Constants;
-import storm.lrb.tools.Helper;
-import storm.lrb.tools.StopWatch;
 
 
 
@@ -97,7 +99,7 @@ public class DailyExpenditureBoltTest {
 		int expectedToll = 4748;
 		instance.getDataStore().storeToll(xWay, day0, vehicleIdentifierValid, expectedToll);
 		DailyExpenditureRequest dailyExpenditureRequest = new DailyExpenditureRequest(System.currentTimeMillis(),
-			vehicleIdentifierValid, xWay, queryIdentifier, day0, new StopWatch());
+			vehicleIdentifierValid, xWay, queryIdentifier, day0);
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(dailyExpenditureRequest), 1, // taskId
 			null // streamID
 		);
@@ -106,16 +108,16 @@ public class DailyExpenditureBoltTest {
 		assertEquals(1, collector.output.size());// write only to one stream
 		assertEquals(1, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 		List<Object> resultTuple1 = collector.output.get(Utils.DEFAULT_STREAM_ID).get(0);
-		assertEquals(LRBtuple.TYPE_DAILY_EXPEDITURE, resultTuple1.get(0));
-		assertEquals(dailyExpenditureRequest.getCreated(), resultTuple1.get(1));
+		assertEquals(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, resultTuple1.get(0));
+		assertEquals(dailyExpenditureRequest.getTime(), resultTuple1.get(1));
 		// don't care about processing time
 		assertEquals(queryIdentifier, resultTuple1.get(3));
 		assertEquals(expectedToll, resultTuple1.get(4));
 		
 		// test transmission of initial toll for yet inexsting accounts
 		int vehicleIdentifierInvalid = 2;
-		dailyExpenditureRequest = new DailyExpenditureRequest(day0, vehicleIdentifierInvalid, xWay, queryIdentifier,
-			day0, new StopWatch());
+		dailyExpenditureRequest = new DailyExpenditureRequest((long)day0, vehicleIdentifierInvalid, xWay,
+			queryIdentifier, day0);
 		tuple = new TupleImpl(generalContextMock, new Values(dailyExpenditureRequest), 1, // taskId
 			null // streamId
 		);
@@ -124,8 +126,8 @@ public class DailyExpenditureBoltTest {
 		assertEquals(1, collector.output.size());
 		assertEquals(2, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
 		List<Object> resultTuple2 = collector.output.get(Utils.DEFAULT_STREAM_ID).get(1);
-		assertEquals(LRBtuple.TYPE_DAILY_EXPEDITURE, resultTuple2.get(0));
-		assertEquals(dailyExpenditureRequest.getCreated(), resultTuple2.get(1));
+		assertEquals(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, resultTuple2.get(0));
+		assertEquals(dailyExpenditureRequest.getTime(), resultTuple2.get(1));
 		// don't care about the processing time
 		assertEquals(queryIdentifier, resultTuple2.get(3));
 		assertEquals(Constants.INITIAL_TOLL, resultTuple2.get(4));

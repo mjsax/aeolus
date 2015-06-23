@@ -18,7 +18,8 @@
  */
 package storm.lrb.model;
 
-import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
 
 
 
@@ -29,59 +30,28 @@ import storm.lrb.tools.StopWatch;
  * a query identifier.
  * 
  */
-/*
- * internal implementation notes: - does not implement clone because Values doesn't
- */
-@SuppressWarnings("CloneableImplementsClone")
-public class AccountBalanceRequest extends LRBtuple {
+public class AccountBalanceRequest extends AbstractInputTuple {
 	
 	private static final long serialVersionUID = 1L;
 	/**
 	 * QID is an integer query identiﬁer
 	 */
 	private Integer queryIdentifier;
-	/**
-	 * VID (0. . . MAXINT) is an integer vehicle identifier i
-	 */
-	private Integer vehicleIdentifier;
 	
-	/**
-	 * Time (0. . .10799)^3 is a timestamp identifying the time at which the position report was emitted
-	 */
-	private long time;
 	
 	protected AccountBalanceRequest() {
 		super();
 		
 	}
 	
-	public AccountBalanceRequest(long time, int vehicleIdentifier, int queryIdentifier, StopWatch systemTimer) {
-		super(LRBtuple.TYPE_ACCOUNT_BALANCE_REQUEST, System.currentTimeMillis(), systemTimer);
-		this.time = time;
-		this.vehicleIdentifier = vehicleIdentifier;
+	public AccountBalanceRequest(Long time, Integer vehicleIdentifier, int queryIdentifier) {
+		super(AbstractLRBTuple.ACCOUNT_BALANCE_REQUEST, time, vehicleIdentifier);
 		this.queryIdentifier = queryIdentifier;
 	}
 	
-	public long getTime() {
-		return this.time;
-	}
-	
-	public Integer getVehicleIdentifier() {
-		return this.vehicleIdentifier;
-	}
 	
 	public Integer getQueryIdentifier() {
 		return this.queryIdentifier;
-	}
-	
-	/**
-	 * get the emit time for notification output
-	 * 
-	 * @return (time+processing time)
-	 */
-	public long getEmitTime() {
-		
-		return this.time + this.getProcessingTimeSec();
 	}
 	
 }

@@ -18,9 +18,8 @@
  */
 package storm.lrb.model;
 
-import java.io.Serializable;
-
-import storm.lrb.tools.StopWatch;
+import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
 
 
 
@@ -31,15 +30,10 @@ import storm.lrb.tools.StopWatch;
  * 
  * LRB format: (Type = 3, Time, VID, XWay, QID, Day)
  */
-/*
- * internal implementation notes: - does not implement clone because Values doesn't
- */
-@SuppressWarnings("CloneableImplementsClone")
-public class DailyExpenditureRequest extends LRBtuple implements Serializable {
+public class DailyExpenditureRequest extends AbstractInputTuple {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private int vehicleIdentifier;
 	private int xWay;
 	private int queryIdentifier;
 	/**
@@ -51,10 +45,8 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 		super();
 	}
 	
-	public DailyExpenditureRequest(long created, int vehicleIdentifier, int xWay, int queryIdentifier, int day,
-		StopWatch systemTimer) {
-		super(LRBtuple.TYPE_DAILY_EXPEDITURE, created, systemTimer);
-		this.vehicleIdentifier = vehicleIdentifier;
+	public DailyExpenditureRequest(Long time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int day) {
+		super(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, time, vehicleIdentifier);
 		this.xWay = xWay;
 		this.queryIdentifier = queryIdentifier;
 		this.day = day;
@@ -65,7 +57,7 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	}
 	
 	public int getDay() {
-		return day;
+		return this.day;
 	}
 	
 	public void setQueryIdentifier(int queryIdentifier) {
@@ -73,7 +65,7 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	}
 	
 	public int getQueryIdentifier() {
-		return queryIdentifier;
+		return this.queryIdentifier;
 	}
 	
 	public void setxWay(int xWay) {
@@ -81,15 +73,7 @@ public class DailyExpenditureRequest extends LRBtuple implements Serializable {
 	}
 	
 	public int getxWay() {
-		return xWay;
-	}
-	
-	public void setVehicleIdentifier(int vehicleIdentifier) {
-		this.vehicleIdentifier = vehicleIdentifier;
-	}
-	
-	public int getVehicleIdentifier() {
-		return vehicleIdentifier;
+		return this.xWay;
 	}
 	
 }
