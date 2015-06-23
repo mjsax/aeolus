@@ -38,8 +38,10 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.queries.utils.FileSinkBolt;
-import storm.lrb.bolt.PersistenceTollDataStore;
-import storm.lrb.bolt.TollDataStore;
+import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
+import java.util.Arrays;
+import java.util.LinkedList;
+import storm.lrb.tools.Helper;
 
 
 
@@ -54,11 +56,29 @@ import storm.lrb.bolt.TollDataStore;
 public class LRBTopology {
 	private final static Logger LOGGER = LoggerFactory.getLogger(LRBTopology.class);
 	private final StormTopology stormTopology;
-	private final Config stormConfig;
-	private final TollDataStore tollDataStore = PersistenceTollDataStore.getInstance();
+	private final String tollDataStoreClass = MemoryTollDataStore.class.getName();
 	
-	public LRBTopology(String nameext, List<String> fields, int xways, int workers, int tasks, int executors,
-		int offset, IRichSpout spout, StopWatch stormTimer, boolean local, String histFile, String topologyNamePrefix) {
+	/**
+	 * performs the assembly of the topology which can be retrieved with {@link #getStormTopology() }.
+	 * 
+	 * @param nameext
+	 * @param xways
+	 * @param workers
+	 * @param tasks
+	 * @param executors
+	 * @param offset
+	 * @param spout
+	 * @param stormTimer
+	 * @param local
+	 * @param histFile
+	 * @param topologyNamePrefix
+	 * @param stormConfig
+	 *            an existing {@link Config} object to be filled with serialization and custom bolt information
+	 */
+	public LRBTopology(String nameext, int xways, int workers, int tasks, int executors, int offset, IRichSpout spout,
+		StopWatch stormTimer, boolean local, String histFile, String topologyNamePrefix, Config stormConfig) {
+		List<String> fields = new LinkedList<String>(Arrays.asList(TopologyControl.XWAY_FIELD_NAME,
+			TopologyControl.DIRECTION_FIELD_NAME));
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout(TopologyControl.START_SPOUT_NAME, spout, 1);
@@ -82,7 +102,7 @@ public class LRBTopology {
 		
 		
 		builder.setBolt(TopologyControl.TOLL_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_toll"), 1)
-			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_NOTIFICATION_STREAM_ID);
+			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENT_STREAM_ID);
 		
 		// builder.setBolt("lavBolt", new SegmentStatsBolt(0), cmd.xways*3)
 		// .fieldsGrouping("SplitStreamBolt", "PosReports", new Fields("xsd"));
@@ -91,56 +111,54 @@ public class LRBTopology {
 			.setNumTasks(tasks)
 			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,
 				new Fields(fields))
-			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-			
-			new Fields(fields))
+			.fieldsGrouping(
+				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
+				TopologyControl.ACCIDENT_INFO_STREAM_ID,
+				new Fields(TopologyControl.POS_REPORT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+					TopologyControl.ACCIDENT_INFO_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
 				new Fields(fields));
-		
-		builder.setBolt(TopologyControl.TOLL_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_toll"), 1)
-			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_NOTIFICATION_STREAM_ID);
 		
 		builder.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, new AccidentDetectionBolt(), xways)
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
-		builder
-			.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, new AccidentNotificationBolt(), xways)
-			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME))
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
+		builder.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, new AccidentNotificationBolt(), xways)
+			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENT_INFO_STREAM_ID, // streamId
+				new Fields(TopologyControl.POS_REPORT_FIELD_NAME))
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID, // streamId
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_acc"),
-			1).allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME);
+			1).allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENT_INFO_STREAM_ID);
 		
 		builder
 			.setBolt(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME, new AccountBalanceBolt(), xways)
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENT_STREAM_ID,
-				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME));
+				new Fields(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME,
 			new FileSinkBolt(topologyNamePrefix + "_bal"), 1).allGrouping(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME);
 		
-		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(tollDataStore), xways * 1)
+		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(), xways * 1)
 			.shuffleGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME,
 				TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID);
 		
 		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME,
 			new FileSinkBolt(topologyNamePrefix + "_exp"), 1).allGrouping(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME);
 		
-		this.stormConfig = new Config();
-		this.stormConfig.registerSerialization(storm.lrb.model.PosReport.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.AccountBalanceRequest.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.DailyExpenditureRequest.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.Accident.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.VehicleInfo.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.LRBtuple.class);
-		this.stormConfig.registerSerialization(storm.lrb.tools.StopWatch.class);
-		this.stormConfig.registerSerialization(storm.lrb.model.AccidentImmutable.class);
+		stormConfig.registerSerialization(storm.lrb.model.PosReport.class);
+		stormConfig.registerSerialization(storm.lrb.model.AccountBalanceRequest.class);
+		stormConfig.registerSerialization(storm.lrb.model.DailyExpenditureRequest.class);
+		stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
+		stormConfig.registerSerialization(storm.lrb.model.Accident.class);
+		stormConfig.registerSerialization(storm.lrb.model.VehicleInfo.class);
+		stormConfig.registerSerialization(storm.lrb.model.LRBtuple.class);
+		stormConfig.registerSerialization(storm.lrb.tools.StopWatch.class);
+		stormConfig.registerSerialization(storm.lrb.model.AccidentImmutable.class);
+		stormConfig.put(Helper.TOLL_DATA_STORE_CONF_KEY, tollDataStoreClass);
 		
 		this.stormTopology = builder.createTopology();
 		LOGGER.info(String.format("successfully created storm topology '%s'", TopologyControl.TOPOLOGY_NAME));
@@ -148,10 +166,6 @@ public class LRBTopology {
 	
 	public StormTopology getStormTopology() {
 		return this.stormTopology;
-	}
-	
-	public Config getStormConfig() {
-		return this.stormConfig;
 	}
 	
 }

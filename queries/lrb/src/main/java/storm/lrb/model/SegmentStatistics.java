@@ -70,7 +70,7 @@ public class SegmentStatistics implements Serializable {
 	
 	public void addVehicleSpeed(int minute, SegmentIdentifier xsd, int vid, int speed) {
 		
-		LOGGER.debug("segmentstats: %d, xsd: %d, speed: %d", minute, xsd, speed);
+		LOGGER.debug(String.format("segmentstats: %d, xsd: %d, speed: %d", minute, xsd, speed));
 		// We need to keep segment statistics for each minute. For this, we use a
 		// List where each index represents statistics for one minute.
 		List<MinuteStatistics> minutes = this.minutesListGetAndInit(xsd, this.segmentsMinutes);

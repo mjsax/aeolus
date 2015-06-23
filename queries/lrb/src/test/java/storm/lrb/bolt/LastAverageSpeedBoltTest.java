@@ -48,16 +48,20 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import storm.lrb.TopologyControl;
 import storm.lrb.tools.Constants;
 
+
+
+
+
 /**
  * Tests {@link LastAverageSpeedBolt} using mocks.
+ *
  * @author richter
  */
 public class LastAverageSpeedBoltTest {
 
 	/**
-	 * Test of execute method, of class LastAverageSpeedBolt. Tests the
-	 * calculation of the average of values passed in multiple tuples with a
-	 * certain minute value.
+	 * Test of execute method, of class LastAverageSpeedBolt. Tests the calculation of the average of values passed in
+	 * multiple tuples with a certain minute value.
 	 */
 	@Test
 	public void testExecute() {
@@ -107,14 +111,13 @@ public class LastAverageSpeedBoltTest {
 		assertEquals((int)carcnt, (int)resultCarCount);
 		double expectedSpeedAverage = initialSpeedAverage;
 		assertEquals(expectedSpeedAverage, resultSpeedAverage, 0.0);
-		int expectedMinute = minuteOfTuple+1;
+		int expectedMinute = minuteOfTuple + 1;
 		assertEquals((int)expectedMinute, (int)resultMinute);
 	}
 
 	/**
-	 * Test of calcLav method, of class LastAverageSpeedBolt. Tests refusal of
-	 * illegal arguments as well as whether average is calculated correctly
-	 * ignoring the latest value.
+	 * Test of calcLav method, of class LastAverageSpeedBolt. Tests refusal of illegal arguments as well as whether
+	 * average is calculated correctly ignoring the latest value.
 	 */
 	@Test
 	public void testCalcLav() {

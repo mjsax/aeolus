@@ -29,15 +29,10 @@ import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
-import java.util.Arrays;
+import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
@@ -48,13 +43,17 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 import storm.lrb.TopologyControl;
 import storm.lrb.model.DailyExpenditureRequest;
 import storm.lrb.model.LRBtuple;
-import storm.lrb.model.PosReport;
 import storm.lrb.tools.Constants;
-import storm.lrb.tools.EntityHelper;
+import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
+
+
+
+
 
 /**
  * Tests {@link DailyExpenditureBolt} with mocks.
+ * 
  * @author richter
  */
 public class DailyExpenditureBoltTest {
@@ -82,9 +81,10 @@ public class DailyExpenditureBoltTest {
 		GeneralTopologyContext context = mock(GeneralTopologyContext.class);
 		when(context.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
 		when(context.getComponentId(anyInt())).thenReturn("componentID");
-		TollDataStore tollDataStore = mock(TollDataStore.class);
-		DailyExpenditureBolt instance = new DailyExpenditureBolt(tollDataStore);
-		instance.prepare(new Config(), contextMock, new OutputCollector(collector));
+		DailyExpenditureBolt instance = new DailyExpenditureBolt();
+		Config instanceConfig = new Config();
+		instanceConfig.put(Helper.TOLL_DATA_STORE_CONF_KEY, MemoryTollDataStore.class.getName());
+		instance.prepare(instanceConfig, contextMock, new OutputCollector(collector));
 		OutputFieldsDeclarer outputFieldsDeclarer = Mockito.mock(OutputFieldsDeclarer.class);
 		// initial setup
 		instance.declareOutputFields(outputFieldsDeclarer);
@@ -95,7 +95,7 @@ public class DailyExpenditureBoltTest {
 		int queryIdentifier = 2;
 		int day0 = 1;
 		int expectedToll = 4748;
-		when(tollDataStore.retrieveToll(xWay, day0, vehicleIdentifierValid)).thenReturn(expectedToll);
+		instance.getDataStore().storeToll(xWay, day0, vehicleIdentifierValid, expectedToll);
 		DailyExpenditureRequest dailyExpenditureRequest = new DailyExpenditureRequest(System.currentTimeMillis(),
 			vehicleIdentifierValid, xWay, queryIdentifier, day0, new StopWatch());
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(dailyExpenditureRequest), 1, // taskId
@@ -114,7 +114,6 @@ public class DailyExpenditureBoltTest {
 		
 		// test transmission of initial toll for yet inexsting accounts
 		int vehicleIdentifierInvalid = 2;
-		when(tollDataStore.retrieveToll(xWay, day0, vehicleIdentifierInvalid)).thenReturn(null);
 		dailyExpenditureRequest = new DailyExpenditureRequest(day0, vehicleIdentifierInvalid, xWay, queryIdentifier,
 			day0, new StopWatch());
 		tuple = new TupleImpl(generalContextMock, new Values(dailyExpenditureRequest), 1, // taskId
