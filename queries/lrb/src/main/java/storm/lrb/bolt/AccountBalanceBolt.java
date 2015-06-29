@@ -35,8 +35,8 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
+import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
 

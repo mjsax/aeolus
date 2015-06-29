@@ -1,4 +1,22 @@
-package de.hub.cs.dbis.lrb.datatypes;
+/*
+ * #!
+ * %
+ * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * %
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #_
+ */
+package de.hub.cs.dbis.lrb.types;
 
 
 
@@ -8,7 +26,7 @@ package de.hub.cs.dbis.lrb.datatypes;
  * All input tuples do have the following attributes: TYPE, TIME, VID
  * <ul>
  * <li>TYPE: the tuple type ID</li>
- * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in milliseconds)</li>
+ * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in LRB seconds)</li>
  * <li>VID: the unique vehicle ID</li>
  * </ul>
  * 
@@ -27,7 +45,7 @@ public abstract class AbstractInputTuple extends AbstractLRBTuple {
 		super();
 	}
 	
-	protected AbstractInputTuple(Short type, Long time, Integer vid) {
+	protected AbstractInputTuple(Short type, Short time, Integer vid) {
 		super(type, time);
 		
 		assert (vid != null);

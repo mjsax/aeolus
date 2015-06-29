@@ -146,7 +146,8 @@
             <goals>
               <goal>update-file-header</goal>
             </goals>
-            <phase>process-sources</phase>
+            <!--phase>process-sources</phase-->
+            <phase>validate</phase>
             <configuration>
               <licenseName>apache_v2</licenseName>
               <roots>

@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,9 +46,9 @@ public class TopologyControl {
 	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "AccountBalanceFileWriterBolt";
 	public final static String DAILY_EXPEDITURE_BOLT_NAME = "DailyExpenditureBolt";
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
-
+	
 	public final static String START_SPOUT_NAME = "StartSpout";
-
+	
 	public final static String POS_REPORTS_STREAM_ID = "PosReportStream";
 	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
 	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM_ID = "AccountBalanceRequestsStream";
@@ -58,7 +58,7 @@ public class TopologyControl {
 	public final static String TOLL_NOTIFICATION_STREAM_ID = "TollNotificationStream";
 	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "TravelTimeRequestRequestsStream";
 	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
-
+	
 	/**
 	 * The identifier of tuple attributes.
 	 */
@@ -73,6 +73,7 @@ public class TopologyControl {
 	public final static String SEGMENT_FIELD_NAME = "seg";
 	public final static String POSITION_FIELD_NAME = "pos";
 	
+	public final static String AVERAGE_VEHICLE_SPEED_FIELD_NAME = "avgvs";
 	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
 	
 	// TODO check if needed
@@ -92,6 +93,6 @@ public class TopologyControl {
 	public final static String ACCIDENT_INFO_FIELD_NAME = "accidentInfo";
 	public final static String TIMER_FIELD_NAME = "StormTimer";
 	public final static String BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME = "balancenotification";
-
+	
 	private TopologyControl() {}
 }

@@ -35,7 +35,8 @@ package storm.lrb.tools;
 
 import java.util.Random;
 
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.util.Constants;
 
 
 
@@ -57,7 +58,7 @@ public class EntityHelper {
 	 * @return an instance of {@link PositionReport} simulating a running car
 	 */
 	public static PositionReport createPosReport(Random random, Integer vehicleID) {
-		return createPosReport(random, vehicleID, 1, Constants.MAX_SPEED);
+		return createPosReport(random, vehicleID, 1, Constants.NUMBER_OF_SPEEDS);
 	}
 	
 	/**
@@ -72,8 +73,8 @@ public class EntityHelper {
 	 * @return
 	 */
 	public static PositionReport createPosReport(Random random, Integer vehicleID, int minSpeed, int maxSpeed) {
-		Long time = new Long((long)(System.currentTimeMillis() - random.nextDouble() * System.currentTimeMillis()));
-		Short segment = new Short((short)(random.nextDouble() * 100000)); // set max. value to increase readability;
+		Short time = new Short((short)random.nextInt(Constants.NUMBER_OF_SECONDS));
+		Short segment = new Short((short)(random.nextDouble() * Constants.NUMBER_OF_SEGMENT));
 		return createPosReport(time, segment, random, vehicleID, minSpeed, maxSpeed);
 	}
 	
@@ -99,14 +100,14 @@ public class EntityHelper {
 	/*
 	 * internal implementation notes: - pass vehicleID because it is shared in Accident
 	 */
-	public static PositionReport createPosReport(Long time, Short segment, Random random, Integer vehicleID, int minSpeed, int maxSpeed) {
+	public static PositionReport createPosReport(Short time, Short segment, Random random, Integer vehicleID, int minSpeed, int maxSpeed) {
 		// set max. value to increase
-		Integer currentSpeed = new Integer((int)(minSpeed + (maxSpeed - minSpeed) * random.nextDouble()));
+		Integer speed = new Integer((int)(minSpeed + (maxSpeed - minSpeed) * random.nextDouble()));
 		Integer position = new Integer(1);
 		
-		return new PositionReport(time, vehicleID, currentSpeed, new Integer(1), // xWay
+		return new PositionReport(time, vehicleID, speed, new Integer(1), // xWay
 			new Short((short)1),// lane
-			Constants.DIRECTION_EASTBOUND, // direction
+			Constants.EASTBOUND, // direction
 			segment, position);
 	}
 	

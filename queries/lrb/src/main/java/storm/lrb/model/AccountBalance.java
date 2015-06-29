@@ -18,8 +18,8 @@
  */
 package storm.lrb.model;
 
-import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
-import de.hub.cs.dbis.lrb.datatypes.AbstractOutputTuple;
+import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.AbstractOutputTuple;
 
 
 
@@ -36,7 +36,7 @@ public class AccountBalance extends AbstractOutputTuple {
 	private int balance;
 	private long tollTime;
 	
-	public AccountBalance(Long time, int queryIdentifier, int balance, long tollTime, Long created) {
+	public AccountBalance(Short time, int queryIdentifier, int balance, long tollTime, Short created) {
 		super(AbstractLRBTuple.ACCOUNT_BALANCE_REQUEST, time, created);
 		this.queryIdentifier = queryIdentifier;
 		this.balance = balance;

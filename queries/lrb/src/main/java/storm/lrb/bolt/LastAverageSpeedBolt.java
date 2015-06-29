@@ -79,7 +79,7 @@ public class LastAverageSpeedBolt extends BaseRichBolt {
 			.getValueByField(TopologyControl.SEGMENT_FIELD_NAME);
 		int direction = tuple.getIntegerByField(TopologyControl.DIRECTION_FIELD_NAME);
 		int carcnt = tuple.getIntegerByField(TopologyControl.CAR_COUNT_FIELD_NAME);
-		double avgs = tuple.getDoubleByField(TopologyControl.AVERAGE_SPEED_FIELD_NAME);
+		double avgs = tuple.getDoubleByField(TopologyControl.AVERAGE_VEHICLE_SPEED_FIELD_NAME);
 		
 		Triple<Integer, SegmentIdentifier, Integer> segmentKey = new MutableTriple<Integer, SegmentIdentifier, Integer>(
 			xway, segmentIdentifier, direction);

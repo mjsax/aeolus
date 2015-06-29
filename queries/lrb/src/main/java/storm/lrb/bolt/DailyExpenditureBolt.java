@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.model.DailyExpenditureRequest;
+import storm.lrb.tools.Helper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -34,7 +35,8 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.lrb.toll.TollDataStore;
-import storm.lrb.tools.Helper;
+import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.util.Constants;
 
 
 
@@ -89,13 +91,13 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 			this.dataStore = (TollDataStore)Class.forName(tollDataStoreClass).newInstance();
 		} catch(InstantiationException ex) {
 			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
-				+ "nested exception for details)", dataStore), ex);
+				+ "nested exception for details)", this.dataStore), ex);
 		} catch(IllegalAccessException ex) {
 			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
-				+ "nested exception for details)", dataStore), ex);
+				+ "nested exception for details)", this.dataStore), ex);
 		} catch(ClassNotFoundException ex) {
 			throw new RuntimeException(String.format("The data store instance '%s' could not be initialized (see "
-				+ "nested exception for details)", dataStore), ex);
+				+ "nested exception for details)", this.dataStore), ex);
 		}
 	}
 	
@@ -117,16 +119,14 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 				// LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
 				// toll);
 				
-				// values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getCreated(),
-				// exp.getTimer().getOffset(),
-				// exp.getQueryIdentifier(), toll);
+				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(),
+					exp.getQueryIdentifier(), toll);
 			} else {
-				// values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getCreated(),
-				// exp.getTimer().getOffset(),
-				// exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
+				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(),
+					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
 				
 			}
-			// this.collector.emit(values);
+			this.collector.emit(values);
 		}
 		this.collector.ack(tuple);
 	}

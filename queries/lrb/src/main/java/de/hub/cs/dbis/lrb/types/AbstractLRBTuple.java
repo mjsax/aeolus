@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.datatypes;
+package de.hub.cs.dbis.lrb.types;
 
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.lrb.util.Time;
@@ -31,7 +31,7 @@ import de.hub.cs.dbis.lrb.util.Time;
  * All tuples do have the following two attributes: TYPE, TIME
  * <ul>
  * <li>TYPE: the tuple type ID</li>
- * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in milliseconds)</li>
+ * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in seconds)</li>
  * <ul>
  * 
  * @author mjsax
@@ -82,12 +82,13 @@ public abstract class AbstractLRBTuple extends Values {
 	
 	protected AbstractLRBTuple() {}
 	
-	protected AbstractLRBTuple(Short type, Long time) {
+	protected AbstractLRBTuple(Short type, Short time) {
 		assert (type != null);
 		assert (time != null);
 		assert (type.shortValue() == position_report || type.shortValue() == account_balance_request
 			|| type.shortValue() == daily_expenditure_request || type.shortValue() == travel_time_request
 			|| type.shortValue() == toll_notifivation || type.shortValue() == accident_notification);
+		assert (time.shortValue() >= 0);
 		
 		super.add(TYPE_IDX, type);
 		super.add(TIME_IDX, time);
@@ -107,12 +108,12 @@ public abstract class AbstractLRBTuple extends Values {
 	}
 	
 	/**
-	 * Returns the timestamp (in milliseconds) of this {@link AbstractLRBTuple}.
+	 * Returns the timestamp (in LRB seconds) of this {@link AbstractLRBTuple}.
 	 * 
 	 * @return the timestamp of this tuple
 	 */
-	public final Long getTime() {
-		return (Long)super.get(TIME_IDX);
+	public final Short getTime() {
+		return (Short)super.get(TIME_IDX);
 	}
 	
 	/**
@@ -121,7 +122,7 @@ public abstract class AbstractLRBTuple extends Values {
 	 * @return
 	 */
 	public final short getMinuteNumber() {
-		return Time.getMinute(this.getTime().longValue());
+		return Time.getMinute(this.getTime().shortValue());
 	}
 	
 }

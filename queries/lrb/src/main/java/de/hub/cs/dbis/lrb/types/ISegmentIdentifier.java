@@ -16,45 +16,19 @@
  * limitations under the License.
  * #_
  */
-package storm.lrb.model;
-
-
+package de.hub.cs.dbis.lrb.types;
 
 /**
- * TODO
+ * Each type that contains the three segment identifier attributes XWAY, SEGMENT, DIR must implement this interface.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
-public class AvgVehicleSpeed {
-	private int speedSum;
-	private int speedCnt;
+public interface ISegmentIdentifier {
 	
+	public Integer getXWay();
 	
+	public Short getSegment();
 	
-	/**
-	 * TODO
-	 * 
-	 * @param speed
-	 */
-	public AvgVehicleSpeed(int speed) {
-		this.speedSum = speed;
-		this.speedCnt = 1;
-	}
+	public Short getDirection();
 	
-	
-	
-	/**
-	 * TODO
-	 * 
-	 * @param vehicleId
-	 * @param vehicleSpeed
-	 */
-	public void updateAverage(int speed) {
-		this.speedSum += speed;
-		++this.speedCnt;
-	}
-	
-	public Integer getAverageSpeed() {
-		return new Integer(this.speedSum / this.speedCnt);
-	}
 }

@@ -152,7 +152,7 @@ public class LRBTopology {
 			new FileSinkBolt(topologyNamePrefix + "_exp"), 1).allGrouping(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME);
 		
 		
-		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.datatypes.PositionReport.class);
+		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.PositionReport.class);
 		stormConfig.registerSerialization(storm.lrb.model.AccountBalanceRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.DailyExpenditureRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
