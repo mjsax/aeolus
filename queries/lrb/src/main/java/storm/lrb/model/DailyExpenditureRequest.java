@@ -18,8 +18,8 @@
  */
 package storm.lrb.model;
 
-import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
-import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 
 
 
@@ -45,7 +45,7 @@ public class DailyExpenditureRequest extends AbstractInputTuple {
 		super();
 	}
 	
-	public DailyExpenditureRequest(Long time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int day) {
+	public DailyExpenditureRequest(Short time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int day) {
 		super(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, time, vehicleIdentifier);
 		this.xWay = xWay;
 		this.queryIdentifier = queryIdentifier;

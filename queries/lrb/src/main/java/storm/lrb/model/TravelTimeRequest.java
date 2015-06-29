@@ -19,8 +19,8 @@
 package storm.lrb.model;
 
 import storm.lrb.tools.StopWatch;
-import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
-import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 
 
 
@@ -44,7 +44,7 @@ public class TravelTimeRequest extends AbstractInputTuple {
 		super();
 	}
 	
-	public TravelTimeRequest(Long time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int dayOfWeek,
+	public TravelTimeRequest(Short time, Integer vehicleIdentifier, int xWay, int queryIdentifier, int dayOfWeek,
 		int minuteOfDay, StopWatch systemTimer) {
 		super(AbstractLRBTuple.TRAVEL_TIME_REQUEST, time, vehicleIdentifier);
 		this.xWay = xWay;

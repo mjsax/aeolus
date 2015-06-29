@@ -49,9 +49,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	
 	
 	
-	/**
-	 * The prefix of all input file names.
-	 */
+	/** The prefix of all input file names. */
 	private final String defaultPrefix = "xway";
 	
 	

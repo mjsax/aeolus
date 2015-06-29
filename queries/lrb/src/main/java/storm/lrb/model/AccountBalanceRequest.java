@@ -18,8 +18,8 @@
  */
 package storm.lrb.model;
 
-import de.hub.cs.dbis.lrb.datatypes.AbstractInputTuple;
-import de.hub.cs.dbis.lrb.datatypes.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.AbstractInputTuple;
+import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 
 
 
@@ -34,7 +34,7 @@ public class AccountBalanceRequest extends AbstractInputTuple {
 	
 	private static final long serialVersionUID = 1L;
 	/**
-	 * QID is an integer query identiﬁer
+	 * QID is an integer query identifier
 	 */
 	private Integer queryIdentifier;
 	
@@ -44,7 +44,7 @@ public class AccountBalanceRequest extends AbstractInputTuple {
 		
 	}
 	
-	public AccountBalanceRequest(Long time, Integer vehicleIdentifier, int queryIdentifier) {
+	public AccountBalanceRequest(Short time, Integer vehicleIdentifier, int queryIdentifier) {
 		super(AbstractLRBTuple.ACCOUNT_BALANCE_REQUEST, time, vehicleIdentifier);
 		this.queryIdentifier = queryIdentifier;
 	}

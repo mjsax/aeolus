@@ -6,9 +6,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
 
@@ -48,9 +48,9 @@ import de.hub.cs.dbis.lrb.datatypes.PositionReport;
 /**
  * This bolt registers every stopped vehicle. If an accident was detected it emits accident information for further
  * processing.
- *
+ * 
  * Each AccidentDetectionBolt is responsible to check one assigned xway.
- *
+ * 
  * The description in the LRB paper isn't very helpful as the accident section doesn't describe accidents
  * completely:<blockquote> An accident occurs when two vehicles are "stopped" at the same position at the same time. A
  * vehicle is stopped when it reports the same position in 4 consecutive position reports. Once an accident occurs in a
@@ -60,13 +60,13 @@ import de.hub.cs.dbis.lrb.datatypes.PositionReport;
  * that segment at the same lane and position</blockquote>
  */
 public class AccidentDetectionBolt extends BaseRichBolt {
-
+	
 	private static final long serialVersionUID = 5537727428628598519L;
 	private static final Logger LOG = LoggerFactory.getLogger(AccidentDetectionBolt.class);
 	public static final Fields FIELDS_OUTGOING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME,
 		TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.ACCIDENT_INFO_FIELD_NAME);
 	public static final Fields FIELDS_INCOMING = new Fields(TopologyControl.POS_REPORT_FIELD_NAME);
-
+	
 	/**
 	 * Holds information about which car has been detected to be stopped how many times (>1) at each segment (identified
 	 * by its id). An accident is defined to have occurred after two vehicles has been detected to be stopped in 4
@@ -93,10 +93,10 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 	}
-
+	
 	@Override
 	public void execute(Tuple tuple) {
-
+		
 		if(TupleHelpers.isTickTuple(tuple)) {
 			LOG.debug("emit all accidents");
 			this.emitCurrentAccidents();
@@ -121,30 +121,30 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 				}
 			}
 		}
-
+		
 		// ...then evaluate the collection
 		this.collector.ack(tuple);
 		
 	}
-
+	
 	/**
 	 * Only invoke if the accident at the position denoted by {@code report} can be cleared.
-	 *
+	 * 
 	 * @param report
 	 */
 	private void checkIfAccidentIsOver(PositionReport report) {
 		// remove car from accidentcars
 		Integer accidentPosition = report.getPosition();
 		Map<Integer, Integer> vehicleStopInformationMap = this.stopInformationPerPosition.get(accidentPosition);
-
+		
 		Set<Integer> stoppedCarsAtPosition = vehicleStopInformationMap.keySet();
-
+		
 		if(stoppedCarsAtPosition.size() == 2) {
 			// there has been an accident
 			Map<Integer, Accident> laneAccidentMap = this.accidentsPerPosition.get(accidentPosition);
 			Accident accidentinfo = laneAccidentMap.get(report.getLane());
 			accidentinfo.setOver(report.getTime());
-
+			
 			LOG.info("accident is over: %s", accidentinfo);
 			
 			this.emitAccidentAtPosition(accidentPosition);
@@ -177,7 +177,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			this.updateAccident(report);
 			
 		}
-
+		
 	}
 	
 	private void updateAccident(PositionReport report) {
@@ -190,7 +190,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 				accidentVehicleIdentifiers.add(vehicleIdentifier);
 			}
 		}
-
+		
 		if(accidentVehicleIdentifiers.size() >= 2) {
 			// accident at position
 			Map<Integer, Accident> laneAccidentMap = this.accidentsPerPosition.get(report.getPosition());
@@ -210,7 +210,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			}
 		}
 	}
-
+	
 	// emit all current accidents
 	private void emitCurrentAccidents() {
 		for(Map<Integer, Accident> laneAccidentMap : this.accidentsPerPosition.values()) {
@@ -219,7 +219,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			}
 		}
 	}
-
+	
 	private void emitAccident(Accident accident) {
 		// emit accidents (for every affected segment)
 		Set<SegmentIdentifier> segmensts = accident.getInvolvedSegs();
@@ -228,10 +228,10 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			this.collector.emit(TopologyControl.ACCIDENT_INFO_STREAM_ID, new Values(acc));
 		}
 	}
-
+	
 	/**
 	 * emit newly detected accident at {@code position}
-	 *
+	 * 
 	 * @param position
 	 */
 	private void emitAccidentAtPosition(Integer position) {
@@ -247,29 +247,29 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 			this.emitAccident(accident);
 		}
 	}
-
+	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.ACCIDENT_INFO_STREAM_ID, FIELDS_OUTGOING);
 	}
-
+	
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
 		Map<String, Object> conf = new HashMap<String, Object>();
 		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, 60);
 		return conf;
 	}
-
+	
 	@Override
 	public String toString() {
 		return "AccidentDetectionBolt \n [stoppedCarsPerXSegDir=" + this.stopInformationPerPosition
 			+ ",\n allAccidentPositions=" + this.accidentsPerPosition + "]";
 	}
-
+	
 	public Map<Integer, Map<Integer, Accident>> getAccidentsPerPosition() {
 		return Collections.unmodifiableMap(this.accidentsPerPosition);
 	}
-
+	
 	public Map<Integer, Map<Integer, Integer>> getStopInformationPerPosition() {
 		return Collections.unmodifiableMap(this.stopInformationPerPosition);
 	}

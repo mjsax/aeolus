@@ -16,9 +16,9 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.datatypes;
+package de.hub.cs.dbis.lrb.types;
 
-import storm.lrb.tools.Constants;
+import de.hub.cs.dbis.lrb.util.Constants;
 
 
 
@@ -30,7 +30,7 @@ import storm.lrb.tools.Constants;
  * Position reports do have the following attributes: TYPE=0, TIME, VID, Spd, XWay, Lane, Dir, Seg, Pos
  * <ul>
  * <li>TYPE: the tuple type ID</li>
- * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in milliseconds)</li>
+ * <li>TIME: 'the timestamp of the input tuple that triggered the tuple to be generated' (in LRB seconds)</li>
  * <li>VID: the unique vehicle ID</li>
  * <li>Spd: the speed of the vehicle (0...100)</li>
  * <li>XWay: the ID of the expressway the vehicle is driving on (1...L-1)</li>
@@ -44,7 +44,7 @@ import storm.lrb.tools.Constants;
  * 
  * @author mjsax
  */
-public final class PositionReport extends AbstractInputTuple {
+public final class PositionReport extends AbstractInputTuple implements ISegmentIdentifier {
 	private final static long serialVersionUID = -4386109322233754497L;
 	
 	// attribute indexes
@@ -76,7 +76,7 @@ public final class PositionReport extends AbstractInputTuple {
 	 * Instantiates a new position record for the given attributes.
 	 * 
 	 * @param time
-	 *            the time at which the position record was emitted (in milliseconds)
+	 *            the time at which the position record was emitted (in LRB seconds)
 	 * @param vid
 	 *            the vehicle identifier
 	 * @param speed
@@ -85,28 +85,28 @@ public final class PositionReport extends AbstractInputTuple {
 	 *            the current expressway
 	 * @param lane
 	 *            the lane of the expressway
-	 * @param diretion
+	 * @param direction
 	 *            the traveling direction
 	 * @param segment
 	 *            the mile-long segment of the highway
 	 * @param position
 	 *            the horizontal position on the expressway
 	 */
-	public PositionReport(Long time, Integer vid, Integer speed, Integer xway, Short lane, Short diretion,
+	public PositionReport(Short time, Integer vid, Integer speed, Integer xway, Short lane, Short direction,
 		Short segment, Integer position) {
 		super(AbstractLRBTuple.POSITION_REPORT, time, vid);
 		
 		assert (speed != null);
 		assert (xway != null);
 		assert (lane != null);
-		assert (diretion != null);
+		assert (direction != null);
 		assert (segment != null);
 		assert (position != null);
 		
 		super.add(SPD_IDX, speed);
 		super.add(XWAY_IDX, xway);
 		super.add(LANE_IDX, lane);
-		super.add(DIR_IDX, diretion);
+		super.add(DIR_IDX, direction);
 		super.add(SEG_IDX, segment);
 		super.add(POS_IDX, position);
 		
@@ -129,6 +129,7 @@ public final class PositionReport extends AbstractInputTuple {
 	 * 
 	 * @return the VID of this position report
 	 */
+	@Override
 	public final Integer getXWay() {
 		return (Integer)super.get(XWAY_IDX);
 	}
@@ -147,6 +148,7 @@ public final class PositionReport extends AbstractInputTuple {
 	 * 
 	 * @return the VID of this position report
 	 */
+	@Override
 	public final Short getDirection() {
 		return (Short)super.get(DIR_IDX);
 	}
@@ -156,6 +158,7 @@ public final class PositionReport extends AbstractInputTuple {
 	 * 
 	 * @return the VID of this position report
 	 */
+	@Override
 	public final Short getSegment() {
 		return (Short)super.get(SEG_IDX);
 	}

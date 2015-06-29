@@ -27,15 +27,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.bolt.SegmentIdentifier;
-import storm.lrb.model.AvgVehicleSpeed;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
+import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.util.AvgValue;
 import de.hub.cs.dbis.lrb.util.Time;
 
 
@@ -57,21 +57,19 @@ import de.hub.cs.dbis.lrb.util.Time;
 public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	private final static long serialVersionUID = 5537727428628598519L;
 	
-	/**
-	 * The storm provided output collector.
-	 */
+	/** The storm provided output collector. */
 	private OutputCollector collector;
+	
+	/** Internally (re)used object to access individual attributes. */
+	private final PositionReport inputPositionReport = new PositionReport();
+	
 	/**
-	 * Internally (re)used object to access individual attributes.
+	 * Maps each vehicle to its average speed value that corresponds to the current 'minute number' and specified
+	 * segment.
 	 */
-	private final PositionReport inputPositionRecord = new PositionReport();
-	/**
-	 * Maps each vehicle to its average speed value that corresponds to the specified 'minute number' and segment.
-	 */
-	private final Map<Integer, Pair<AvgVehicleSpeed, SegmentIdentifier>> avgSpeedsMap = new HashMap<Integer, Pair<AvgVehicleSpeed, SegmentIdentifier>>();
-	/**
-	 * The currently processed 'minute number'.
-	 */
+	private final Map<Integer, Pair<AvgValue, SegmentIdentifier>> avgSpeedsMap = new HashMap<Integer, Pair<AvgValue, SegmentIdentifier>>();
+	
+	/** The currently processed 'minute number'. */
 	private short currentMinute = 1;
 	
 	
@@ -82,38 +80,40 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	}
 	
 	@Override
-	public void execute(Tuple tuple) {
-		this.inputPositionRecord.clear();
-		this.inputPositionRecord.addAll(tuple.getValues());
+	public void execute(Tuple input) {
+		this.inputPositionReport.clear();
+		this.inputPositionReport.addAll(input.getValues());
 		
-		Integer vid = this.inputPositionRecord.getVid();
-		short minute = this.inputPositionRecord.getMinuteNumber();
-		int speed = this.inputPositionRecord.getSpeed().intValue();
-		SegmentIdentifier segment = new SegmentIdentifier(this.inputPositionRecord);
+		Integer vid = this.inputPositionReport.getVid();
+		short minute = this.inputPositionReport.getMinuteNumber();
+		int speed = this.inputPositionReport.getSpeed().intValue();
+		SegmentIdentifier segment = new SegmentIdentifier(this.inputPositionReport);
+		
+		assert (minute >= this.currentMinute);
 		
 		if(minute > this.currentMinute) {
 			// emit all values for last minute
 			// (because input tuples are ordered by ts, we can close the last minute safely)
-			for(Entry<Integer, Pair<AvgVehicleSpeed, SegmentIdentifier>> entry : this.avgSpeedsMap.entrySet()) {
-				Pair<AvgVehicleSpeed, SegmentIdentifier> value = entry.getValue();
+			for(Entry<Integer, Pair<AvgValue, SegmentIdentifier>> entry : this.avgSpeedsMap.entrySet()) {
+				Pair<AvgValue, SegmentIdentifier> value = entry.getValue();
 				SegmentIdentifier segId = value.getRight();
 				
 				// VID, Minute-Number, X-Way, Segment, Direction, Avg(speed)
-				this.collector.emit(new Values(entry.getKey(), new Short(this.currentMinute), segId.getXWay(), segId
-					.getSegment(), segId.getDirection(), value.getLeft().getAverageSpeed()));
+				this.collector.emit(new AvgVehicleSpeedTuple(entry.getKey(), new Short(this.currentMinute), segId
+					.getXWay(), segId.getSegment(), segId.getDirection(), value.getLeft().getAverage()));
 			}
 			
 			this.avgSpeedsMap.clear();
 			this.currentMinute = minute;
 		}
 		
-		Pair<AvgVehicleSpeed, SegmentIdentifier> vehicleEntry = this.avgSpeedsMap.get(vid);
+		Pair<AvgValue, SegmentIdentifier> vehicleEntry = this.avgSpeedsMap.get(vid);
 		if(vehicleEntry != null && !vehicleEntry.getRight().equals(segment)) {
 			SegmentIdentifier segId = vehicleEntry.getRight();
 			
 			// VID, Minute-Number, X-Way, Segment, Direction, Avg(speed)
-			this.collector.emit(new Values(vid, new Short(this.currentMinute), segId.getXWay(), segId.getSegment(),
-				segId.getDirection(), vehicleEntry.getLeft().getAverageSpeed()));
+			this.collector.emit(new AvgVehicleSpeedTuple(vid, new Short(this.currentMinute), segId.getXWay(), segId
+				.getSegment(), segId.getDirection(), vehicleEntry.getLeft().getAverage()));
 			
 			// set to null to get new vehicle entry below
 			vehicleEntry = null;
@@ -121,20 +121,20 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		
 		
 		if(vehicleEntry == null) {
-			vehicleEntry = new MutablePair<AvgVehicleSpeed, SegmentIdentifier>(new AvgVehicleSpeed(speed), segment);
+			vehicleEntry = new MutablePair<AvgValue, SegmentIdentifier>(new AvgValue(speed), segment);
 			this.avgSpeedsMap.put(vid, vehicleEntry);
 		} else {
 			vehicleEntry.getLeft().updateAverage(speed);
 		}
 		
-		this.collector.ack(tuple);
+		this.collector.ack(input);
 	}
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME,
 			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.AVERAGE_SPEED_FIELD_NAME));
+			TopologyControl.AVERAGE_VEHICLE_SPEED_FIELD_NAME));
 	}
 	
 }

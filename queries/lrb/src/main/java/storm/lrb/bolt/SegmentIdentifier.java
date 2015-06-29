@@ -18,7 +18,7 @@
  */
 package storm.lrb.bolt;
 
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.types.ISegmentIdentifier;
 
 
 
@@ -30,7 +30,7 @@ import de.hub.cs.dbis.lrb.datatypes.PositionReport;
  * @author richter
  * @author Matthias J. Sax
  */
-public final class SegmentIdentifier {
+public final class SegmentIdentifier implements ISegmentIdentifier {
 	/**
 	 * XWay (0. . . L−1) identifies the express way from which the position report is emitted
 	 */
@@ -70,9 +70,9 @@ public final class SegmentIdentifier {
 	 * Instantiates a new {@link SegmentIdentifier}.
 	 * 
 	 * @param record
-	 *            the position report this segment ID is take from
+	 *            the tuple this segment ID is take from
 	 */
-	public SegmentIdentifier(PositionReport record) {
+	public SegmentIdentifier(ISegmentIdentifier record) {
 		assert (record != null);
 		
 		this.xway = record.getXWay();
@@ -87,6 +87,7 @@ public final class SegmentIdentifier {
 	 * 
 	 * @return the express way ID
 	 */
+	@Override
 	public Integer getXWay() {
 		return this.xway;
 	}
@@ -96,6 +97,7 @@ public final class SegmentIdentifier {
 	 * 
 	 * @return the segment number
 	 */
+	@Override
 	public Short getSegment() {
 		return this.segment;
 	}
@@ -105,6 +107,7 @@ public final class SegmentIdentifier {
 	 * 
 	 * @return the direction
 	 */
+	@Override
 	public Short getDirection() {
 		return this.direction;
 	}

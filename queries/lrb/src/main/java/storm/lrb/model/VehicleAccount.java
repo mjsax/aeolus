@@ -20,7 +20,7 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 
-import de.hub.cs.dbis.lrb.datatypes.PositionReport;
+import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
 
