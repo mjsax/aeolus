@@ -39,7 +39,14 @@ import de.hub.cs.dbis.lrb.util.AvgValue;
 
 
 /**
- * TODO
+ * AverageSpeedBolt computes the average speed over all vehicle within an express way-segment (single direction) every
+ * minute. The input is expected to have input schema &lt;{@code vid:}{@link Integer}{@code , minute:}{@link Short}
+ * {@code , xway:} {@link Integer}{@code , seg:}{@link Short}{@code , dir:}{@link Short}{@code , avgvs:}{@link Integer}
+ * &gt; and must be grouped by {@code (xway,seg,dir)}. A new average speed computation is trigger each 60 seconds (ie,
+ * changing 'minute number' [see Time.getMinute(short)]).<br />
+ * <br />
+ * <strong>Output schema:</strong> &lt;{@code minute:}{@link Short}{@code , xway:} {@link Integer}{@code , seg:}
+ * {@link Short}{@code , dir:}{@link Short}{@code , avgs:}{@link Integer} &gt;
  * 
  * @author mjsax
  */

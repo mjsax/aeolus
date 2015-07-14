@@ -49,7 +49,7 @@ import de.hub.cs.dbis.lrb.util.Time;
  * each 60 seconds (ie, changing 'minute number' [see {@link Time#getMinute(short)}]).<br />
  * <br />
  * <strong>Output schema:</strong> &lt;{@code vid:}{@link Integer}{@code , minute:}{@link Short}{@code , xway:}
- * {@link Integer}{@code , seg:}{@link Short}{@code , dir:}{@link Short}{@code , avgs:}{@link Integer}&gt;
+ * {@link Integer}{@code , seg:}{@link Short}{@code , dir:}{@link Short}{@code , avgvs:}{@link Integer}&gt;
  * 
  * @author msoyka
  * @author mjsax
