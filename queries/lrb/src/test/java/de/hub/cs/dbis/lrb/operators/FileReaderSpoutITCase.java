@@ -36,7 +36,7 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.queries.utils.TimestampMerger;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
 

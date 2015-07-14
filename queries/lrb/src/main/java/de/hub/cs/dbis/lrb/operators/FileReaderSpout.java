@@ -23,7 +23,7 @@ import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
+import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
 
 
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.utils;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -39,6 +39,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import de.hub.cs.dbis.aeolus.testUtils.Comp;
+import de.hub.cs.dbis.aeolus.utils.StreamMerger;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;

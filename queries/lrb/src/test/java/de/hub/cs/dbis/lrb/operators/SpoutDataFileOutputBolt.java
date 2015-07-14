@@ -19,7 +19,7 @@
 package de.hub.cs.dbis.lrb.operators;
 
 import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.aeolus.queries.utils.AbstractFileOutputBolt;
+import de.hub.cs.dbis.aeolus.sinks.AbstractFileOutputBolt;
 
 
 
