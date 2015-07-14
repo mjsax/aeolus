@@ -33,7 +33,7 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.queries.utils.AbstractOrderedFileInputSpout;
+import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
 import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 

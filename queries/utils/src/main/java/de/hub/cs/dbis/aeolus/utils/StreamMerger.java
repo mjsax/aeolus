@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.utils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 // TODO: make more efficient (avoid linear scan of all partitions to extract next tuple)
-class StreamMerger<T> {
+public class StreamMerger<T> {
 	private final static Logger logger = LoggerFactory.getLogger(StreamMerger.class);
 	
 	/**

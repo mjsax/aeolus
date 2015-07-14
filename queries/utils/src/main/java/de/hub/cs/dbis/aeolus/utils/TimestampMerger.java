@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.utils;
 
 import java.util.LinkedList;
 import java.util.Map;

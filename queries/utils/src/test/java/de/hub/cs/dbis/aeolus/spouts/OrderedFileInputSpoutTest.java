@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.spouts;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -49,6 +49,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.Comp;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 

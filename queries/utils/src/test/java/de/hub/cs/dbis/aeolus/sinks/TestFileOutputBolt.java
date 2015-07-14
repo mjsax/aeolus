@@ -16,10 +16,10 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.sinks;
 
-import java.util.Comparator;
-import java.util.List;
+import de.hub.cs.dbis.aeolus.sinks.AbstractFileOutputBolt;
+import backtype.storm.tuple.Tuple;
 
 
 
@@ -28,19 +28,12 @@ import java.util.List;
 /**
  * @author Matthias J. Sax
  */
-class Comp implements Comparator<List<Object>> {
+class TestFileOutputBolt extends AbstractFileOutputBolt {
+	private final static long serialVersionUID = -956984089329568377L;
+	
 	@Override
-	public int compare(List<Object> o1, List<Object> o2) {
-		long first = ((Long)o1.get(0)).longValue();
-		long second = ((Long)o2.get(0)).longValue();
-		if(first < second) {
-			return -1;
-		}
-		
-		if(second < first) {
-			return 1;
-		}
-		
-		return 0;
+	protected String tupleToString(Tuple t) {
+		return t.toString();
 	}
+	
 }

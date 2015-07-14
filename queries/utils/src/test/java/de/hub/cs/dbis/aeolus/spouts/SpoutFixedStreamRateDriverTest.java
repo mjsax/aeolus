@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.spouts;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -33,6 +33,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
 import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.spouts;
 
 /*
  * #%L
@@ -61,6 +61,8 @@ import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedInputSpout;
+import de.hub.cs.dbis.aeolus.testUtils.Comp;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 

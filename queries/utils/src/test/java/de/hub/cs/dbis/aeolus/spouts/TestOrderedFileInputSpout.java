@@ -16,41 +16,43 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.spouts;
 
-import backtype.storm.tuple.Tuple;
+import java.text.ParseException;
+import java.util.Map;
+
+import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
 
 
 
 
 
 /**
- * {@link FileFlushSinkBolt} flushes the written data to disc after each received tuple. I can be used for low
- * throughput streams to guarantee, that all tuples are written to disc (the call to {@link #cleanup()} is not
- * guaranteed by Storm.
- * 
  * @author Matthias J. Sax
  */
-public class FileFlushSinkBolt extends FileSinkBolt {
-	private static final long serialVersionUID = -2896873750026892533L;
+class TestOrderedFileInputSpout extends AbstractOrderedFileInputSpout {
+	private final static long serialVersionUID = -5336858069313450395L;
 	
-	
-	
-	public FileFlushSinkBolt(String filename) {
-		super(filename);
+	@Override
+	protected long extractTimestamp(String line) throws ParseException {
+		return Long.parseLong(line.trim().split(",")[1].trim());
 	}
 	
-	
-	
-	/**
-	 * Writes (and flushed) the given tuple to disc.
-	 * 
-	 * @param input
-	 *            The input tuple to be processed.
-	 */
 	@Override
-	public void execute(Tuple input) {
-		super.executeAndFlush(input);
+	public void activate() {}
+	
+	@Override
+	public void deactivate() {}
+	
+	@Override
+	public void ack(Object msgId) {}
+	
+	@Override
+	public void fail(Object msgId) {}
+	
+	@Override
+	public Map<String, Object> getComponentConfiguration() {
+		return null;
 	}
 	
 }

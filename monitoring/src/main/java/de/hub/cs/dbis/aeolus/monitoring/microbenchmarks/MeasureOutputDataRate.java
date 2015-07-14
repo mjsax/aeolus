@@ -53,8 +53,8 @@ import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterBolt;
 import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterSpout;
 import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
 import de.hub.cs.dbis.aeolus.monitoring.utils.ConfigReader;
-import de.hub.cs.dbis.aeolus.queries.utils.FileFlushSinkBolt;
-import de.hub.cs.dbis.aeolus.queries.utils.FixedStreamRateDriverSpout;
+import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
+import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 
 

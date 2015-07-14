@@ -16,13 +16,14 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.aeolus.queries.utils;
+package de.hub.cs.dbis.aeolus.spouts;
 
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedInputSpout;
 import backtype.storm.tuple.Values;
 
 

@@ -38,7 +38,7 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
-import de.hub.cs.dbis.aeolus.queries.utils.FileSinkBolt;
+import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
 import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
