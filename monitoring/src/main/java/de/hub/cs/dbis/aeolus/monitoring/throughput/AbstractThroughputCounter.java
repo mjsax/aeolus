@@ -46,41 +46,32 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 public abstract class AbstractThroughputCounter {
-	/**
-	 * The default ID of the report stream.
-	 */
+	
+	/** The default ID of the report stream. */
 	public final static String DEFAULT_STATS_STREAM = "aeolus::throughput";
-	/**
-	 * The name of the timestamp attribute.
-	 */
+	
+	/** The name of the timestamp attribute. */
 	public final static String TS_ATTRIBUTE = "ts";
-	/**
-	 * The name of the stream ID attribute.
-	 */
+	
+	/** The name of the stream ID attribute. */
 	public final static String STREAM_ID_ATTRIBUTE = "streamId";
-	/**
-	 * The name of the overall count attribute.
-	 */
+	
+	/** The name of the overall count attribute. */
 	public final static String COUNT_ATTRIBUTE = "count";
-	/**
-	 * The name of the delta count attribute.
-	 */
+	
+	/** The name of the delta count attribute. */
 	public final static String DELTA_ATTRIBUTE = "delta";
-	/**
-	 * The index of the timestamp attribute.
-	 */
+	
+	/** The index of the timestamp attribute. */
 	public final static int TS_INDEX = 0;
-	/**
-	 * The index of the stream ID attribute.
-	 */
+	
+	/** The index of the stream ID attribute. */
 	public final static int STREAM_ID_INDEX = 1;
-	/**
-	 * The index of the overall count attribute.
-	 */
+	
+	/** The index of the overall count attribute. */
 	public final static int COUNT_INDEX = 2;
-	/**
-	 * The index of the delta count attribute.
-	 */
+	
+	/** The index of the delta count attribute. */
 	public final static int DELTA_INDEX = 3;
 	
 	
@@ -90,17 +81,14 @@ public abstract class AbstractThroughputCounter {
 	 * for input or output streams, respectively.
 	 */
 	private final boolean inputOrOutput;
-	/**
-	 * Holds the overall count per stream.
-	 */
+	
+	/** Holds the overall count per stream. */
 	private final HashMap<String, Counter> counter = new HashMap<String, Counter>();
-	/**
-	 * Hold the count per stream since the last report.
-	 */
+	
+	/** Hold the count per stream since the last report. */
 	private final HashMap<String, Counter> deltaCounter = new HashMap<String, Counter>();
-	/**
-	 * The overall count over all streams.
-	 */
+	
+	/** The overall count over all streams. */
 	private long overallCount = 0;
 	
 	

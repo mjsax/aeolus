@@ -26,9 +26,8 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
  * @author Matthias J. Sax
  */
 class BoltInputReportingThread extends AbstractReportingThread {
-	/**
-	 * The internally used {@link BoltThroughputCounter}.
-	 */
+	
+	/** The internally used {@link BoltThroughputCounter}. */
 	private final BoltThroughputCounter counter;
 	
 	

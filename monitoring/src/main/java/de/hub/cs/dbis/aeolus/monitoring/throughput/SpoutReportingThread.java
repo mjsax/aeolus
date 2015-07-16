@@ -26,9 +26,8 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
  * @author Matthias J. Sax
  */
 class SpoutReportingThread extends AbstractReportingThread {
-	/**
-	 * The internally used {@link ThroughputCounterSpoutOutputCollector}.
-	 */
+	
+	/** The internally used {@link ThroughputCounterSpoutOutputCollector}. */
 	private final ThroughputCounterSpoutOutputCollector collector;
 	
 	

@@ -47,34 +47,24 @@ import backtype.storm.tuple.Tuple;
  */
 public abstract class AbstractFileOutputBolt implements IRichBolt {
 	private final static long serialVersionUID = 5082995927274164044L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(AbstractFileOutputBolt.class);
 	
-	
-	
-	/**
-	 * Can be used to specify an output file name. The configuration value is expected to be of type {@link String}.
-	 */
+	/** Can be used to specify an output file name. The configuration value is expected to be of type {@link String}. */
 	public final static String OUTPUT_FILE_NAME = "FileOutputBolt.outputFile";
-	/**
-	 * Can be used to specify an output directory. The configuration value is expected to be of type {@link String}.
-	 */
+	
+	/** Can be used to specify an output directory. The configuration value is expected to be of type {@link String}. */
 	public final static String OUTPUT_DIR_NAME = "FileOutputBolt.outputDir";
-	/**
-	 * The name of the output file.
-	 */
+	
+	/** The name of the output file. */
 	private String outputFileName = "result.dat";
-	/**
-	 * The name of the output directory.
-	 */
+	
+	/** The name of the output directory. */
 	private String outputDirName = ".";
-	/**
-	 * The output collector to be used.
-	 */
+	
+	/** The output collector to be used. */
 	private OutputCollector collector;
-	/**
-	 * The used file writer.
-	 */
+	
+	/** The used file writer. */
 	private BufferedWriter writer = null;
 	
 	

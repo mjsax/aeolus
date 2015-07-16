@@ -42,26 +42,18 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  */
 public class ThroughputCounterSpout implements IRichSpout {
 	private final static long serialVersionUID = 7077749897674933208L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(ThroughputCounterSpout.class);
 	
-	
-	
-	/**
-	 * The original user spout.
-	 */
+	/** The original user spout. */
 	private IRichSpout userSpout;
-	/**
-	 * The reporting interval in milliseconds;
-	 */
+	
+	/** The reporting interval in milliseconds; */
 	private long interval;
-	/**
-	 * The name of the report stream.
-	 */
+	
+	/** The name of the report stream. */
 	private final String reportStream;
-	/**
-	 * A asynchrony reporting thread, to report collected output stream statistics periodically.
-	 */
+	
+	/** A asynchrony reporting thread, to report collected output stream statistics periodically. */
 	private SpoutReportingThread reporter;
 	
 	

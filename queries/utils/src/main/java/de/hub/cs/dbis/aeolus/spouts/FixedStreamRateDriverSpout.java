@@ -38,17 +38,13 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 public class FixedStreamRateDriverSpout implements IRichSpout {
 	private final static long serialVersionUID = 5846769281188227304L;
 	
-	/**
-	 * The original spout that produces output tuples.
-	 */
+	/** The original spout that produces output tuples. */
 	private IRichSpout wrappedSpout;
-	/**
-	 * The delay between two consecutive emits in nano seconds (ie, the inverse of the intended output rate).
-	 */
+	
+	/** The delay between two consecutive emits in nano seconds (ie, the inverse of the intended output rate). */
 	private final long delay;
-	/**
-	 * The system timestamp when the next tuple will be emitted.
-	 */
+	
+	/** The system timestamp when the next tuple will be emitted. */
 	private long nextTS;
 	
 	

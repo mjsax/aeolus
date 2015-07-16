@@ -33,10 +33,10 @@ public class AeolusConfig {
 	public final static String NIMBUS_HOST = "nimbus.host";
 	public final static String NIMBUS_PORT = "nimbus.port";
 	
-	/**
-	 * Contains the actual configuration key-value-pairs.
-	 */
+	/** Contains the actual configuration key-value-pairs. */
 	final HashMap<String, Object> config = new HashMap<String, Object>();
+	
+	
 	
 	public String getNimbusHost() {
 		return (String)this.config.get(NIMBUS_HOST);

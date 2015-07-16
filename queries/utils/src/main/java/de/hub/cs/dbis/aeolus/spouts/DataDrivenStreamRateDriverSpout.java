@@ -43,27 +43,19 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichSpout {
 	private final static long serialVersionUID = -2459573797603618679L;
 	
-	
-	
-	/**
-	 * The original spout that produces output tuples.
-	 */
+	/** The original spout that produces output tuples. */
 	private IRichSpout wrappedSpout;
-	/**
-	 * The index of the timestamp attribute ({@code -1} if attribute name is used).
-	 */
+	
+	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
 	private final int tsIndex;
-	/**
-	 * The time unit used in the timestamp attribute.
-	 */
+	
+	/** The time unit used in the timestamp attribute. */
 	private final TimeUnit timeUnit;
-	/**
-	 * The timestamp of the first emitted tuple
-	 */
+	
+	/** The timestamp of the first emitted tuple */
 	private long startTS;
-	/**
-	 * Wrapper for the original {@link SpoutOutputCollector} that extract the timestamp for each emitted tuple.
-	 */
+	
+	/** Wrapper for the original {@link SpoutOutputCollector} that extract the timestamp for each emitted tuple. */
 	private DataDrivenStreamRateDriverCollector<T> timestampChecker;
 	
 	

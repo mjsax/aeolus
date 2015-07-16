@@ -34,9 +34,8 @@ import backtype.storm.utils.Utils;
  * @author Matthias J. Sax
  */
 class ThroughputCounterSpoutOutputCollector extends SpoutOutputCollector {
-	/**
-	 * The internally used counter.
-	 */
+	
+	/** The internally used counter. */
 	private SpoutThroughputCounter counter;
 	
 	

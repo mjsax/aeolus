@@ -26,13 +26,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.hub.cs.dbis.aeolus.utils.StreamMerger;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.utils.StreamMerger;
 
 
 
@@ -61,29 +61,27 @@ import backtype.storm.tuple.Values;
  */
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private final static long serialVersionUID = 6224448887936832190L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(AbstractOrderedInputSpout.class);
-	
-	
 	
 	/**
 	 * Can be used to specify the number of input partitions that are available (default value is one). The
 	 * configuration value is expected to be of type {@link Integer}.
 	 */
 	public final static String NUMBER_OF_PARTITIONS = "OrderedInputSpout.partitions";
-	/**
-	 * The merger to be used.
-	 */
+	
+	/** The merger to be used. */
 	private StreamMerger<Values> merger;
-	/**
-	 * The output collector to be used.
-	 */
+	
+	/** The output collector to be used. */
 	private SpoutOutputCollector collector;
+	
 	/**
 	 * The stream ID to be used for declaration of timestamp and raw tuple fields. Can be {@code null} which causes the
 	 * fields to be declared only.
 	 */
 	private final String streamID;
+	
+	
 	
 	/**
 	 * Creates a {@code AbstractOrderedInputSpout} which declares fields without explicit stream ID.

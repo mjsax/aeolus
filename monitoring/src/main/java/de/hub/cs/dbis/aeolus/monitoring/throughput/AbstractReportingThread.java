@@ -30,22 +30,19 @@ import backtype.storm.utils.Utils;
  * @author Matthias J. Sax
  */
 abstract class AbstractReportingThread extends Thread {
-	/**
-	 * Indicates if the thread is still running.
-	 */
+	
+	/** Indicates if the thread is still running. */
 	boolean isRunning = true;
-	/**
-	 * The reporting interval in milliseconds.
-	 */
+	
+	/** The reporting interval in milliseconds. */
 	private final long interval;
-	/**
-	 * The normalization factor to a "per seconds" basis.
-	 */
+	
+	/** The normalization factor to a "per seconds" basis. */
 	private final double factor;
-	/**
-	 * The timestamp for the next reporting.
-	 */
+	
+	/** The timestamp for the next reporting. */
 	private long nextReportTime;
+	
 	
 	
 	/**

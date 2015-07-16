@@ -36,12 +36,10 @@ import org.slf4j.LoggerFactory;
  * @author Matthias J. Sax
  */
 public class ConfigReader {
-	/**
-	 * The default configuration file name.
-	 */
-	public final static String defaultConfigFile = "aeolus.conf";
+	private final static Logger logger = LoggerFactory.getLogger(ConfigReader.class);
 	
-	protected final static Logger logger = LoggerFactory.getLogger(ConfigReader.class);
+	/** The default configuration file name. */
+	public final static String defaultConfigFile = "aeolus.conf";
 	
 	
 	

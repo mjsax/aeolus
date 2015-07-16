@@ -55,34 +55,30 @@ import backtype.storm.tuple.Values;
  */
 public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInputSpout<String> {
 	private final static long serialVersionUID = -4690963122364704481L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(AbstractOrderedFileInputSpout.class);
-	
-	
 	
 	/**
 	 * Can be used to specify an input file name (or prefix together with {@link #INPUT_FILE_SUFFIXES}). The
 	 * configuration value is expected to be of type {@link String}.
 	 */
 	public final static String INPUT_FILE_NAME = "OrderedFileInputSpout.input";
+	
 	/**
 	 * Can be used to specify a list of file name suffixes (one suffix for each input file) if multiple input files are
 	 * used. {@link #INPUT_FILE_NAME} is used as file prefix for each file. The configuration value is expected to be of
 	 * type {@link List}.
 	 */
 	public final static String INPUT_FILE_SUFFIXES = "OrderedFileInputSpout.inputFileSuffixes";
-	/**
-	 * The prefix of all input file names.
-	 */
+	
+	/** The prefix of all input file names. */
 	private String prefix = "input";
-	/**
-	 * All input files to read from.
-	 */
+	
+	/** All input files to read from. */
 	private final ArrayList<BufferedReader> inputFiles = new ArrayList<BufferedReader>();
-	/**
-	 * Emit-Round-Robin-Index.
-	 */
+	
+	/** Emit-Round-Robin-Index. */
 	private int emitIndex = -1;
+	
 	/**
 	 * Map containing all tuples emitted by the last call of {@link #emitNextTuple(Integer, Long, Object)}. The map
 	 * including the task IDs each tuple was sent to.

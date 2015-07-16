@@ -44,21 +44,16 @@ import backtype.storm.tuple.Values;
 public class StreamMerger<T> {
 	private final static Logger logger = LoggerFactory.getLogger(StreamMerger.class);
 	
-	/**
-	 * The index of the timestamp attribute ({@code -1} if attribute name is used).
-	 */
+	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
 	private final int tsIndex;
-	/**
-	 * The name of the timestamp attribute ({@code null} if attribute index is used).
-	 */
+	
+	/** The name of the timestamp attribute ({@code null} if attribute index is used). */
 	private final String tsAttributeName;
-	/**
-	 * Input tuple buffer for merging. Contains a list of input tuples for each producer task.
-	 */
+	
+	/** Input tuple buffer for merging. Contains a list of input tuples for each producer task. */
 	private final HashMap<Integer, LinkedList<T>> mergeBuffer = new HashMap<Integer, LinkedList<T>>();
-	/**
-	 * Maximum timestamp value that was emitted already;
-	 */
+	
+	/** Maximum timestamp value that was emitted already; */
 	private long latestTs = Long.MIN_VALUE;
 	
 	

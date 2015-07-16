@@ -32,13 +32,11 @@ import backtype.storm.tuple.Values;
  * @author Matthias J. Sax
  */
 class SpoutThroughputCounter extends AbstractThroughputCounter {
-	/**
-	 * The internally used output collector.
-	 */
+	
+	/** The internally used output collector. */
 	private final SpoutOutputCollector collector;
-	/**
-	 * The ID of the report stream.
-	 */
+	
+	/** The ID of the report stream. */
 	protected final String reportStream;
 	
 	

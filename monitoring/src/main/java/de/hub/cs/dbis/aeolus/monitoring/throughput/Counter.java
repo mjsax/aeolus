@@ -26,8 +26,8 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
  * @author Matthias J. Sax
  */
 class Counter {
-	/**
-	 * The value of the counter.
-	 */
+	
+	/** The value of the counter. */
 	public long counter = 0;
+	
 }

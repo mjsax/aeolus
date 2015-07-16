@@ -39,18 +39,13 @@ import backtype.storm.tuple.Tuple;
 public class FileSinkBolt extends AbstractFileOutputBolt {
 	private final static long serialVersionUID = -3429907305973973314L;
 	
-	/**
-	 * String representation of an {@code null} attribute.
-	 */
+	/** String representation of an {@code null} attribute. */
 	private final static String nullAttribute = "null";
 	
-	/**
-	 * The name of the output file.
-	 */
+	/** The name of the output file. */
 	private final String outputFileName;
-	/**
-	 * The directory of the output file.
-	 */
+	
+	/** The directory of the output file. */
 	private final String outputDirName;
 	
 	

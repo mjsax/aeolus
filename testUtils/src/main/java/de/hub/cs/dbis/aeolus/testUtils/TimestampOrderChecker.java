@@ -41,31 +41,24 @@ import backtype.storm.tuple.Tuple;
  */
 public class TimestampOrderChecker implements IRichBolt {
 	private final static long serialVersionUID = -6266187713977343965L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(TimestampOrderChecker.class);
 	
-	
-	
-	/**
-	 * The bolt to be wrapped.
-	 */
+	/** The bolt to be wrapped. */
 	private final IRichBolt wrappedBolt;
-	/**
-	 * The index of the timestamp attribute ({@code -1} if attribute name is used).
-	 */
+	
+	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
 	private final int tsIndex;
-	/**
-	 * The name of the timestamp attribute ({@code null} if attribute index is used).
-	 */
+	
+	/** The name of the timestamp attribute ({@code null} if attribute index is used). */
 	private final String tsAttributeName;
-	/**
-	 * Indicates if timestamp must be strict monotonic (ie, no timestamp duplicates) or not.
-	 */
+	
+	/** Indicates if timestamp must be strict monotonic (ie, no timestamp duplicates) or not. */
 	private final boolean duplicates;
-	/**
-	 * The timestamp of the previously processed tuple.
-	 */
+	
+	/** The timestamp of the previously processed tuple. */
 	private long lastTimestamp = Long.MIN_VALUE;
+	
+	
 	
 	/**
 	 * Creates a new {@link TimestampOrderChecker} wrapper that wraps the given bolt instance.
@@ -104,6 +97,8 @@ public class TimestampOrderChecker implements IRichBolt {
 		this.tsAttributeName = tsAttributeName;
 		this.duplicates = duplicates;
 	}
+	
+	
 	
 	@Override
 	public void cleanup() {

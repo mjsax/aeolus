@@ -47,26 +47,18 @@ import backtype.storm.tuple.Tuple;
  */
 public class TimestampMerger implements IRichBolt {
 	private final static long serialVersionUID = -6930627449574381467L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(TimestampMerger.class);
 	
-	
-	
-	/**
-	 * The original bolt that consumers a stream of input tuples that are ordered by their timestamp attribute.
-	 */
+	/** The original bolt that consumers a stream of input tuples that are ordered by their timestamp attribute. */
 	private final IRichBolt wrappedBolt;
-	/**
-	 * The index of the timestamp attribute ({@code -1} if attribute name is used).
-	 */
+	
+	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
 	private final int tsIndex;
-	/**
-	 * The name of the timestamp attribute ({@code null} if attribute index is used).
-	 */
+	
+	/** The name of the timestamp attribute ({@code null} if attribute index is used). */
 	private final String tsAttributeName;
-	/**
-	 * Input tuple buffer for merging.
-	 */
+	
+	/** Input tuple buffer for merging. */
 	private StreamMerger<Tuple> merger;
 	
 	

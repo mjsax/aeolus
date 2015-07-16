@@ -43,38 +43,27 @@ import backtype.storm.tuple.Tuple;
  */
 public class ThroughputCounterBolt implements IRichBolt {
 	private final static long serialVersionUID = -2588575856564324599L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(ThroughputCounterBolt.class);
 	
-	
-	
-	/**
-	 * The original user bolt.
-	 */
+	/** The original user bolt. */
 	private IRichBolt userBolt;
-	/**
-	 * The reporting interval in milliseconds;
-	 */
+	
+	/** The reporting interval in milliseconds; */
 	private long interval;
-	/**
-	 * The name of the report stream.
-	 */
+	
+	/** The name of the report stream. */
 	private final String reportStream;
-	/**
-	 * The counter used to monitor incoming streams.
-	 */
+	
+	/** The counter used to monitor incoming streams. */
 	private BoltThroughputCounter inputCounter;
-	/**
-	 * A asynchrony reporting thread, to report collected input stream statistics periodically.
-	 */
+	
+	/** A asynchrony reporting thread, to report collected input stream statistics periodically. */
 	private BoltInputReportingThread inputReporter;
-	/**
-	 * A asynchrony reporting thread, to report collected output stream statistics periodically.
-	 */
+	
+	/** A asynchrony reporting thread, to report collected output stream statistics periodically. */
 	private BoltOutputReportingThread outputReporter;
-	/**
-	 * Indicated if the monitored bolt is a sink or not. For sink, output stream monitoring and reporting is disabled.
-	 */
+	
+	/** Indicated if the monitored bolt is a sink or not. For sink, output stream monitoring and reporting is disabled. */
 	private final boolean isSink;
 	
 	

@@ -34,17 +34,14 @@ import backtype.storm.spout.SpoutOutputCollector;
  * @author Matthias J. Sax
  */
 public class DataDrivenStreamRateDriverCollector<T extends Number> extends SpoutOutputCollector {
-	/**
-	 * The original output collector.
-	 */
+	
+	/** The original output collector. */
 	private final SpoutOutputCollector collector;
-	/**
-	 * The index of the timestamp attribute.
-	 */
+	
+	/** The index of the timestamp attribute. */
 	private final int tsIndex;
-	/**
-	 * The timestamp of the last emitted tuple.
-	 */
+	
+	/** The timestamp of the last emitted tuple. */
 	long timestampLastTuple;
 	
 	

@@ -42,16 +42,12 @@ import backtype.storm.tuple.Values;
  */
 public class SchemaSpout implements IRichSpout {
 	private final static long serialVersionUID = 7071724037607577082L;
-	
 	private final static Logger logger = LoggerFactory.getLogger(SchemaSpout.class);
 	
-	/**
-	 * TODO
-	 */
+	/** TODO */
 	private final Random r;
-	/**
-	 * TODO
-	 */
+	
+	/** TODO */
 	private SpoutOutputCollector collector;
 	
 	
