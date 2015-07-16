@@ -47,8 +47,6 @@ import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
 public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	private final static long serialVersionUID = 8536833427236986702L;
 	
-	
-	
 	/** The prefix of all input file names. */
 	private final String defaultPrefix = "xway";
 	

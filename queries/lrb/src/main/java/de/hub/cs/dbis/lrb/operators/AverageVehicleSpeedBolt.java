@@ -25,16 +25,14 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import storm.lrb.TopologyControl;
-import storm.lrb.bolt.SegmentIdentifier;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.AvgValue;
 import de.hub.cs.dbis.lrb.util.Time;
 
@@ -48,8 +46,7 @@ import de.hub.cs.dbis.lrb.util.Time;
  * new average speed computation is trigger each time a vehicle changes the express way, segment or direction as wall as
  * each 60 seconds (ie, changing 'minute number' [see {@link Time#getMinute(short)}]).<br />
  * <br />
- * <strong>Output schema:</strong> &lt;{@code vid:}{@link Integer}{@code , minute:}{@link Short}{@code , xway:}
- * {@link Integer}{@code , seg:}{@link Short}{@code , dir:}{@link Short}{@code , avgvs:}{@link Integer}&gt;
+ * <strong>Output type:</strong> {@link AvgVehicleSpeedTuple}
  * 
  * @author msoyka
  * @author mjsax
@@ -132,9 +129,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME,
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.AVERAGE_VEHICLE_SPEED_FIELD_NAME));
+		declarer.declare(AvgVehicleSpeedTuple.getSchema());
 	}
 	
 }

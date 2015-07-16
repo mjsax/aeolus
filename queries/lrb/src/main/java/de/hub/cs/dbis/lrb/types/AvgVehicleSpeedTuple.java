@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.types;
 
+import storm.lrb.TopologyControl;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.lrb.util.Time;
 
@@ -158,6 +160,17 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	 */
 	public final Integer getAvgSpeed() {
 		return (Integer)super.get(AVGS_IDX);
+	}
+	
+	/**
+	 * Returns the schema of a AvgVehicleSpeedTuple.
+	 * 
+	 * @return the schema of a AvgVehicleSpeedTuple
+	 */
+	public static Fields getSchema() {
+		return new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME,
+			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
+			TopologyControl.AVERAGE_VEHICLE_SPEED_FIELD_NAME);
 	}
 	
 }

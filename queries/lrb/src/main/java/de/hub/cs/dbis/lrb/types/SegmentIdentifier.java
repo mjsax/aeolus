@@ -16,32 +16,25 @@
  * limitations under the License.
  * #_
  */
-package storm.lrb.bolt;
-
-import de.hub.cs.dbis.lrb.types.ISegmentIdentifier;
-
-
+package de.hub.cs.dbis.lrb.types;
 
 
 
 /**
- * TODO
+ * SegmentIdentifier represent an express way, segment, and direction.
  * 
  * @author richter
  * @author Matthias J. Sax
  */
 public final class SegmentIdentifier implements ISegmentIdentifier {
-	/**
-	 * XWay (0. . . L−1) identifies the express way from which the position report is emitted
-	 */
+	
+	/** XWay (0. . . L−1) identifies the express way from which the position report is emitted. */
 	private Integer xway;
-	/**
-	 * Seg (0. . .99) identifies the mile-long segment from which the position report is emitted
-	 */
+	
+	/** Seg (0. . .99) identifies the mile-long segment from which the position report is emitted. */
 	private Short segment;
-	/**
-	 * Dir (0. . .1) indicates the direction (0 for Eastbound and 1 for Westbound)
-	 */
+	
+	/** Dir (0. . .1) indicates the direction (0 for Eastbound and 1 for Westbound). */
 	private Short direction;
 	
 	

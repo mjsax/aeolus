@@ -22,16 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import storm.lrb.TopologyControl;
-import storm.lrb.bolt.SegmentIdentifier;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.lrb.types.AvgSpeedTuple;
 import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
+import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.AvgValue;
 
 
@@ -40,13 +38,11 @@ import de.hub.cs.dbis.lrb.util.AvgValue;
 
 /**
  * AverageSpeedBolt computes the average speed over all vehicle within an express way-segment (single direction) every
- * minute. The input is expected to have input schema &lt;{@code vid:}{@link Integer}{@code , minute:}{@link Short}
- * {@code , xway:} {@link Integer}{@code , seg:}{@link Short}{@code , dir:}{@link Short}{@code , avgvs:}{@link Integer}
- * &gt; and must be grouped by {@code (xway,seg,dir)}. A new average speed computation is trigger each 60 seconds (ie,
- * changing 'minute number' [see Time.getMinute(short)]).<br />
+ * minute. The input is expected to be of type {@link AvgVehicleSpeedTuple} and must be grouped by
+ * {@link SegmentIdentifier}. A new average speed computation is trigger each 60 seconds (ie, changing 'minute number'
+ * [see Time.getMinute(short)]).<br />
  * <br />
- * <strong>Output schema:</strong> &lt;{@code minute:}{@link Short}{@code , xway:} {@link Integer}{@code , seg:}
- * {@link Short}{@code , dir:}{@link Short}{@code , avgs:}{@link Integer} &gt;
+ * <strong>Output schema:</strong> {@link AvgSpeedTuple}
  * 
  * @author mjsax
  */
@@ -110,10 +106,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
-			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.AVERAGE_SPEED_FIELD_NAME));
-		
+		declarer.declare(AvgSpeedTuple.getSchema());
 	}
 	
 }

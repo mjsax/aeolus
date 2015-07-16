@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.bolt.SegmentIdentifier;
 import storm.lrb.tools.EntityHelper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
@@ -39,6 +38,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Constants;
 
 

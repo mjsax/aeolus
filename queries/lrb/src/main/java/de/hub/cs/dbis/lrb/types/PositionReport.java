@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.types;
 
+import storm.lrb.TopologyControl;
+import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.lrb.util.Constants;
 
 
@@ -39,8 +41,6 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * <li>Seg: the ID of the expressway segment the vehicle in on (0...99)</li>
  * <li>Pos: the position in feet of the vehicle (distance to expressway Westbound point; 0...527999</li>
  * </ul>
- * 
- * TODO LAV = latest average velocity
  * 
  * @author mjsax
  */
@@ -179,6 +179,18 @@ public final class PositionReport extends AbstractInputTuple implements ISegment
 	 */
 	public boolean isOnExitLane() {
 		return this.getLane().shortValue() == Constants.EXIT_LANE;
+	}
+	
+	/**
+	 * Returns the schema of a PositionReport.
+	 * 
+	 * @return the schema of a PositionReport
+	 */
+	public static Fields getSchema() {
+		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMER_FIELD_NAME,
+			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.SPEED_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+			TopologyControl.LANE_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+			TopologyControl.POSITION_FIELD_NAME);
 	}
 	
 }
