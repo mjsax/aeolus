@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import de.hub.cs.dbis.aeolus.testUtils.Comp;
+import de.hub.cs.dbis.aeolus.testUtils.TimestampComperator;
 import de.hub.cs.dbis.aeolus.utils.StreamMerger;
 import backtype.storm.task.GeneralTopologyContext;
 import backtype.storm.tuple.Fields;
@@ -258,7 +258,7 @@ public class StreamMergerTest {
 			
 		}
 		
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new TimestampComperator());
 		
 		List<Object> lastRemoved = null;
 		while(expectedResult.size() > result.size()) {

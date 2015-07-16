@@ -18,26 +18,6 @@
  */
 package de.hub.cs.dbis.aeolus.spouts;
 
-/*
- * #%L
- * utils
- * %%
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
@@ -61,10 +41,9 @@ import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedInputSpout;
-import de.hub.cs.dbis.aeolus.testUtils.Comp;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
+import de.hub.cs.dbis.aeolus.testUtils.TimestampComperator;
 
 
 
@@ -265,7 +244,7 @@ public class OrderedInputSpoutTest {
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String(" 3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3")}));
 		expectedResult.add(Arrays.asList(new Object[] {new Long(3), new String("3 ")}));
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new TimestampComperator());
 		@SuppressWarnings("unchecked")
 		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2, partition3));
 		
@@ -342,7 +321,7 @@ public class OrderedInputSpoutTest {
 			partition3.add(number + " ");
 			expectedResult.add(Arrays.asList(new Object[] {new Long(number), new String(number + " ")}));
 		}
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new TimestampComperator());
 		
 		@SuppressWarnings("unchecked")
 		List<Deque<String>> data = new LinkedList<Deque<String>>(Arrays.asList(partition1, partition2, partition3));

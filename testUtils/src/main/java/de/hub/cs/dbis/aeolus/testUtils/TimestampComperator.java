@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * @author Matthias J. Sax
  */
-public class Comp implements Comparator<List<Object>> {
+public class TimestampComperator implements Comparator<List<Object>> {
 	@Override
 	public int compare(List<Object> o1, List<Object> o2) {
 		long first = ((Long)o1.get(0)).longValue();

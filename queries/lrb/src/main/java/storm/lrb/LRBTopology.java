@@ -30,7 +30,6 @@ import storm.lrb.bolt.AccidentNotificationBolt;
 import storm.lrb.bolt.AccountBalanceBolt;
 import storm.lrb.bolt.DailyExpenditureBolt;
 import storm.lrb.bolt.DispatcherBolt;
-import storm.lrb.bolt.LastAverageSpeedBolt;
 import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
@@ -40,6 +39,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
 import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
+import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 
@@ -95,7 +95,7 @@ public class LRBTopology {
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
-		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LastAverageSpeedBolt(), xways * 3)
+		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LatestAverageVelocityBolt(), xways * 3)
 			.fieldsGrouping(
 				TopologyControl.AVERAGE_SPEED_BOLT_NAME,
 				TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,

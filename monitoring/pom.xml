@@ -64,10 +64,8 @@
                   <type>jar</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                  <includes>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class,
-                            de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class,
-                            de/hub/cs/dbis/aeolus/queries/utils/FileFlushSinkBolt.class,
-                            de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</includes>
+                  <includes>de/hub/cs/dbis/aeolus/sinks/*.class,
+                            de/hub/cs/dbis/aeolus/spouts/FixedStreamRateDriverSpout.class</includes>
                 </artifactItem>
                 <artifactItem>
                   <groupId>de.hub.cs.dbis.aeolus</groupId>
@@ -115,10 +113,8 @@
                 <include>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/SchemaSpout.class</include>
                 <include>de/hub/cs/dbis/aeolus/monitoring/throughput/*.class</include>
                 <include>de/hub/cs/dbis/aeolus/monitoring/utils/*.class</include>
-                <include>de/hub/cs/dbis/aeolus/queries/utils/FixedStreamRateDriverSpout.class</include>
-                <include>de/hub/cs/dbis/aeolus/queries/utils/AbstractFileOutputBolt.class</include>
-                <include>de/hub/cs/dbis/aeolus/queries/utils/FileSinkBolt.class</include>
-                <include>de/hub/cs/dbis/aeolus/queries/utils/FileFlushSinkBolt.class</include>
+                <include>de/hub/cs/dbis/aeolus/spouts/FixedStreamRateDriverSpout.class</include>
+                <include>de/hub/cs/dbis/aeolus/sinks/*.class</include>
                 <include>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</include>
                 <include>de/hub/cs/dbis/aeolus/batching/*.class</include>
               </includes>

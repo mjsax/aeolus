@@ -49,7 +49,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.testUtils.Comp;
+import de.hub.cs.dbis.aeolus.testUtils.TimestampComperator;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 
@@ -314,7 +314,7 @@ public class OrderedFileInputSpoutTest {
 			}
 			stub = stub.thenReturn(null);
 		}
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new TimestampComperator());
 		
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		
@@ -379,7 +379,7 @@ public class OrderedFileInputSpoutTest {
 			}
 			stub = stub.thenReturn(null);
 		}
-		Collections.sort(expectedResult, new Comp());
+		Collections.sort(expectedResult, new TimestampComperator());
 		
 		TestOrderedFileInputSpout spout = new TestOrderedFileInputSpout();
 		

@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.bolt.SegmentIdentifier;
 import storm.lrb.model.AccidentImmutable;
 import storm.lrb.model.NovLav;
 import storm.lrb.model.VehicleInfo;
@@ -40,6 +39,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 
 
@@ -61,7 +61,6 @@ import de.hub.cs.dbis.lrb.util.Time;
  */
 public class TollNotificationBolt extends BaseRichBolt {
 	private final static long serialVersionUID = 5537727428628598519L;
-	
 	private final static Logger LOG = LoggerFactory.getLogger(TollNotificationBolt.class);
 	
 	protected static final int MAX_SPEED_FOR_TOLL = 40;
