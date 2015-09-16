@@ -18,6 +18,10 @@
  */
 package storm.lrb;
 
+import backtype.storm.topology.TopologyBuilder;
+
+
+
 
 
 //import storm.lrb.spout.SocketClientSpout;
@@ -25,9 +29,9 @@ package storm.lrb;
  * Thistopology is equivalent to LrbXD with the difference, that "xway" and "dir" are used in fieldsgrouping of the
  * tollnotificationbolt as opposed to LrbXD where one field is made out of both fields two.
  */
-public class LRBtopologyNormal {
+public class LRBtopologyBuilder2 extends TopologyBuilder {
 	
-	public static void main(String[] args) throws Exception {
+	public LRBtopologyBuilder2() {
 		
 		// CommandLineParser cmd = new CommandLineParser();
 		//

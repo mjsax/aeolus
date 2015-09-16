@@ -33,6 +33,7 @@ import org.junit.Test;
  * @author richter
  */
 public class LRBTopologyMainTest {
+	
 	public static final String DRIVER = "org.apache.derby.jdbc.ClientDriver";
 	public static final String URL = "jdbc:derby://localhost:1527/aeolus-test";
 	private static Connection conn;
@@ -49,17 +50,24 @@ public class LRBTopologyMainTest {
 	@Test
 	public void testMain0() throws Exception {
 		String histFilePath = File.createTempFile("lrb-test", null).getAbsolutePath();
-		LRBTopologyMain.main0(0, // offset
-			1, // executors
+		File outputDirFile = File.createTempFile("lrb-test", null);
+		if(!outputDirFile.delete()) {
+			throw new RuntimeException();
+		}
+		if(!outputDirFile.mkdir()) {
+			throw new RuntimeException();
+		}
+		LRBTopologyMain.main0(outputDirFile, "lrb-test", // topoplogNamePrefix
 			2, // xways
+			2, // workers
+			1, // executors
+			2, // tasks
+			0, // offset
+			5000, // runtimeMillis
+			true, // local
 			"127.0.0.1", // host
 			5060, // port
-			histFilePath, 2, // tasks,
-			false, // submit
-			true, // stormConfigDebug
-			2, // workers
-			"nameext", // nameext
-			5000 // runtimeMillis
+			histFilePath, true // stormConfigDebug
 			);
 	}
 	

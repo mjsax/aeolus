@@ -48,7 +48,20 @@ public class FileSinkBolt extends AbstractFileOutputBolt {
 	/** The directory of the output file. */
 	private final String outputDirName;
 	
-	
+	public FileSinkBolt(File outputFile) {
+		if(!outputFile.isAbsolute()) {
+			this.outputFileName = outputFile.getName();
+			if(!outputFile.getPath().contains(File.separator)) {
+				// simple file without relative path component
+				this.outputDirName = null;
+			} else {
+				this.outputDirName = outputFile.getParentFile().getPath();
+			}
+		} else {
+			this.outputFileName = outputFile.getName();
+			this.outputDirName = outputFile.getParentFile().getAbsolutePath();
+		}
+	}
 	
 	public FileSinkBolt(String filename) {
 		String[] tokens = filename.split(File.separator);

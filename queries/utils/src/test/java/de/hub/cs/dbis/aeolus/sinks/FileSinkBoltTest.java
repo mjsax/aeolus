@@ -35,6 +35,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
 import backtype.storm.Config;
 import backtype.storm.tuple.Tuple;
+import static org.mockito.Mockito.times;
 
 
 
@@ -65,7 +66,10 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		PowerMockito.verifyNew(FileWriter.class).withArguments("." + File.separator + filename);
+		String expectedArgument = "." + File.separator + filename;
+		bolt = new FileSinkBolt(new File(filename));
+		bolt.prepare(stormConf, null, null);
+		PowerMockito.verifyNew(FileWriter.class, times(2)).withArguments(expectedArgument);
 	}
 	
 	@Test
@@ -79,7 +83,9 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		PowerMockito.verifyNew(FileWriter.class).withArguments(filename);
+		bolt = new FileSinkBolt(new File(filename));
+		bolt.prepare(stormConf, null, null);
+		PowerMockito.verifyNew(FileWriter.class, times(2)).withArguments(filename);
 	}
 	
 	@Test
@@ -93,7 +99,9 @@ public class FileSinkBoltTest {
 		Config stormConf = new Config();
 		bolt.prepare(stormConf, null, null);
 		
-		PowerMockito.verifyNew(FileWriter.class).withArguments(filename);
+		bolt = new FileSinkBolt(new File(filename));
+		bolt.prepare(stormConf, null, null);
+		PowerMockito.verifyNew(FileWriter.class, times(2)).withArguments(filename);
 	}
 	
 	@Test

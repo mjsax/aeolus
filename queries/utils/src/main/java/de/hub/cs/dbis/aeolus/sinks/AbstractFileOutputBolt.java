@@ -38,7 +38,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * {@link AbstractFileOutputBolt} writes all received tuples to an output file. The output file name can be configures
+ * {@link AbstractFileOutputBolt} writes all received tuples to an output file. The output file name can be configured
  * using {@link #outputDirName} and {@link #outputFileName} (default is {@code ./result.dat}).<br/>
  * <br/>
  * {@link AbstractFileOutputBolt} acknowledges each retrieved tuple.
