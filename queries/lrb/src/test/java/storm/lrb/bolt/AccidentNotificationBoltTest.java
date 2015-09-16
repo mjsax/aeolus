@@ -27,7 +27,6 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -46,6 +45,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.AbstractBoltTest;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
@@ -57,8 +57,7 @@ import de.hub.cs.dbis.lrb.types.PositionReport;
  * 
  * @author richter
  */
-public class AccidentNotificationBoltTest {
-	private static final Random random = new Random();
+public class AccidentNotificationBoltTest extends AbstractBoltTest {
 	
 	/**
 	 * Test of execute method, of class AccidentNotificationBolt.
@@ -92,12 +91,12 @@ public class AccidentNotificationBoltTest {
 		
 		// test that PosReports don't cause notification if no accident has been submitted
 		int vehicleIdentifier = 454;
-		PositionReport posReport1 = EntityHelper.createPosReport(random, vehicleIdentifier);
+		PositionReport posReport1 = EntityHelper.createPosReport(r, vehicleIdentifier);
 		Tuple tuple1 = new TupleImpl(generalContextMock, new Values(posReport1), 0, // taskId
 			TopologyControl.POS_REPORTS_STREAM_ID // streamId
 		);
 		instance.execute(tuple1);
-		PositionReport posReport2 = EntityHelper.createPosReport(random, vehicleIdentifier);
+		PositionReport posReport2 = EntityHelper.createPosReport(r, vehicleIdentifier);
 		Tuple tuple2 = new TupleImpl(generalContextMock, new Values(posReport2), 0, // taskId
 			TopologyControl.POS_REPORTS_STREAM_ID // streamId
 		);
@@ -109,7 +108,7 @@ public class AccidentNotificationBoltTest {
 		short posReportAccidentSegment = 775;
 		short posReportAccidentCreated = 0;// System.currentTimeMillis();
 		PositionReport posReportAccident = EntityHelper.createPosReport(posReportAccidentCreated,
-			posReportAccidentSegment, random, vehicleIdentifier, 30, // minSpeed
+			posReportAccidentSegment, r, vehicleIdentifier, 30, // minSpeed
 			170 // maxSpeed
 			);
 		AccidentImmutable accident = new AccidentImmutable(posReportAccident);
@@ -123,7 +122,7 @@ public class AccidentNotificationBoltTest {
 		// test that accident notifications more than 4 segments upstream cause notification
 		short posReport4Segment = (short)(posReportAccidentSegment - 5);
 		short posReport4Created = 1;// System.currentTimeMillis();
-		PositionReport posReport4 = EntityHelper.createPosReport(posReport4Created, posReport4Segment, random,
+		PositionReport posReport4 = EntityHelper.createPosReport(posReport4Created, posReport4Segment, r,
 			vehicleIdentifier, 20, // minSpeed
 			179 // maxSpeed
 			);
@@ -139,7 +138,7 @@ public class AccidentNotificationBoltTest {
 		// tests (that's not too elegant, but avoids to expose bolt internals)
 		short posReport5Segment = (short)(posReportAccidentSegment - 4);
 		short posReport5Created = 2;// System.currentTimeMillis();
-		PositionReport posReport5 = EntityHelper.createPosReport(posReport5Created, posReport5Segment, random,
+		PositionReport posReport5 = EntityHelper.createPosReport(posReport5Created, posReport5Segment, r,
 			vehicleIdentifier, 20, // minSpeed
 			179 // maxSpeed
 			);
@@ -158,7 +157,7 @@ public class AccidentNotificationBoltTest {
 		// well
 		short posReport6Segment = posReportAccidentSegment;
 		short posReport6Created = 3;// System.currentTimeMillis();
-		PositionReport posReport6 = EntityHelper.createPosReport(posReport6Created, posReport6Segment, random,
+		PositionReport posReport6 = EntityHelper.createPosReport(posReport6Created, posReport6Segment, r,
 			vehicleIdentifier, 20, // minSpeed
 			179 // maxSpeed
 			);
