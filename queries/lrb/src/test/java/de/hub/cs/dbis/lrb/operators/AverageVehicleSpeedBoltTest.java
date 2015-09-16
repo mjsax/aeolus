@@ -22,8 +22,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Random;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,6 +32,7 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.AbstractBoltTest;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
@@ -49,20 +48,7 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * @author richter
  * @author mjsax
  */
-public class AverageVehicleSpeedBoltTest {
-	private long seed;
-	private Random r;
-	
-	
-	
-	@Before
-	public void prepare() {
-		this.seed = System.currentTimeMillis();
-		this.r = new Random(this.seed);
-		System.out.println("Test seed: " + this.seed);
-	}
-	
-	
+public class AverageVehicleSpeedBoltTest extends AbstractBoltTest {
 	
 	@Test
 	public void testExecute() {

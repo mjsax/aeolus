@@ -18,6 +18,8 @@
  */
 package storm.lrb.tools;
 
+import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public class CommandLineParser {
 	
 	@Parameter(names = "-h", description = "SocketHost to connect to (default: localhost)") private String host = "localhost";
 	
-	@Parameter(names = "-submit", description = "Submit to Cluster") private boolean submit = false;
+	@Parameter(names = "-submit", description = "Submit to Cluster") private boolean local = false;
 	
 	@Parameter(names = {"-hist", "-histfile"}, description = "History File to consume") private String histFile = "";
 	
@@ -57,9 +59,11 @@ public class CommandLineParser {
 	
 	@Parameter(names = {"-debug", "-d"}, description = "Set debug mode") private boolean debug = false;
 	
-	@Parameter(names = {"-n", "-name"}, description = "prefix for topology name") private String nameext = "";
+	@Parameter(names = {"-n", "-name"}, description = "prefix for topology name") private String topologyNamePrefix = "";
 	
 	@Parameter(names = {"-r", "-runtimeMillis"}, description = "the time in milli seconds to run") private int runtimeMillis;
+	
+	@Parameter(names = {"-q", "-output-directory"}, description = "the output directory for file writer bolts (will be created if inexisting)") private String outputDirectory;
 	
 	protected void setRuntimeMillis(int runtimeMillis) {
 		this.runtimeMillis = runtimeMillis;
@@ -145,18 +149,21 @@ public class CommandLineParser {
 	}
 	
 	/**
+	 * whether the cluster ought to be run locally using {@link LocalCluster} or submitted to a remote cluster using
+	 * {@link StormSubmitter#submitTopology(java.lang.String, java.util.Map, backtype.storm.generated.StormTopology) }
+	 * 
 	 * @return the submit
 	 */
-	public boolean isSubmit() {
-		return this.submit;
+	public boolean isLocal() {
+		return this.local;
 	}
 	
 	/**
-	 * @param submit
+	 * @param local
 	 *            the submit to set
 	 */
-	protected void setSubmit(boolean submit) {
-		this.submit = submit;
+	protected void setLocal(boolean local) {
+		this.local = local;
 	}
 	
 	/**
@@ -235,18 +242,26 @@ public class CommandLineParser {
 	}
 	
 	/**
-	 * @return the nameext
+	 * @return the topologyNamePrefix
 	 */
-	public String getNameext() {
-		return this.nameext;
+	public String getTopologyNamePrefix() {
+		return this.topologyNamePrefix;
 	}
 	
 	/**
-	 * @param nameext
-	 *            the nameext to set
+	 * @param topologyNamePrefix
+	 *            the topologyNamePrefix to set
 	 */
-	protected void setNameext(String nameext) {
-		this.nameext = nameext;
+	protected void setTopologyNamePrefix(String topologyNamePrefix) {
+		this.topologyNamePrefix = topologyNamePrefix;
+	}
+	
+	public String getOutputDirectory() {
+		return outputDirectory;
+	}
+	
+	public void setOutputDirectory(String outputDirectory) {
+		this.outputDirectory = outputDirectory;
 	}
 	
 }

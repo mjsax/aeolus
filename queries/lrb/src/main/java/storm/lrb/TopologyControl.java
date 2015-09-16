@@ -36,7 +36,6 @@ public class TopologyControl {
 	 */
 	public final static String SPLIT_STREAM_BOLT_NAME = "SplitStreamBolt";
 	public final static String AVERAGE_SPEED_BOLT_NAME = "AvergageSpeedBolt";
-	public final static String LAST_AVERAGE_SPEED_BOLT_NAME = "LastAverageSpeedBolt";
 	public final static String TOLL_NOTIFICATION_BOLT_NAME = "TollNotificationBolt";
 	public final static String ACCIDENT_DETECTION_BOLT_NAME = "AccidentDetectionBolt";
 	public final static String ACCIDENT_NOTIFICATION_BOLT_NAME = "AccidentNotificationBolt";
@@ -57,7 +56,6 @@ public class TopologyControl {
 	public final static String TOLL_ASSESSMENT_STREAM_ID = "TollAssessmentStream";
 	public final static String TOLL_NOTIFICATION_STREAM_ID = "TollNotificationStream";
 	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "TravelTimeRequestRequestsStream";
-	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
 	
 	/**
 	 * The identifier of tuple attributes.

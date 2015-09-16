@@ -75,6 +75,33 @@
           </execution>
         </executions>
       </plugin>
+      <!-- It'd be nice to fail in the topmost parent pom, but putting the
+      enforce rule here allows to keep track of the requirement of the java
+      version check more easily-->
+      <!--currently we need to stick with 1.6 because storm 0.9.3 is 
+      incompatible with 1.7-->
+<!--      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+            <execution>
+                <phase>validate</phase>
+                <goals>
+                    <goal>enforce</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+            <rules>
+              <requireJavaVersion>
+                 <version>(,1.7.0]</version> 
+              </requireJavaVersion> 
+            </rules>
+            <fail>true</fail>
+            <failFast>true</failFast>
+        </configuration>
+      </plugin>-->
     </plugins>
   </build>
 

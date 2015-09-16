@@ -24,7 +24,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +35,7 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.AbstractBoltTest;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
@@ -45,20 +45,7 @@ import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 /**
  * @author mjsax
  */
-public class FileReaderSpoutITCase {
-	private long seed;
-	private Random r;
-	
-	
-	
-	@Before
-	public void prepare() {
-		this.seed = System.currentTimeMillis();
-		this.r = new Random(this.seed);
-		System.out.println("Test seed: " + this.seed);
-	}
-	
-	
+public class FileReaderSpoutITCase extends AbstractBoltTest {
 	
 	@Test(timeout = 30000)
 	public void test() throws AlreadyAliveException, InvalidTopologyException, IOException {

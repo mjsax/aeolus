@@ -41,6 +41,7 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.lrb.testutils.AbstractLRBTest;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.AvgSpeedTuple;
@@ -56,24 +57,7 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * @author richter
  * @author mjsax
  */
-public class LastAverageVelocityBoltTest {
-	private long seed;
-	private Random r;
-	
-	
-	
-	@Before
-	public void prepare() {
-		this.seed = System.currentTimeMillis();
-		// this.seed = 1438089824484L;
-		// this.seed = 1438954362592L;
-		// this.seed = 1439978340861L;
-		// this.seed = 1439982750815L;
-		this.r = new Random(this.seed);
-		System.out.println("Test seed: " + this.seed);
-	}
-	
-	
+public class LastAverageVelocityBoltTest extends AbstractLRBTest {
 	
 	@Test
 	public void testExecute() {
@@ -171,28 +155,7 @@ public class LastAverageVelocityBoltTest {
 				
 				assertEquals(1, collector.output.size());
 				List<List<Object>> result = collector.output.get(Utils.DEFAULT_STREAM_ID);
-				while(expectedResult.size() > 0) {
-					LavTuple t = expectedResult.remove(0);
-					HashSet<List<Object>> ers = new HashSet<List<Object>>();
-					ers.add(t);
-					
-					HashSet<List<Object>> rs = new HashSet<List<Object>>();
-					rs.add(result.remove(0));
-					
-					while(expectedResult.size() > 0) {
-						LavTuple t2 = expectedResult.get(0);
-						if(t2.getMinuteNumber() == t.getMinuteNumber()) {
-							ers.add(expectedResult.remove(0));
-							rs.add(result.remove(0));
-						} else {
-							break;
-						}
-					}
-					
-					assertEquals(ers, rs);
-				}
-				assertEquals(0, result.size());
-				assertEquals(++executeCounter, collector.acked.size());
+				assertLavTupleInputEquals(expectedResult, result, ++executeCounter, collector);
 				
 				firstTupleOfMinute = false;
 			}

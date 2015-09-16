@@ -7,3 +7,6 @@ queries/lrb/nameext_lrbNormal__L2_2W_T2_1E_O0_acc
 queries/lrb/nameext_lrbNormal__L2_2W_T2_1E_O0_bal
 queries/lrb/nameext_lrbNormal__L2_2W_T2_1E_O0_exp
 queries/lrb/nameext_lrbNormal__L2_2W_T2_1E_O0_toll
+
+# vagrant runner
+queries/lrb/lrb-topology-runner-vagrant-vms/

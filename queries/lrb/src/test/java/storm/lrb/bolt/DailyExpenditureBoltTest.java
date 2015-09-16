@@ -26,7 +26,6 @@ import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,6 +44,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.AbstractBoltTest;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
@@ -59,8 +59,7 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * 
  * @author richter
  */
-public class DailyExpenditureBoltTest {
-	private static final Random random = new Random();
+public class DailyExpenditureBoltTest extends AbstractBoltTest {
 	
 	/**
 	 * Test of execute method, of class DailyExpenditureBolt.
