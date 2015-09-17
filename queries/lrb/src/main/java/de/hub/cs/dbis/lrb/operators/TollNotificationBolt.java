@@ -142,7 +142,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 		int xWay = tuple.getIntegerByField(TopologyControl.XWAY_FIELD_NAME);
 		short seg = tuple.getShortByField(TopologyControl.SEGMENT_FIELD_NAME);
 		short dir = tuple.getShortByField(TopologyControl.DIRECTION_FIELD_NAME);
-		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(xWay, seg, dir);
+		SegmentIdentifier segmentIdentifier = null;// new SegmentIdentifier(xWay, seg, dir);
 		int min = tuple.getIntegerByField(TopologyControl.MINUTE_FIELD_NAME);
 		
 		NovLav novlav = new NovLav(tuple.getIntegerByField(TopologyControl.NUMBER_OF_VEHICLES_FIELD_NAME),
@@ -160,7 +160,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 		int xway = tuple.getIntegerByField(TopologyControl.XWAY_FIELD_NAME);
 		short seg = tuple.getShortByField(TopologyControl.SEGMENT_FIELD_NAME);
 		short dir = tuple.getShortByField(TopologyControl.DIRECTION_FIELD_NAME);
-		SegmentIdentifier xsd = new SegmentIdentifier(xway, seg, dir);
+		SegmentIdentifier xsd = null;// new SegmentIdentifier(xway, seg, dir);
 		
 		AccidentImmutable info = (AccidentImmutable)tuple.getValueByField(TopologyControl.ACCIDENT_INFO_FIELD_NAME);
 		if(LOG.isDebugEnabled()) {
@@ -189,7 +189,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 	void calcTollAndEmit(Tuple tuple) {
 		
 		PositionReport pos = (PositionReport)tuple.getValueByField("PosReport");
-		SegmentIdentifier segmentTriple = new SegmentIdentifier(pos.getXWay(), pos.getSegment(), pos.getDirection());
+		SegmentIdentifier segmentTriple = null;// new SegmentIdentifier(pos.getXWay(), pos.getSegment(),
+												// pos.getDirection());
 		
 		if(this.assessTollAndCheckIfTollNotificationRequired(pos)) {
 			
@@ -261,8 +262,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 		} else {
 			VehicleInfo vehicle = this.allVehicles.get(posReport.getVid());
 			SegmentIdentifier oldPosition = vehicle.getSegmentIdentifier();
-			SegmentIdentifier newPosition = new SegmentIdentifier(posReport.getVid(), posReport.getSegment(),
-				posReport.getDirection());
+			SegmentIdentifier newPosition = null;// new SegmentIdentifier(posReport.getVid(), posReport.getSegment(),
+													// posReport.getDirection());
 			segmentChanged = !oldPosition.equals(newPosition);
 			if(LOG.isDebugEnabled()) {
 				LOG.debug("assess toll:" + vehicle);

@@ -25,7 +25,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.bolt.AccidentDetectionBolt;
 import storm.lrb.bolt.AccidentNotificationBolt;
 import storm.lrb.bolt.AccountBalanceBolt;
 import storm.lrb.bolt.DailyExpenditureBolt;
@@ -38,6 +37,7 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
+import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
 import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
 import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;

@@ -44,7 +44,7 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * 
  * @author mjsax
  */
-public final class PositionReport extends AbstractInputTuple implements ISegmentIdentifier {
+public final class PositionReport extends AbstractInputTuple implements IPositionIdentifier, ISegmentIdentifier {
 	private final static long serialVersionUID = -4386109322233754497L;
 	
 	// attribute indexes
@@ -139,6 +139,7 @@ public final class PositionReport extends AbstractInputTuple implements ISegment
 	 * 
 	 * @return the VID of this position report
 	 */
+	@Override
 	public final Short getLane() {
 		return (Short)super.get(LANE_IDX);
 	}
@@ -168,6 +169,7 @@ public final class PositionReport extends AbstractInputTuple implements ISegment
 	 * 
 	 * @return the VID of this position report
 	 */
+	@Override
 	public final Integer getPosition() {
 		return (Integer)super.get(POS_IDX);
 	}
@@ -179,6 +181,17 @@ public final class PositionReport extends AbstractInputTuple implements ISegment
 	 */
 	public boolean isOnExitLane() {
 		return this.getLane().shortValue() == Constants.EXIT_LANE;
+	}
+	
+	/**
+	 * Return a copy of this {@link PositionReport}.
+	 * 
+	 * @return a copy of this {@link PositionReport}
+	 */
+	public PositionReport copy() {
+		PositionReport pr = new PositionReport();
+		pr.addAll(this);
+		return pr;
 	}
 	
 	/**

@@ -65,6 +65,8 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final AvgSpeedTuple input = new AvgSpeedTuple();
+	/** Internally reused object. */
+	private final SegmentIdentifier segmentIdentifier = new SegmentIdentifier();
 	
 	/** The currently processed 'minute number'. */
 	private short currentMinute = 1;
@@ -80,10 +82,8 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		this.input.clear();
 		this.input.addAll(tuple.getValues());
 		
-		SegmentIdentifier segmentIdentifier = new SegmentIdentifier(this.input);
 		Short minuteNumber = this.input.getMinuteNumber();
 		short m = minuteNumber.shortValue();
-		Integer avgSpeed = this.input.getAvgSpeed();
 		
 		assert (m >= this.currentMinute);
 		
@@ -127,16 +127,17 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 			this.currentMinute = m;
 		}
 		
-		List<Integer> latestAvgSpeeds = this.averageSpeedsPerSegment.get(segmentIdentifier);
-		List<Short> latestMinuteNumber = this.minuteNumbersPerSegment.get(segmentIdentifier);
+		this.segmentIdentifier.set(this.input);
+		List<Integer> latestAvgSpeeds = this.averageSpeedsPerSegment.get(this.segmentIdentifier);
+		List<Short> latestMinuteNumber = this.minuteNumbersPerSegment.get(this.segmentIdentifier);
 		
 		if(latestAvgSpeeds == null) {
 			latestAvgSpeeds = new LinkedList<Integer>();
-			this.averageSpeedsPerSegment.put(segmentIdentifier, latestAvgSpeeds);
+			this.averageSpeedsPerSegment.put(this.segmentIdentifier.copy(), latestAvgSpeeds);
 			latestMinuteNumber = new LinkedList<Short>();
-			this.minuteNumbersPerSegment.put(segmentIdentifier, latestMinuteNumber);
+			this.minuteNumbersPerSegment.put(this.segmentIdentifier.copy(), latestMinuteNumber);
 		}
-		latestAvgSpeeds.add(avgSpeed);
+		latestAvgSpeeds.add(this.input.getAvgSpeed());
 		latestMinuteNumber.add(minuteNumber);
 		
 		// discard all values that are more than 5 minutes older than current minute
@@ -152,8 +153,8 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		assert (latestMinuteNumber.size() <= 5);
 		
 		Integer lav = this.computeLavValue(latestAvgSpeeds);
-		this.collector.emit(new LavTuple(new Short((short)(m + 1)), segmentIdentifier.getXWay(), segmentIdentifier
-			.getSegment(), segmentIdentifier.getDirection(), lav));
+		this.collector.emit(new LavTuple(new Short((short)(m + 1)), this.segmentIdentifier.getXWay(),
+			this.segmentIdentifier.getSegment(), this.segmentIdentifier.getDirection(), lav));
 		
 		this.collector.ack(tuple);
 	}

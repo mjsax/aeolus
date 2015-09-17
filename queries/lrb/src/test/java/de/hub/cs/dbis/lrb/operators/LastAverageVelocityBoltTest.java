@@ -65,10 +65,6 @@ public class LastAverageVelocityBoltTest {
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
-		// this.seed = 1438089824484L;
-		// this.seed = 1438954362592L;
-		// this.seed = 1439978340861L;
-		// this.seed = 1439982750815L;
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 	}

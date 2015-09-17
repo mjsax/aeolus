@@ -99,13 +99,14 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 			}
 			PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
 			LOG.debug("AccidentNotification: posReport '%s' received", pos);
-			SegmentIdentifier previousSegment = this.allCars.put(pos.getVid(), new SegmentIdentifier(pos));
+			SegmentIdentifier x = null; // new SegmentIdentifier(pos);
+			SegmentIdentifier previousSegment = this.allCars.put(pos.getVid(), x);
 			// check whether there's an accident on the 4 upcoming segments
 			for(short i = 0; i <= 4; i++) {
 				Short segmentToCheck = (short)(pos.getSegment() + i);
 				LOG.trace("checking segment '{}' for accidents", segmentToCheck);
-				SegmentIdentifier accidentSegment = new SegmentIdentifier(pos.getXWay(), segmentToCheck,
-					pos.getDirection());
+				SegmentIdentifier accidentSegment = null; // new SegmentIdentifier(pos.getXWay(), segmentToCheck,
+															// pos.getDirection());
 				AccidentImmutable accident = this.allAccidents.get(accidentSegment);
 				if(accident != null) {
 					this.sendAccidentAlert(pos, previousSegment, accident);
@@ -129,7 +130,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	
 	private void updateAccidents(Tuple tuple) {
 		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
-		SegmentIdentifier accidentIdentifier = new SegmentIdentifier(pos);
+		SegmentIdentifier accidentIdentifier = null; // new SegmentIdentifier(pos);
 		AccidentImmutable accident = (AccidentImmutable)tuple.getValueByField(TopologyControl.ACCIDENT_INFO_FIELD_NAME);
 		
 		LOG.debug("received accident info '%s'", accident);
@@ -165,7 +166,8 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 			LOG.debug("no accident notification because vehicle is on exit lane");
 			return;
 		}
-		if(!previousSegment.equals(new SegmentIdentifier(pos))) {
+		SegmentIdentifier x = null; // new SegmentIdentifier(pos);
+		if(!previousSegment.equals(x)) {
 			// AccidentImmutable.validatePositionReport(pos);
 			this.collector.emit(new Values(pos));
 		} else {

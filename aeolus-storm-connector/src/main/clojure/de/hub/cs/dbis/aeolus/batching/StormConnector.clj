@@ -19,7 +19,7 @@
 (ns de.hub.cs.dbis.aeolus.batching.StormConnector
 (:require [backtype.storm.daemon [executor :as executor]])
 (:gen-class
-  :methods [#^{:static true} [getFieldsGroupingReceiverTaskId [backtype.storm.task.WorkerTopologyContext, String, String, String, java.util.List] Integer]]))
+  :methods [#^{:static true} [getFieldsGroupingReceiverTaskId [backtype.storm.task.WorkerTopologyContext String String String java.util.List] Integer]]))
 
 (defn -getFieldsGroupingReceiverTaskId
   "Returns the receiver task ID for "

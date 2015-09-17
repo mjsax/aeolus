@@ -90,7 +90,7 @@ public class TimestampOrderChecker implements IRichBolt {
 	 *            {@code true} is timestamp duplicates are allowed; {@code false} otherwise.
 	 */
 	public TimestampOrderChecker(IRichBolt wrappedBolt, String tsAttributeName, boolean duplicates) {
-		assert this.tsIndex >= 0;
+		assert tsAttributeName != null;
 		
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = -1;

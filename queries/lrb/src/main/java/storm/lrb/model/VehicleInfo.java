@@ -93,7 +93,7 @@ public class VehicleInfo implements Serializable {
 	}
 	
 	public SegmentIdentifier getSegmentIdentifier() {
-		return new SegmentIdentifier(this.posreport);
+		return null; // new SegmentIdentifier(this.posreport);
 	}
 	
 	public long getLastReportTime() {

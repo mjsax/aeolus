@@ -60,6 +60,8 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final PositionReport inputPositionReport = new PositionReport();
+	/** Internally reused object. */
+	private final SegmentIdentifier segment = new SegmentIdentifier();
 	
 	/**
 	 * Maps each vehicle to its average speed value that corresponds to the current 'minute number' and specified
@@ -85,7 +87,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		Integer vid = this.inputPositionReport.getVid();
 		short minute = this.inputPositionReport.getMinuteNumber();
 		int speed = this.inputPositionReport.getSpeed().intValue();
-		SegmentIdentifier segment = new SegmentIdentifier(this.inputPositionReport);
+		this.segment.set(this.inputPositionReport);
 		
 		assert (minute >= this.currentMinute);
 		
@@ -106,7 +108,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		}
 		
 		Pair<AvgValue, SegmentIdentifier> vehicleEntry = this.avgSpeedsMap.get(vid);
-		if(vehicleEntry != null && !vehicleEntry.getRight().equals(segment)) {
+		if(vehicleEntry != null && !vehicleEntry.getRight().equals(this.segment)) {
 			SegmentIdentifier segId = vehicleEntry.getRight();
 			
 			// VID, Minute-Number, X-Way, Segment, Direction, Avg(speed)
@@ -119,7 +121,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		
 		
 		if(vehicleEntry == null) {
-			vehicleEntry = new MutablePair<AvgValue, SegmentIdentifier>(new AvgValue(speed), segment);
+			vehicleEntry = new MutablePair<AvgValue, SegmentIdentifier>(new AvgValue(speed), this.segment.copy());
 			this.avgSpeedsMap.put(vid, vehicleEntry);
 		} else {
 			vehicleEntry.getLeft().updateAverage(speed);

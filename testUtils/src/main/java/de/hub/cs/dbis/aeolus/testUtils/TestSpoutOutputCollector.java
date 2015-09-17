@@ -56,4 +56,9 @@ public class TestSpoutOutputCollector implements ISpoutOutputCollector {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 	
+	// @Override
+	// public long getPendingCount() {
+	// return 0;
+	// }
+	//
 }

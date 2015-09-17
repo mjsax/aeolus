@@ -21,62 +21,23 @@ package de.hub.cs.dbis.lrb.types;
 
 
 /**
- * {@link SegmentIdentifier} represent an express way, segment, and direction.
+ * PositionIdentifier represent an express way, lane, position, and direction.
  * 
- * @author richter
  * @author mjsax
  */
-public final class SegmentIdentifier implements ISegmentIdentifier {
+public final class PositionIdentifier implements IPositionIdentifier {
 	
 	/** XWay (0...L−1) identifies the express way from which the position report is emitted. */
 	private Integer xway;
 	
-	/** Seg (0...99) identifies the mile-long segment from which the position report is emitted. */
-	private Short segment;
+	/** Lane (0...4) identifies the lane of the expressway from which the position report is emitted. */
+	private Short lane;
+	
+	/** Pos (0...527999) identifies the horizontal position of the vehicle on the expressway. */
+	private Integer position;
 	
 	/** Dir (0,1) indicates the direction (0 for Eastbound and 1 for Westbound). */
 	private Short direction;
-	
-	
-	
-	/**
-	 * Instantiates a new {@link SegmentIdentifier}.
-	 */
-	public SegmentIdentifier() {}
-	
-	/**
-	 * Instantiates a new {@link SegmentIdentifier}.
-	 * 
-	 * @param xWay
-	 *            the xway of the segment
-	 * @param segment
-	 *            the segment id
-	 * @param direction
-	 *            the direction
-	 */
-	public SegmentIdentifier(Integer xWay, Short segment, Short direction) {
-		assert (xWay != null);
-		assert (segment != null);
-		assert (direction != null);
-		
-		this.xway = xWay;
-		this.segment = segment;
-		this.direction = direction;
-	}
-	
-	/**
-	 * Instantiates a new {@link SegmentIdentifier}.
-	 * 
-	 * @param record
-	 *            the tuple this segment ID is take from
-	 */
-	public SegmentIdentifier(ISegmentIdentifier record) {
-		assert (record != null);
-		
-		this.xway = record.getXWay();
-		this.segment = record.getSegment();
-		this.direction = record.getDirection();
-	}
 	
 	
 	
@@ -91,13 +52,23 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Returns the segment number.
+	 * Returns the lane ID.
 	 * 
-	 * @return the segment number
+	 * @return the lane ID
 	 */
 	@Override
-	public Short getSegment() {
-		return this.segment;
+	public Short getLane() {
+		return this.lane;
+	}
+	
+	/**
+	 * Return the position.
+	 * 
+	 * @return the position
+	 */
+	@Override
+	public Integer getPosition() {
+		return this.position;
 	}
 	
 	/**
@@ -111,31 +82,35 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Set express way ID, segment number, and direction from the given record.
+	 * Set express way ID, lane, position, and direction from the given record.
 	 * 
 	 * @param record
-	 *            The record this {@link SegmentIdentifier} is populated from.
+	 *            The record this {@link PositionIdentifier} is populated from.
 	 */
-	public void set(ISegmentIdentifier record) {
+	public PositionIdentifier set(IPositionIdentifier record) {
 		assert (record != null);
 		
 		this.xway = record.getXWay();
-		this.segment = record.getSegment();
+		this.lane = record.getLane();
+		this.position = record.getPosition();
 		this.direction = record.getDirection();
+		
+		return this;
 	}
 	
 	/**
-	 * Return a copy of this {@link SegmentIdentifier}.
+	 * Return a copy of this {@link PositionIdentifier}.
 	 * 
-	 * @return a copy of this {@link SegmentIdentifier}
+	 * @return a copy of this {@link PositionIdentifier}
 	 */
-	public SegmentIdentifier copy() {
-		SegmentIdentifier sid = new SegmentIdentifier();
-		sid.xway = this.xway;
-		sid.segment = this.segment;
-		sid.direction = this.direction;
+	public PositionIdentifier copy() {
+		PositionIdentifier pid = new PositionIdentifier();
+		pid.xway = this.xway;
+		pid.lane = this.lane;
+		pid.position = this.position;
+		pid.direction = this.direction;
 		
-		return sid;
+		return pid;
 	}
 	
 	@Override
@@ -143,7 +118,8 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((this.direction == null) ? 0 : this.direction.hashCode());
-		result = prime * result + ((this.segment == null) ? 0 : this.segment.hashCode());
+		result = prime * result + ((this.lane == null) ? 0 : this.lane.hashCode());
+		result = prime * result + ((this.position == null) ? 0 : this.position.hashCode());
 		result = prime * result + ((this.xway == null) ? 0 : this.xway.hashCode());
 		return result;
 	}
@@ -159,7 +135,7 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 		if(this.getClass() != obj.getClass()) {
 			return false;
 		}
-		SegmentIdentifier other = (SegmentIdentifier)obj;
+		PositionIdentifier other = (PositionIdentifier)obj;
 		if(this.direction == null) {
 			if(other.direction != null) {
 				return false;
@@ -167,11 +143,18 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 		} else if(!this.direction.equals(other.direction)) {
 			return false;
 		}
-		if(this.segment == null) {
-			if(other.segment != null) {
+		if(this.lane == null) {
+			if(other.lane != null) {
 				return false;
 			}
-		} else if(!this.segment.equals(other.segment)) {
+		} else if(!this.lane.equals(other.lane)) {
+			return false;
+		}
+		if(this.position == null) {
+			if(other.position != null) {
+				return false;
+			}
+		} else if(!this.position.equals(other.position)) {
 			return false;
 		}
 		if(this.xway == null) {

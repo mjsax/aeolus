@@ -124,7 +124,7 @@ public class SegmentStatsBolt extends BaseRichBolt {
 		
 		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
 		
-		SegmentIdentifier segment = new SegmentIdentifier(pos);
+		SegmentIdentifier segment = null;// new SegmentIdentifier(pos);
 		
 		long newMinute = Time.getMinute(pos.getTime());
 		if(newMinute > this.curMinute) {

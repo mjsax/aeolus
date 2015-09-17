@@ -55,6 +55,8 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final AvgVehicleSpeedTuple inputTuple = new AvgVehicleSpeedTuple();
+	/** Internally reused object. */
+	private final SegmentIdentifier segment = new SegmentIdentifier();
 	
 	/** Maps each segment to its average speed value. */
 	private final Map<SegmentIdentifier, AvgValue> avgSpeedsMap = new HashMap<SegmentIdentifier, AvgValue>();
@@ -76,7 +78,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		
 		short minute = this.inputTuple.getMinute().shortValue();
 		int avgVehicleSpeed = this.inputTuple.getAvgSpeed().intValue();
-		SegmentIdentifier segment = new SegmentIdentifier(this.inputTuple);
+		this.segment.set(this.inputTuple);
 		
 		if(minute > this.currentMinute) {
 			// emit all values for last minute
@@ -93,10 +95,10 @@ public class AverageSpeedBolt extends BaseRichBolt {
 			this.currentMinute = minute;
 		}
 		
-		AvgValue segId = this.avgSpeedsMap.get(segment);
+		AvgValue segId = this.avgSpeedsMap.get(this.segment);
 		if(segId == null) {
 			segId = new AvgValue(avgVehicleSpeed);
-			this.avgSpeedsMap.put(segment, segId);
+			this.avgSpeedsMap.put(this.segment.copy(), segId);
 		} else {
 			segId.updateAverage(avgVehicleSpeed);
 		}

@@ -33,7 +33,6 @@ import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
 import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 
 
@@ -102,7 +101,7 @@ public class SpoutFixedStreamRateDriverTest {
 		long stop = System.nanoTime();
 		
 		long executionTime = (stop - start) / 1000 / 1000;
-		Assert.assertTrue(executionTime - 1 <= 1900 && 1900 <= executionTime + 1);
+		Assert.assertTrue(executionTime - 50 <= 1900 && 1900 <= executionTime + 50);
 	}
 	
 }

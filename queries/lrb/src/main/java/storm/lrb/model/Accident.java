@@ -113,13 +113,13 @@ public class Accident implements Serializable {
 		if(dir == 0) {
 			// maxPos = pos; minPos = (segment-4)*5280;
 			for(short i = segment; 0 < i && i > segment - 5; i--) {
-				SegmentIdentifier segmentTriple = new SegmentIdentifier(xway, i, dir);
+				SegmentIdentifier segmentTriple = null;// new SegmentIdentifier(xway, i, dir);
 				this.involvedSegs.add(segmentTriple);
 			}
 		} else {
 			// minPos = pos; maxPos = (segment+5)*5280-1;
 			for(short i = segment; i < segment + 5 && i < 100; i++) {
-				SegmentIdentifier segmentTriple = new SegmentIdentifier(xway, i, dir);
+				SegmentIdentifier segmentTriple = null;// new SegmentIdentifier(xway, i, dir);
 				this.involvedSegs.add(segmentTriple);
 			}
 		}

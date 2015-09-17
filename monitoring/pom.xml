@@ -83,7 +83,8 @@
                   <type>jar</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                  <includes>de/hub/cs/dbis/aeolus/batching/*.class</includes>
+                  <includes>de/hub/cs/dbis/aeolus/batching/*.class,
+                            de/hub/cs/dbis/aeolus/batching/api/*.class</includes>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -117,6 +118,7 @@
                 <include>de/hub/cs/dbis/aeolus/sinks/*.class</include>
                 <include>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</include>
                 <include>de/hub/cs/dbis/aeolus/batching/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/batching/api/*.class</include>
               </includes>
             </configuration>
           </execution>
