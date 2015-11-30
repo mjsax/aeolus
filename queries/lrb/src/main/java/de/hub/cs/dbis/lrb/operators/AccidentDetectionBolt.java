@@ -30,9 +30,9 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.lrb.types.AccidentTuple;
-import de.hub.cs.dbis.lrb.types.PositionIdentifier;
 import de.hub.cs.dbis.lrb.types.PositionReport;
+import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
+import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
 
 
 
@@ -58,11 +58,11 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final PositionReport inputPositionReport = new PositionReport();
-	/** Internally reused object. */
+	/** Internally (re)used object. */
 	private final PositionIdentifier vehiclePosition = new PositionIdentifier();
-	/** Internally reused object. */
+	/** Internally (re)used object. */
 	private final PositionReport lastPositionReport = new PositionReport();
-	/** Internally reused object. */
+	/** Internally (re)used object. */
 	private final PositionIdentifier lastVehiclePosition = new PositionIdentifier();
 	
 	/** Holds the last positions for each vehicle (if those positions are equal to each other). */

@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types;
+package de.hub.cs.dbis.lrb.types.util;
 
 
 

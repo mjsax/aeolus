@@ -25,7 +25,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.bolt.AccidentNotificationBolt;
 import storm.lrb.bolt.AccountBalanceBolt;
 import storm.lrb.bolt.DailyExpenditureBolt;
 import storm.lrb.bolt.DispatcherBolt;
@@ -38,6 +37,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
 import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
+import de.hub.cs.dbis.lrb.operators.AccidentNotificationBolt;
 import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
 import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
@@ -91,7 +91,7 @@ public class LRBTopology {
 		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageVehicleSpeedBolt(), xways * 3)
 			.fieldsGrouping(
 				TopologyControl.SPLIT_STREAM_BOLT_NAME,
-				TopologyControl.POS_REPORTS_STREAM_ID,
+				TopologyControl.POSITION_REPORTS_STREAM,
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
@@ -118,17 +118,17 @@ public class LRBTopology {
 				TopologyControl.ACCIDENT_INFO_STREAM_ID,
 				new Fields(TopologyControl.POS_REPORT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.ACCIDENT_INFO_FIELD_NAME))
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM,
 				new Fields(fields));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, new AccidentDetectionBolt(), xways)
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID,
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM,
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, new AccidentNotificationBolt(), xways)
 			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENT_INFO_STREAM_ID, // streamId
 				new Fields(TopologyControl.POS_REPORT_FIELD_NAME))
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POS_REPORTS_STREAM_ID, // streamId
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM, // streamId
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_acc"),

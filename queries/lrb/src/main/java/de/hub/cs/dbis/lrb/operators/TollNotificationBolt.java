@@ -39,7 +39,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.lrb.types.PositionReport;
-import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 
 

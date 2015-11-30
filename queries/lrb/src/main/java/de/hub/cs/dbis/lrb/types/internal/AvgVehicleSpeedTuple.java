@@ -16,11 +16,12 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types;
+package de.hub.cs.dbis.lrb.types.internal;
 
 import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 
 
@@ -163,9 +164,9 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	}
 	
 	/**
-	 * Returns the schema of a AvgVehicleSpeedTuple.
+	 * Returns the schema of a {@link AvgVehicleSpeedTuple}.
 	 * 
-	 * @return the schema of a AvgVehicleSpeedTuple
+	 * @return the schema of a {@link AvgVehicleSpeedTuple}
 	 */
 	public static Fields getSchema() {
 		return new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME,

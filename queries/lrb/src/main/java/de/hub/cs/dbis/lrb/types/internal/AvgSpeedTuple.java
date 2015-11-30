@@ -16,11 +16,12 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types;
+package de.hub.cs.dbis.lrb.types.internal;
 
 import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 
 
@@ -28,22 +29,22 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 
 /**
- * {@link LavTuple} represents an intermediate result tuple; the "latest average velocity" (LAV) of a segment within the
- * last 5 minutes (ie, 'minute number'; see {@link Time#getMinute(short)}).<br/>
+ * {@link AvgSpeedTuple} represents an intermediate result tuple; the average speed of all vehicle in a segment within a
+ * 'minute number' time frame (see {@link Time#getMinute(short)}).<br/>
  * <br/>
- * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR, LAV
+ * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR, AVGS
  * <ul>
- * <li>MINUTE: the 'minute number' of the LAV value</li>
- * <li>XWAY: the expressway for the LAV value</li>
- * <li>SEGMENT: the segment number for the LAV value</li>
- * <li>DIR: the direction for the LAV value</li>
- * <li>LAV: the latest average velocity of the segment identified by XWAY, SEGMENT, DIR</li>
+ * <li>MINUTE: the 'minute number' of the speed average</li>
+ * <li>XWAY: the expressway the vehicle is on</li>
+ * <li>SEGMENT: the segment number the vehicle is in</li>
+ * <li>DIR: the vehicle's driving direction</li>
+ * <li>AVGS: the average speed of the vehicle</li>
  * </ul>
  * 
  * @author mjsax
  */
-public final class LavTuple extends Values implements ISegmentIdentifier {
-	private static final long serialVersionUID = 1726682629621494657L;
+public final class AvgSpeedTuple extends Values implements ISegmentIdentifier {
+	private static final long serialVersionUID = 2759896465050962310L;
 	
 	// attribute indexes
 	/** The index of the MINUTE attribute. */
@@ -58,17 +59,17 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	/** The index of the DIR attribute. */
 	public final static int DIR_IDX = 3;
 	
-	/** The index of the LAV attribute. */
-	public final static int LAV_IDX = 4;
+	/** The index of the AVGS attribute. */
+	public final static int AVGS_IDX = 4;
 	
 	
 	
-	public LavTuple() {
+	public AvgSpeedTuple() {
 		super();
 	}
 	
 	/**
-	 * Instantiates a new {@link LavTuple} tuple for the given attributes.
+	 * Instantiates a new {@link AvgSpeedTuple} tuple for the given attributes.
 	 * 
 	 * @param minute
 	 *            the 'minute number' of the speed average
@@ -78,27 +79,27 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	 *            the segment number the vehicle is in
 	 * @param diretion
 	 *            the vehicle's driving direction
-	 * @param lav
-	 *            the latest average velocity of a segment
+	 * @param avgSpeed
+	 *            the average speed of the vehicle
 	 */
-	public LavTuple(Short minute, Integer xway, Short segment, Short diretion, Integer lav) {
+	public AvgSpeedTuple(Short minute, Integer xway, Short segment, Short diretion, Integer avgSpeed) {
 		assert (minute != null);
 		assert (xway != null);
 		assert (segment != null);
 		assert (diretion != null);
-		assert (lav != null);
+		assert (avgSpeed != null);
 		
 		super.add(MINUTE_IDX, minute);
 		super.add(XWAY_IDX, xway);
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, diretion);
-		super.add(LAV_IDX, lav);
+		super.add(AVGS_IDX, avgSpeed);
 	}
 	
 	
 	
 	/**
-	 * Returns the 'minute number' of this {@link LavTuple}.
+	 * Returns the 'minute number' of this {@link AvgSpeedTuple}.
 	 * 
 	 * @return the 'minute number' of this tuple
 	 */
@@ -107,7 +108,7 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Returns the expressway ID of this {@link LavTuple}.
+	 * Returns the expressway ID of this {@link AvgSpeedTuple}.
 	 * 
 	 * @return the VID of this tuple
 	 */
@@ -117,7 +118,7 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Returns the segment of this {@link LavTuple}.
+	 * Returns the segment of this {@link AvgSpeedTuple}.
 	 * 
 	 * @return the VID of this tuple
 	 */
@@ -127,7 +128,7 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Returns the vehicle's direction of this {@link LavTuple}.
+	 * Returns the vehicle's direction of this {@link AvgSpeedTuple}.
 	 * 
 	 * @return the VID of this tuple
 	 */
@@ -137,23 +138,23 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	}
 	
 	/**
-	 * Returns the latest average velocity (LAV) of this {@link LavTuple}.
+	 * Returns the vehicle's average speed of this {@link AvgSpeedTuple}.
 	 * 
-	 * @return the latest average velocity (LAV) of this tuple
+	 * @return the average speed of this tuple
 	 */
-	public final Integer getLav() {
-		return (Integer)super.get(LAV_IDX);
+	public final Integer getAvgSpeed() {
+		return (Integer)super.get(AVGS_IDX);
 	}
 	
 	/**
-	 * Returns the schema of a LavTuple.
+	 * Returns the schema of a {@link AvgSpeedTuple}..
 	 * 
-	 * @return the schema of a LavTuple
+	 * @return the schema of a {@link AvgSpeedTuple}
 	 */
 	public static Fields getSchema() {
 		return new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.LAST_AVERAGE_SPEED_FIELD_NAME);
+			TopologyControl.AVERAGE_SPEED_FIELD_NAME);
 	}
 	
 }

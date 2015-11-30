@@ -16,7 +16,7 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types;
+package de.hub.cs.dbis.lrb.types.util;
 
 
 
@@ -26,7 +26,7 @@ package de.hub.cs.dbis.lrb.types;
  * @author richter
  * @author mjsax
  */
-public final class SegmentIdentifier implements ISegmentIdentifier {
+public class SegmentIdentifier implements ISegmentIdentifier {
 	
 	/** XWay (0...L−1) identifies the express way from which the position report is emitted. */
 	private Integer xway;
@@ -109,6 +109,28 @@ public final class SegmentIdentifier implements ISegmentIdentifier {
 	public Short getDirection() {
 		return this.direction;
 	}
+	
+	/**
+	 * Sets the express way ID.
+	 */
+	public void setXWay(Integer xway) {
+		this.xway = xway;
+	}
+	
+	/**
+	 * Sets the segment number.
+	 */
+	public void setSegment(Short segment) {
+		this.segment = segment;
+	}
+	
+	/**
+	 * Sets the direction.
+	 */
+	public void setDirection(Short direction) {
+		this.direction = direction;
+	}
+	
 	
 	/**
 	 * Set express way ID, segment number, and direction from the given record.

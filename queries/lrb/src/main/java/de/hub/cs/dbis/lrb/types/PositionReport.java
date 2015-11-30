@@ -20,6 +20,8 @@ package de.hub.cs.dbis.lrb.types;
 
 import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.lrb.types.util.IPositionIdentifier;
+import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Constants;
 
 
@@ -195,9 +197,9 @@ public final class PositionReport extends AbstractInputTuple implements IPositio
 	}
 	
 	/**
-	 * Returns the schema of a PositionReport.
+	 * Returns the schema of a {@link PositionReport}.
 	 * 
-	 * @return the schema of a PositionReport
+	 * @return the schema of a {@link PositionReport}
 	 */
 	public static Fields getSchema() {
 		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMER_FIELD_NAME,

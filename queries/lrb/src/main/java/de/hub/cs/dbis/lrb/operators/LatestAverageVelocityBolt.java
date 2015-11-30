@@ -30,9 +30,9 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.lrb.types.AvgSpeedTuple;
-import de.hub.cs.dbis.lrb.types.LavTuple;
-import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
+import de.hub.cs.dbis.lrb.types.internal.LavTuple;
+import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 
 
 
@@ -65,7 +65,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final AvgSpeedTuple input = new AvgSpeedTuple();
-	/** Internally reused object. */
+	/** Internally (re)used object. */
 	private final SegmentIdentifier segmentIdentifier = new SegmentIdentifier();
 	
 	/** The currently processed 'minute number'. */

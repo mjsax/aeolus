@@ -43,8 +43,8 @@ public final class Constants {
 	public static final short ENTRANCE_LANE = 0;
 	public static final short EXIT_LANE = 4;
 	
-	public static final Short EASTBOUND = new Short((short)1);
-	public static final Short WESTBOUND = new Short((short)2);
+	public static final Short EASTBOUND = new Short((short)0);
+	public static final Short WESTBOUND = new Short((short)1);
 	
 	/** 0...100 */
 	public static final short MAX_SEGMENT = 100;

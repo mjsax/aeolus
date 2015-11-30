@@ -27,9 +27,9 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
-import de.hub.cs.dbis.lrb.types.AvgSpeedTuple;
-import de.hub.cs.dbis.lrb.types.AvgVehicleSpeedTuple;
-import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
+import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
+import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.AvgValue;
 
 
@@ -55,7 +55,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	
 	/** Internally (re)used object to access individual attributes. */
 	private final AvgVehicleSpeedTuple inputTuple = new AvgVehicleSpeedTuple();
-	/** Internally reused object. */
+	/** Internally (re)used object. */
 	private final SegmentIdentifier segment = new SegmentIdentifier();
 	
 	/** Maps each segment to its average speed value. */

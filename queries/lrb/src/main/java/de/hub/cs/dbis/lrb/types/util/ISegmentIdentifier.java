@@ -16,21 +16,18 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types;
+package de.hub.cs.dbis.lrb.types.util;
 
 /**
- * Each type that contains the three position identifier attributes XWAY, LANE, POSITION, DIR must implement this
- * interface.
+ * Each type that contains the three segment identifier attributes XWAY, SEGMENT, DIR must implement this interface.
  * 
  * @author mjsax
  */
-public interface IPositionIdentifier {
+public interface ISegmentIdentifier {
 	
 	public Integer getXWay();
 	
-	public Short getLane();
-	
-	public Integer getPosition();
+	public Short getSegment();
 	
 	public Short getDirection();
 	

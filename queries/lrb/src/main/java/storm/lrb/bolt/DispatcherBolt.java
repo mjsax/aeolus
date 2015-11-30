@@ -84,7 +84,7 @@ public class DispatcherBolt extends BaseRichBolt {
 			switch(type) {
 			case AbstractLRBTuple.position_report:
 				PositionReport pos = (PositionReport)line;
-				this.collector.emit(TopologyControl.POS_REPORTS_STREAM_ID, tuple, pos);
+				this.collector.emit(TopologyControl.POSITION_REPORTS_STREAM, tuple, pos);
 				break;
 			case AbstractLRBTuple.account_balance_request:
 				AccountBalanceRequest acc = (AccountBalanceRequest)line;
@@ -116,7 +116,7 @@ public class DispatcherBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
 		
-		outputFieldsDeclarer.declareStream(TopologyControl.POS_REPORTS_STREAM_ID, new Fields(
+		outputFieldsDeclarer.declareStream(TopologyControl.POSITION_REPORTS_STREAM, new Fields(
 			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
 			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.POS_REPORT_FIELD_NAME));
 		

@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.hub.cs.dbis.lrb.types.PositionReport;
-import de.hub.cs.dbis.lrb.types.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 
 
 

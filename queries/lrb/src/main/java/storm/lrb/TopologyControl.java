@@ -28,17 +28,27 @@ package storm.lrb;
  */
 public class TopologyControl {
 	
+	/*
+	 * The identifiers of the topology.
+	 */
 	public final static String TOPOLOGY_NAME = "Linear Road Benchmark";
 	
-	/*
-	 * internal implementation notes: - use java class name notation in order to minimize changes if bolts are actually
-	 * implemented as classes one day
-	 */
+	// spout
+	
+	// bolts
+	public final static String ACCIDENT_DETECTION_BOLT_NAME = "AccidentDetectionBolt";
+	
+	// streams
+	public final static String POSITION_REPORTS_STREAM = "pos-r";
+	
+	// TODO check usage
+	// spouts
+	public final static String START_SPOUT_NAME = "StartSpout";
+	// bolts
 	public final static String SPLIT_STREAM_BOLT_NAME = "SplitStreamBolt";
 	public final static String AVERAGE_SPEED_BOLT_NAME = "AvergageSpeedBolt";
 	public final static String LAST_AVERAGE_SPEED_BOLT_NAME = "LastAverageSpeedBolt";
 	public final static String TOLL_NOTIFICATION_BOLT_NAME = "TollNotificationBolt";
-	public final static String ACCIDENT_DETECTION_BOLT_NAME = "AccidentDetectionBolt";
 	public final static String ACCIDENT_NOTIFICATION_BOLT_NAME = "AccidentNotificationBolt";
 	public final static String ACCIDENT_FILE_WRITER_BOLT_NAME = "AccidentFileWriterBolt";
 	public final static String TOLL_FILE_WRITER_BOLT_NAME = "TollFileWriterBolt";
@@ -46,10 +56,7 @@ public class TopologyControl {
 	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "AccountBalanceFileWriterBolt";
 	public final static String DAILY_EXPEDITURE_BOLT_NAME = "DailyExpenditureBolt";
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
-	
-	public final static String START_SPOUT_NAME = "StartSpout";
-	
-	public final static String POS_REPORTS_STREAM_ID = "PosReportStream";
+	// streams
 	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
 	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM_ID = "AccountBalanceRequestsStream";
 	public final static String DAILY_EXPEDITURE_REQUESTS_STREAM_ID = "DailyExpeditureRequestsStream";
@@ -59,13 +66,16 @@ public class TopologyControl {
 	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "TravelTimeRequestRequestsStream";
 	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
 	
-	/**
-	 * The identifier of tuple attributes.
+	/*
+	 * The identifiers of tuple attributes.
 	 */
-	// Position Report
+	// General (input and output)
 	public final static String TYPE_FIELD_NAME = "type";
 	public final static String TIMESTAMP_FIELD_NAME = "timestamp";
+	
+	// Input (all)
 	public final static String VEHICLE_ID_FIELD_NAME = "vid";
+	// Position Report
 	public final static String SPEED_FIELD_NAME = "speed";
 	public final static String XWAY_FIELD_NAME = "xway";
 	public final static String LANE_FIELD_NAME = "lane";
@@ -73,6 +83,10 @@ public class TopologyControl {
 	public final static String SEGMENT_FIELD_NAME = "seg";
 	public final static String POSITION_FIELD_NAME = "pos";
 	
+	// Output (All)
+	public final static String EMIT_FIELD_NAME = "emit";
+	
+	// internal
 	public final static String AVERAGE_VEHICLE_SPEED_FIELD_NAME = "avgvs";
 	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
 	
