@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -54,7 +57,7 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * <em>before</em> those {@link PositionReport}s.<br />
  * <br />
  * This implementation assumes, that {@link PositionReport}s are delivered via a stream called
- * {@link TopologyControl.POS_REPORTS_STREAM_ID}. Input tuples of all other streams are assumed to be
+ * {@link TopologyControl#POSITION_REPORTS_STREAM}. Input tuples of all other streams are assumed to be
  * {@link AccidentTuple}s. <br />
  * <br />
  * <strong>Input schema:</strong> {@link PositionReport} and {@link AccidentTuple}<br />
@@ -65,9 +68,11 @@ import de.hub.cs.dbis.lrb.util.Constants;
  */
 public class AccidentNotificationBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 5537727428628598519L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AccidentNotificationBolt.class);
 	
 	/** The storm provided output collector. */
 	private OutputCollector collector;
+	
 	/** Buffer for accidents. */
 	private Set<ISegmentIdentifier> currentMinuteAccidents = new HashSet<ISegmentIdentifier>();
 	/** Buffer for accidents. */
@@ -85,8 +90,10 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	/** Internally (re)used object. */
 	private SegmentIdentifier segmentToCheck = new SegmentIdentifier();
 	
-	// TODO
+	/** The currently processed 'minute number'. */
 	private int currentMinute = -1;
+	
+	
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
@@ -98,6 +105,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 		if(input.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM)) {
 			this.inputPositionReport.clear();
 			this.inputPositionReport.addAll(input.getValues());
+			LOGGER.trace(this.inputPositionReport.toString());
 			
 			this.checkMinute(this.inputPositionReport.getMinuteNumber());
 			
@@ -136,7 +144,8 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 				if(this.previousMinuteAccidents.contains(this.segmentToCheck)) {
 					// TODO get accurate emit time...
 					this.collector.emit(new AccidentNotification(this.inputPositionReport.getTime(),
-						this.inputPositionReport.getTime(), this.segmentToCheck.getSegment()));
+						this.inputPositionReport.getTime(), this.segmentToCheck.getSegment(), this.inputPositionReport
+							.getVid()));
 					
 					break; // send a notification for the closest accident only
 				}
@@ -144,7 +153,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 		} else {
 			this.inputAccidentTuple.clear();
 			this.inputAccidentTuple.addAll(input.getValues());
-			
+			LOGGER.trace(this.inputAccidentTuple.toString());
 			this.checkMinute(this.inputAccidentTuple.getMinuteNumber().shortValue());
 			assert (this.inputAccidentTuple.getMinuteNumber().shortValue() == this.currentMinute);
 			
@@ -155,7 +164,10 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	}
 	
 	private void checkMinute(short minute) {
+		assert (minute >= this.currentMinute);
+		
 		if(minute > this.currentMinute) {
+			LOGGER.trace("New minute: {}", new Short(minute));
 			this.currentMinute = minute;
 			this.previousMinuteAccidents = this.currentMinuteAccidents;
 			this.currentMinuteAccidents = new HashSet<ISegmentIdentifier>();

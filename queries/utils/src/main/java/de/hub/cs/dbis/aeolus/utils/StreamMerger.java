@@ -44,11 +44,14 @@ import backtype.storm.tuple.Values;
 public class StreamMerger<T> {
 	private final static Logger logger = LoggerFactory.getLogger(StreamMerger.class);
 	
-	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
+	/** The index of the timestamp attribute ({@code -1} if attribute name or timestamp extractor is used). */
 	private final int tsIndex;
 	
-	/** The name of the timestamp attribute ({@code null} if attribute index is used). */
+	/** The name of the timestamp attribute ({@code null} if attribute index or timestamp extractor is used). */
 	private final String tsAttributeName;
+	
+	/** The extractor for the timestamp ({@code null} if attribute index or name is used). */
+	private final TimeStampExtractor<T> tsExtractor;
 	
 	/** Input tuple buffer for merging. Contains a list of input tuples for each producer task. */
 	private final HashMap<Integer, LinkedList<T>> mergeBuffer = new HashMap<Integer, LinkedList<T>>();
@@ -74,6 +77,7 @@ public class StreamMerger<T> {
 		
 		this.tsIndex = tsIndex;
 		this.tsAttributeName = null;
+		this.tsExtractor = null;
 		
 		this.initialize(partitionIds);
 	}
@@ -92,6 +96,26 @@ public class StreamMerger<T> {
 		
 		this.tsIndex = -1;
 		this.tsAttributeName = tsAttributeName;
+		this.tsExtractor = null;
+		
+		this.initialize(partitionIds);
+	}
+	
+	/**
+	 * Instantiates a new {@link StreamMerger}. Can only be used if {@code T} is type {@link Tuple}.
+	 * 
+	 * @param tsExtractor
+	 *            The extractor for the timestamp.
+	 */
+	public StreamMerger(Collection<Integer> partitionIds, TimeStampExtractor<T> tsExtractor) {
+		assert (partitionIds != null);
+		assert (tsExtractor != null);
+		
+		logger.debug("Initializing with timestamp extractor:");
+		
+		this.tsIndex = -1;
+		this.tsAttributeName = null;
+		this.tsExtractor = tsExtractor;
 		
 		this.initialize(partitionIds);
 	}
@@ -171,14 +195,17 @@ public class StreamMerger<T> {
 	private long getTsValue(T tuple) {
 		if(this.tsIndex != -1) {
 			if(tuple instanceof Tuple) {
-				return ((Tuple)tuple).getLong(this.tsIndex).longValue();
+				return ((Number)((Tuple)tuple).getValue(this.tsIndex)).longValue();
 			}
 			assert (tuple instanceof Values);
-			return ((Long)((Values)tuple).get(this.tsIndex)).longValue();
+			return ((Number)((Values)tuple).get(this.tsIndex)).longValue();
 			
 		}
+		if(this.tsAttributeName != null) {
+			return ((Number)((Tuple)tuple).getValueByField(this.tsAttributeName)).longValue();
+		}
 		
-		return ((Tuple)tuple).getLongByField(this.tsAttributeName).longValue();
+		return this.tsExtractor.getTs(tuple);
 	}
 	
 	/**

@@ -45,6 +45,11 @@ public class AccidentNotification extends AbstractOutputTuple {
 	// attribute indexes
 	/** The index of the segment attribute. */
 	public final static int SEG_IDX = 3;
+	/**
+	 * The index of the VID attribute. (Not part of LRB specification but necessary for "mimic" message delivery to
+	 * correct car.)
+	 */
+	public final static int VID_IDX = 4;
 	
 	
 	
@@ -61,15 +66,18 @@ public class AccidentNotification extends AbstractOutputTuple {
 	 *            the emit time of the notification
 	 * @param segment
 	 *            the accident segment
+	 * @param vid
+	 *            the vehicle ID this notification has to be delivered to
 	 */
-	public AccidentNotification(Short time, Short emit, Short segment) {
+	public AccidentNotification(Short time, Short emit, Short segment, Integer vid) {
 		super(AbstractLRBTuple.ACCIDENT_NOTIFICATION, time, emit);
 		
 		assert (segment != null);
 		
 		super.add(SEG_IDX, segment);
+		super.add(VID_IDX, vid);
 		
-		assert (super.size() == 4);
+		assert (super.size() == 5);
 	}
 	
 	
@@ -84,20 +92,29 @@ public class AccidentNotification extends AbstractOutputTuple {
 	}
 	
 	/**
+	 * Returns the vehicle ID of this {@link AccidentNotification}.
+	 * 
+	 * @return the VID of this tuple
+	 */
+	public final Integer getVid() {
+		return (Integer)super.get(VID_IDX);
+	}
+	
+	/**
 	 * Returns the schema of an {@link AccidentNotification}.
 	 * 
 	 * @return the schema of an {@link AccidentNotification}
 	 */
 	public static Fields getSchema() {
-		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMER_FIELD_NAME,
-			TopologyControl.EMIT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME);
+		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+			TopologyControl.EMIT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME);
 	}
 	
 	/**
 	 * Compares the specified object with this {@link AccidentNotification} object for equality. Returns true if and
-	 * only if the specified object is also a {@link AccidentNotification} and their TIME and SEGMENT attributes are
-	 * equals. The EMIT attribute is not considered. Furthermore, TYPE is known to be equal if the specified object is
-	 * of type {@link AccidentNotification}.
+	 * only if the specified object is also a {@link AccidentNotification} and their TIME, SEGMENT, and VID attributes
+	 * are equals. The EMIT attribute is not considered. Furthermore, TYPE is known to be equal if the specified object
+	 * is of type {@link AccidentNotification}.
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -126,6 +143,14 @@ public class AccidentNotification extends AbstractOutputTuple {
 				return false;
 			}
 		} else if(!this.getSegment().equals(other.getSegment())) {
+			return false;
+		}
+		
+		if(this.getVid() == null) {
+			if(other.getVid() != null) {
+				return false;
+			}
+		} else if(!this.getVid().equals(other.getVid())) {
 			return false;
 		}
 		

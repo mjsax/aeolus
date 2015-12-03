@@ -94,10 +94,10 @@ public class LRBTopologyMain {
 			+ executors + "E_O" + offset;
 		Config conf = new Config();
 		LRBTopology lRBTopology = new LRBTopology(nameext, xways, workers, tasks, executors, offset,
-			new FileReaderSpout(TopologyControl.SPOUT_STREAM_ID), // add AbstractOrderedFileInputSpout.INPUT_FILE_NAME
-																	// and
-																	// AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES
-																	// in Config below
+			new FileReaderSpout(), // add AbstractOrderedFileInputSpout.INPUT_FILE_NAME
+									// and
+									// AbstractOrderedFileInputSpout.INPUT_FILE_SUFFIXES
+									// in Config below
 			stormTimer, submit, histFile, topologyNamePrefix, conf);
 		StormTopology topology = lRBTopology.getStormTopology();
 		conf.setDebug(stormConfigDebug);

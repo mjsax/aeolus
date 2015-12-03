@@ -20,6 +20,7 @@ package storm.lrb.model;
 
 import java.io.Serializable;
 
+import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
@@ -80,8 +81,8 @@ public class VehicleAccount implements Serializable {
 		// TODO nach zweiter meinung fragen: Benchmarkspezifikation
 		// widerspricht sich bei der Reihenfolge der Werte des Outputtuples.
 		
-		AccountBalance retValue = new AccountBalance(accBalReq.getTime(), accBalReq.getQueryIdentifier(),
-			this.tollToday, this.tollTime, accBalReq.getTime());
+		AccountBalance retValue = new AccountBalance(accBalReq.getTime(), accBalReq.getQid(), this.tollToday,
+			this.tollTime, accBalReq.getTime());
 		return retValue;
 	}
 }

@@ -16,28 +16,25 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.types.util;
+package de.hub.cs.dbis.aeolus.utils;
 
 import java.io.Serializable;
+
+import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 
 
 
 
 
 /**
- * Each type that contains the three position identifier attributes XWAY, LANE, POSITION, DIR must implement this
- * interface.
+ * {@link TimeStampExtractor} extract the timestamp from a given {@link Tuple} or {@link Values}. (Type {@code T} is
+ * expected to be either {@link Tuple} (for usage in bolts) or {@link Values} (for usage in spouts).)
  * 
  * @author mjsax
  */
-public interface IPositionIdentifier extends Serializable {
+public interface TimeStampExtractor<T> extends Serializable {
 	
-	public Integer getXWay();
-	
-	public Short getLane();
-	
-	public Integer getPosition();
-	
-	public Short getDirection();
+	public long getTs(T tuple);
 	
 }

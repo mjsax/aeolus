@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.DailyExpenditureRequest;
 import storm.lrb.tools.Helper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -36,6 +35,7 @@ import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.lrb.toll.TollDataStore;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
 import de.hub.cs.dbis.lrb.util.Constants;
 
 
@@ -112,18 +112,17 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 				.getValueByField(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
 			int vehicleIdentifier = exp.getVid();
 			Values values;
-			Integer toll = this.dataStore.retrieveToll(exp.getxWay(), exp.getDay(), vehicleIdentifier);
+			Integer toll = this.dataStore.retrieveToll(exp.getXWay(), exp.getDay(), vehicleIdentifier);
 			if(toll != null) {
 				LOG.debug("ExpenditureRequest: found vehicle identifier %d", vehicleIdentifier);
 				
 				// LOG.debug("3, %d, %d, %d, %d", exp.getTime(), exp.getTimer().getOffset(), exp.getQueryIdentifier(),
 				// toll);
 				
-				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(),
-					exp.getQueryIdentifier(), toll);
+				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(), exp.getQid(), toll);
 			} else {
-				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(),
-					exp.getQueryIdentifier(), Constants.INITIAL_TOLL);
+				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(), exp.getQid(),
+					Constants.INITIAL_TOLL);
 				
 			}
 			this.collector.emit(values);

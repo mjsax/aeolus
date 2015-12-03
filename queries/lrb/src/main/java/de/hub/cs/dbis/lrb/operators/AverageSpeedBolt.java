@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -49,6 +52,7 @@ import de.hub.cs.dbis.lrb.util.AvgValue;
  */
 public class AverageSpeedBolt extends BaseRichBolt {
 	private static final long serialVersionUID = -8258719764537430323L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AverageSpeedBolt.class);
 	
 	/** The storm provided output collector. */
 	private OutputCollector collector;
@@ -75,10 +79,13 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	public void execute(Tuple input) {
 		this.inputTuple.clear();
 		this.inputTuple.addAll(input.getValues());
+		LOGGER.trace(this.inputTuple.toString());
 		
 		short minute = this.inputTuple.getMinute().shortValue();
 		int avgVehicleSpeed = this.inputTuple.getAvgSpeed().intValue();
 		this.segment.set(this.inputTuple);
+		
+		assert (minute >= this.currentMinute);
 		
 		if(minute > this.currentMinute) {
 			// emit all values for last minute
@@ -104,7 +111,6 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		}
 		
 		this.collector.ack(input);
-		
 	}
 	
 	@Override

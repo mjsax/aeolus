@@ -115,7 +115,7 @@ public class AccidentNotificationBoltTest {
 		}
 		
 		List<AccidentNotification> expectedResult = new ArrayList<AccidentNotification>();
-		expectedResult.add(new AccidentNotification((short)121, (short)121, (short)2));
+		expectedResult.add(new AccidentNotification((short)121, (short)121, (short)2, dummyInt));
 		
 		Assert.assertEquals(1, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));

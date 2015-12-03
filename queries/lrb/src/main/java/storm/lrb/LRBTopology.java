@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.bolt.AccountBalanceBolt;
 import storm.lrb.bolt.DailyExpenditureBolt;
-import storm.lrb.bolt.DispatcherBolt;
 import storm.lrb.tools.Helper;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
@@ -39,6 +38,7 @@ import de.hub.cs.dbis.aeolus.sinks.FileSinkBolt;
 import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
 import de.hub.cs.dbis.lrb.operators.AccidentNotificationBolt;
 import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
+import de.hub.cs.dbis.lrb.operators.DispatcherBolt;
 import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
@@ -82,11 +82,11 @@ public class LRBTopology {
 			TopologyControl.DIRECTION_FIELD_NAME));
 		TopologyBuilder builder = new TopologyBuilder();
 		
-		builder.setSpout(TopologyControl.START_SPOUT_NAME, spout, 1);
+		builder.setSpout(TopologyControl.SPOUT_NAME, spout, 1);
 		
 		builder.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new DispatcherBolt(), 2 * xways).setNumTasks(4 * xways)
-			.shuffleGrouping(TopologyControl.START_SPOUT_NAME, TopologyControl.SPOUT_STREAM_ID);// .allGrouping("Spout",
-																								// "stormtimer");
+			.shuffleGrouping(TopologyControl.SPOUT_NAME);// .allGrouping("Spout",
+															// "stormtimer");
 		
 		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME, new AverageVehicleSpeedBolt(), xways * 3)
 			.fieldsGrouping(
@@ -136,7 +136,7 @@ public class LRBTopology {
 		
 		builder
 			.setBolt(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME, new AccountBalanceBolt(), xways)
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID,
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENT_STREAM_ID,
 				new Fields(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
@@ -145,17 +145,16 @@ public class LRBTopology {
 			new FileSinkBolt(topologyNamePrefix + "_bal"), 1).allGrouping(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME);
 		
 		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(), xways * 1)
-			.shuffleGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME,
-				TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID);
+			.shuffleGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM);
 		
 		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME,
 			new FileSinkBolt(topologyNamePrefix + "_exp"), 1).allGrouping(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME);
 		
 		
 		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.PositionReport.class);
-		stormConfig.registerSerialization(storm.lrb.model.AccountBalanceRequest.class);
-		stormConfig.registerSerialization(storm.lrb.model.DailyExpenditureRequest.class);
-		stormConfig.registerSerialization(storm.lrb.model.TravelTimeRequest.class);
+		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.AccountBalanceRequest.class);
+		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.DailyExpenditureRequest.class);
+		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.TravelTimeRequest.class);
 		stormConfig.registerSerialization(storm.lrb.model.Accident.class);
 		stormConfig.registerSerialization(storm.lrb.model.VehicleInfo.class);
 		stormConfig.registerSerialization(storm.lrb.tools.StopWatch.class);

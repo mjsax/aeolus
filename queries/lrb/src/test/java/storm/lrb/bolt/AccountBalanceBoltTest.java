@@ -54,7 +54,6 @@ import org.mockito.Mockito;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.model.AccountBalance;
-import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.tools.EntityHelper;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
@@ -66,6 +65,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
@@ -162,7 +162,7 @@ public class AccountBalanceBoltTest {
 		instance.declareOutputFields(outputFieldsDeclarer);
 		
 		tuple = new TupleImpl(generalContextMock, new Values(vehicleID0, xWay, assessedToll, posReport0Stopped), 1, // taskId
-			TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID // streamID
+			TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM // streamID
 		);
 		instance.execute(tuple);
 		assertEquals(1, collector.acked.size());

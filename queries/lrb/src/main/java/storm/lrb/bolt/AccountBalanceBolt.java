@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
 import storm.lrb.model.AccountBalance;
-import storm.lrb.model.AccountBalanceRequest;
 import storm.lrb.model.VehicleAccount;
 import storm.lrb.tools.Helper;
 import backtype.storm.task.OutputCollector;
@@ -36,6 +35,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
+import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
@@ -73,7 +73,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	public void execute(Tuple tuple) {
 		if(tuple.getSourceStreamId().equals(TopologyControl.TOLL_ASSESSMENT_STREAM_ID)) {
 			this.getBalanceAndSend(tuple);
-		} else if(tuple.getSourceStreamId().equals(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID)) {
+		} else if(tuple.getSourceStreamId().equals(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM)) {
 			this.updateBalance(tuple);
 		} else {
 			throw new RuntimeException(String.format("Errornous stream subscription. Please report a bug at %s",
@@ -104,7 +104,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 		
 		if(account == null) {
 			LOG.debug("No account information available yet: at:" + bal.getTime() + " for request" + bal);
-			AccountBalance accountBalance = new AccountBalance(bal.getTime(), bal.getQueryIdentifier(), 0, // balance
+			AccountBalance accountBalance = new AccountBalance(bal.getTime(), bal.getQid(), 0, // balance
 				0, // tollTime
 				bal.getTime());
 			this.collector.emit(accountBalance);

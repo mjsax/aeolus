@@ -18,6 +18,11 @@
  */
 package de.hub.cs.dbis.lrb.types.util;
 
+import storm.lrb.TopologyControl;
+import backtype.storm.tuple.Fields;
+
+
+
 
 
 /**
@@ -26,6 +31,7 @@ package de.hub.cs.dbis.lrb.types.util;
  * @author mjsax
  */
 public final class PositionIdentifier implements IPositionIdentifier {
+	private static final long serialVersionUID = -5932406731212707454L;
 	
 	/** XWay (0...L−1) identifies the express way from which the position report is emitted. */
 	private Integer xway;
@@ -113,6 +119,16 @@ public final class PositionIdentifier implements IPositionIdentifier {
 		return pid;
 	}
 	
+	/**
+	 * Returns the schema of a {@link PositionIdentifier}.
+	 * 
+	 * @return the schema of a {@link PositionIdentifier}
+	 */
+	public static Fields getSchema() {
+		return new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.LANE_FIELD_NAME,
+			TopologyControl.POSITION_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME);
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -167,4 +183,9 @@ public final class PositionIdentifier implements IPositionIdentifier {
 		return true;
 	}
 	
+	@Override
+	public String toString() {
+		return "x-way: " + this.xway + " lane: " + this.lane + " direction: " + this.direction + " position: "
+			+ this.position;
+	}
 }

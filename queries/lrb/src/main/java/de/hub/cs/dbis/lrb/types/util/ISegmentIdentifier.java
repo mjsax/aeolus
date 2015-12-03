@@ -18,12 +18,18 @@
  */
 package de.hub.cs.dbis.lrb.types.util;
 
+import java.io.Serializable;
+
+
+
+
+
 /**
  * Each type that contains the three segment identifier attributes XWAY, SEGMENT, DIR must implement this interface.
  * 
  * @author mjsax
  */
-public interface ISegmentIdentifier {
+public interface ISegmentIdentifier extends Serializable {
 	
 	public Integer getXWay();
 	

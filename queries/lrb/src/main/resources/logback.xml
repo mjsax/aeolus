@@ -8,8 +8,14 @@
     </encoder>
   </appender>
 
-  <!-- logger name="de.hub.cs.dbis.aeolus.queries.utils" level="TRACE"/-->
-  <!-- logger name="de.hub.cs.dbis.aeolus.testUtils" level="TRACE"/-->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.AccidentNotificationBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.AverageSpeedBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.DispatcherBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.FileReaderSpout" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt" level="TRACE"/ -->
+  <!-- logger name="de.hub.cs.dbis.lrb.operators.TollNotificationBolt" level="TRACE"/ -->
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

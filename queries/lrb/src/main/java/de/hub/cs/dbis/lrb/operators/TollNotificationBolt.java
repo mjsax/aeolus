@@ -314,7 +314,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		
-		declarer.declareStream(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, FIELDS_OUTGOING_TOLL_NOTIFICATION);
+		declarer.declareStream(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM, FIELDS_OUTGOING_TOLL_NOTIFICATION);
 		// TODO which one is correct?
 		declarer.declareStream(TopologyControl.TOLL_NOTIFICATION_STREAM_ID, FIELDS_OUTGOING_TOLL_NOTIFICATION);
 	}

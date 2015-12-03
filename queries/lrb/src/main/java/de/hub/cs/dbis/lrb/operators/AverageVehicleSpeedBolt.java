@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -54,6 +56,7 @@ import de.hub.cs.dbis.lrb.util.Time;
  */
 public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	private final static long serialVersionUID = 5537727428628598519L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AverageVehicleSpeedBolt.class);
 	
 	/** The storm provided output collector. */
 	private OutputCollector collector;
@@ -83,6 +86,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	public void execute(Tuple input) {
 		this.inputPositionReport.clear();
 		this.inputPositionReport.addAll(input.getValues());
+		LOGGER.trace(this.inputPositionReport.toString());
 		
 		Integer vid = this.inputPositionReport.getVid();
 		short minute = this.inputPositionReport.getMinuteNumber();

@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -52,6 +55,7 @@ import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
  */
 public class AccidentDetectionBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 5537727428628598519L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AccidentDetectionBolt.class);
 	
 	/** The storm provided output collector. */
 	private OutputCollector collector;
@@ -67,7 +71,6 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	
 	/** Holds the last positions for each vehicle (if those positions are equal to each other). */
 	private final Map<Integer, List<PositionReport>> lastPositions = new HashMap<Integer, List<PositionReport>>();
-	
 	/** Hold all vehicles that have <em>stopped</em> within a segment. */
 	private final Map<PositionIdentifier, Set<Integer>> stoppedCarsPerPosition = new HashMap<PositionIdentifier, Set<Integer>>();
 	
@@ -83,6 +86,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 		this.inputPositionReport.clear();
 		this.inputPositionReport.addAll(input.getValues());
 		Integer vid = this.inputPositionReport.getVid();
+		LOGGER.trace(this.inputPositionReport.toString());
 		
 		if(this.inputPositionReport.isOnExitLane()) {
 			List<PositionReport> vehiclePositions = this.lastPositions.remove(vid);
@@ -128,6 +132,8 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 		if(this.vehiclePosition.equals(this.lastVehiclePosition)) {
 			vehiclePositions.add(0, this.inputPositionReport.copy());
 			if(vehiclePositions.size() >= 4) {
+				LOGGER.trace("Car {} stopped at {} ({})", vid, this.vehiclePosition,
+					new Short(this.inputPositionReport.getMinuteNumber()));
 				if(vehiclePositions.size() > 4) {
 					assert (vehiclePositions.size() == 5);
 					vehiclePositions.remove(4);

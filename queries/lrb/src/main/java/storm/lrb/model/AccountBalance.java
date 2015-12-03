@@ -20,6 +20,7 @@ package storm.lrb.model;
 
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 import de.hub.cs.dbis.lrb.types.AbstractOutputTuple;
+import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 
 
 

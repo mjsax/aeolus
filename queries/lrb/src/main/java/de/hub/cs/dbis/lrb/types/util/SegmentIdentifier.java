@@ -27,6 +27,7 @@ package de.hub.cs.dbis.lrb.types.util;
  * @author mjsax
  */
 public class SegmentIdentifier implements ISegmentIdentifier {
+	private static final long serialVersionUID = -1749126120064068807L;
 	
 	/** XWay (0...L−1) identifies the express way from which the position report is emitted. */
 	private Integer xway;

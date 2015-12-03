@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.model.DailyExpenditureRequest;
 import storm.lrb.tools.Helper;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
@@ -48,6 +47,7 @@ import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
+import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
 import de.hub.cs.dbis.lrb.util.Constants;
 
 

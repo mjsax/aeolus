@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import storm.lrb.TopologyControl;
-import storm.lrb.bolt.DispatcherBolt;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
@@ -40,6 +39,7 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.lrb.operators.DispatcherBolt;
 
 
 
@@ -143,7 +143,7 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 					this.firstrun = false;
 				}
 				// LOG.info(line+ " at "+cnt.getElapsedTimeSecs());
-				this.collector.emit(TopologyControl.SPOUT_STREAM_ID, new Values(line, this.cnt), this.tupleCnt);
+				this.collector.emit(new Values(line, this.cnt), this.tupleCnt);
 				this.tupleCnt++;
 				
 			} else {
@@ -195,8 +195,7 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declareStream(TopologyControl.SPOUT_STREAM_ID, new Fields(TopologyControl.TUPLE_FIELD_NAME,
-			TopologyControl.TIMER_FIELD_NAME));
+		declarer.declare(new Fields(TopologyControl.TUPLE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME));
 	}
 	
 }

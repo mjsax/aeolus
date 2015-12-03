@@ -56,7 +56,7 @@ public final class PositionReport extends AbstractInputTuple implements IPositio
 	/** The index of the express way attribute. */
 	public final static int XWAY_IDX = 4;
 	
-	/** The index of the land attribute. */
+	/** The index of the lane attribute. */
 	public final static int LANE_IDX = 5;
 	
 	/** The index of the direction attribute. */
@@ -202,7 +202,7 @@ public final class PositionReport extends AbstractInputTuple implements IPositio
 	 * @return the schema of a {@link PositionReport}
 	 */
 	public static Fields getSchema() {
-		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMER_FIELD_NAME,
+		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
 			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.SPEED_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.LANE_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 			TopologyControl.POSITION_FIELD_NAME);

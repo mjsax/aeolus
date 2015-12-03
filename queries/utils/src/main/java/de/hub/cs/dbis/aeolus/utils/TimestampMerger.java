@@ -39,9 +39,8 @@ import backtype.storm.tuple.Tuple;
 
 /**
  * {@link TimestampMerger} merges all incoming streams (all physical substreams from all tasks) over all logical
- * producers in ascending timestamp order. The timestamp attribute must be at the same index in all incoming streams, or
- * must have the same attribute name. Input tuples must be in ascending timestamp order within each incoming substream.
- * The timestamp attribute is expected to be of type {@link Long}.
+ * producers in ascending timestamp order. Input tuples must be in ascending timestamp order within each incoming
+ * substream. The timestamp attribute is expected to be of type {@link Number}.
  * 
  * @author Matthias J. Sax
  */
@@ -52,11 +51,14 @@ public class TimestampMerger implements IRichBolt {
 	/** The original bolt that consumers a stream of input tuples that are ordered by their timestamp attribute. */
 	private final IRichBolt wrappedBolt;
 	
-	/** The index of the timestamp attribute ({@code -1} if attribute name is used). */
+	/** The index of the timestamp attribute ({@code -1} if attribute name or timestamp extractor is used). */
 	private final int tsIndex;
 	
-	/** The name of the timestamp attribute ({@code null} if attribute index is used). */
+	/** The name of the timestamp attribute ({@code null} if attribute index or timestamp extractor is used). */
 	private final String tsAttributeName;
+	
+	/** The extractor for the timestamp ({@code null} if attribute index or name is used). */
+	private final TimeStampExtractor<Tuple> tsExtractor;
 	
 	/** Input tuple buffer for merging. */
 	private StreamMerger<Tuple> merger;
@@ -80,6 +82,7 @@ public class TimestampMerger implements IRichBolt {
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = tsIndex;
 		this.tsAttributeName = null;
+		this.tsExtractor = null;
 	}
 	
 	/**
@@ -99,8 +102,28 @@ public class TimestampMerger implements IRichBolt {
 		this.wrappedBolt = wrappedBolt;
 		this.tsIndex = -1;
 		this.tsAttributeName = tsAttributeName;
+		this.tsExtractor = null;
 	}
 	
+	/**
+	 * Instantiates a new {@link TimestampMerger} that wrapped the given bolt.
+	 * 
+	 * @param wrappedBolt
+	 *            The bolt to be wrapped.
+	 * @param tsExtractor
+	 *            The extractor for the timestamp.
+	 */
+	public TimestampMerger(IRichBolt wrappedBolt, TimeStampExtractor<Tuple> tsExtractor) {
+		assert (wrappedBolt != null);
+		assert (tsExtractor != null);
+		
+		logger.debug("Initialize with timestamp extractor");
+		
+		this.wrappedBolt = wrappedBolt;
+		this.tsIndex = -1;
+		this.tsAttributeName = null;
+		this.tsExtractor = tsExtractor;
+	}
 	
 	
 	@Override
@@ -114,12 +137,14 @@ public class TimestampMerger implements IRichBolt {
 		logger.debug("Detected producer tasks: {}", taskIds);
 		
 		if(this.tsIndex != -1) {
-			assert (this.tsAttributeName == null);
+			assert (this.tsAttributeName == null && this.tsExtractor == null);
 			this.merger = new StreamMerger<Tuple>(taskIds, this.tsIndex);
-		} else {
-			assert (this.tsAttributeName != null);
+		} else if(this.tsAttributeName != null) {
+			assert (this.tsExtractor == null);
 			this.merger = new StreamMerger<Tuple>(taskIds, this.tsAttributeName);
-			
+		} else {
+			assert (this.tsExtractor != null);
+			this.merger = new StreamMerger<Tuple>(taskIds, this.tsExtractor);
 		}
 		
 		this.wrappedBolt.prepare(arg0, arg1, arg2);
