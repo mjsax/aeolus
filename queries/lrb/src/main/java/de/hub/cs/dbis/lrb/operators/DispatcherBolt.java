@@ -40,18 +40,20 @@ import de.hub.cs.dbis.lrb.types.TravelTimeRequest;
 
 
 /**
- * {@link DispatcherBolt} retrieves a stream of &lt;ts,string&gt; tuples, parses the second CSV attribute and emits an
- * appropriate LRB tuple. The LRB CSV schema is:
+ * {@link DispatcherBolt} retrieves a stream of {@code <ts,string>} tuples, parses the second CSV attribute and emits an
+ * appropriate LRB tuple. The LRB input CSV schema is:
  * {@code Type, Time, VID, Spd, XWay, Lane, Dir, Seg, Pos, QID, S_init, S_end, DOW, TOD, Day}<br />
  * <br />
- * <strong>Output schema:</strong><br />
+ * <strong>Output schema:</strong>
  * <ul>
- * <li>{@link PositionReport} (stream: {@link TopologyControl#POSITION_REPORTS_STREAM})</li>
- * <li>{@link AccountBalanceRequest} (stream: {@link TopologyControl#ACCOUNT_BALANCE_REQUESTS_STREAM})</li>
- * <li>{@link DailyExpenditureRequest} (stream: {@link TopologyControl#DAILY_EXPEDITURE_REQUESTS_STREAM})</li>
- * <li>{@link TravelTimeRequest} (stream: {@link TopologyControl#TRAVEL_TIME_REQUEST_STREAM})</li>
+ * <li>{@link PositionReport} (stream: {@link TopologyControl#POSITION_REPORTS_STREAM_ID})</li>
+ * <li>{@link AccountBalanceRequest} (stream: {@link TopologyControl#ACCOUNT_BALANCE_REQUESTS_STREAM_ID})</li>
+ * <li>{@link DailyExpenditureRequest} (stream: {@link TopologyControl#DAILY_EXPEDITURE_REQUESTS_STREAM_ID})</li>
+ * <li>{@link TravelTimeRequest} (stream: {@link TopologyControl#TRAVEL_TIME_REQUEST_STREAM_ID})</li>
  * </ul>
- */
+ * 
+ * @author mjsax
+ **/
 public class DispatcherBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 6908631355830501961L;
 	private static final Logger LOGGER = LoggerFactory.getLogger(DispatcherBolt.class);
@@ -67,21 +69,21 @@ public class DispatcherBolt extends BaseRichBolt {
 	}
 	
 	@Override
-	public void execute(Tuple tuple) {
+	public void execute(Tuple input) {
 		String raw = null;
 		try {
-			raw = tuple.getString(1);
+			raw = input.getString(1);
 			String[] token = raw.split(",");
 			
 			// common attributes of all input tuples
 			short type = Short.parseShort(token[0]);
-			Short time = new Short(tuple.getLong(0).shortValue());
+			Short time = new Short(input.getLong(0).shortValue());
 			Integer vid = new Integer(Integer.parseInt(token[2]));
 			
 			assert (time.shortValue() == Short.parseShort(token[1]));
 			
 			if(type == AbstractLRBTuple.position_report) {
-				this.collector.emit(TopologyControl.POSITION_REPORTS_STREAM, new PositionReport(//
+				this.collector.emit(TopologyControl.POSITION_REPORTS_STREAM_ID, new PositionReport(//
 					time,//
 					vid,//
 					new Integer(Integer.parseInt(token[3])), // speed
@@ -96,18 +98,18 @@ public class DispatcherBolt extends BaseRichBolt {
 				
 				switch(type) {
 				case AbstractLRBTuple.account_balance_request:
-					this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM, new AccountBalanceRequest(
+					this.collector.emit(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, new AccountBalanceRequest(
 						time, vid, qid));
 					break;
 				case AbstractLRBTuple.daily_expenditure_request:
-					this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM, new DailyExpenditureRequest(
-						time, vid,//
-						new Integer(Integer.parseInt(token[4])), // xway
-						qid,//
-						new Short(Short.parseShort(token[14])))); // day
+					this.collector.emit(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID,
+						new DailyExpenditureRequest(time, vid,//
+							new Integer(Integer.parseInt(token[4])), // xway
+							qid,//
+							new Short(Short.parseShort(token[14])))); // day
 					break;
 				case AbstractLRBTuple.travel_time_request:
-					this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM, new TravelTimeRequest(time, vid,//
+					this.collector.emit(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, new TravelTimeRequest(time, vid,//
 						new Integer(Integer.parseInt(token[4])), // xway
 						qid,//
 						new Short(Short.parseShort(token[10])), // S_init
@@ -124,17 +126,18 @@ public class DispatcherBolt extends BaseRichBolt {
 			LOGGER.error("StackTrace:", e);
 		}
 		
-		this.collector.ack(tuple);
+		this.collector.ack(input);
 	}
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-		outputFieldsDeclarer.declareStream(TopologyControl.POSITION_REPORTS_STREAM, PositionReport.getSchema());
-		outputFieldsDeclarer.declareStream(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM,
+		outputFieldsDeclarer.declareStream(TopologyControl.POSITION_REPORTS_STREAM_ID, PositionReport.getSchema());
+		outputFieldsDeclarer.declareStream(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID,
 			AccountBalanceRequest.getSchema());
-		outputFieldsDeclarer.declareStream(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM,
+		outputFieldsDeclarer.declareStream(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID,
 			DailyExpenditureRequest.getSchema());
-		outputFieldsDeclarer.declareStream(TopologyControl.TRAVEL_TIME_REQUEST_STREAM, TravelTimeRequest.getSchema());
+		outputFieldsDeclarer
+			.declareStream(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, TravelTimeRequest.getSchema());
 	}
 	
 }

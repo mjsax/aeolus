@@ -26,8 +26,8 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 
 /**
- * Base class for all LRB tuples.<br/>
- * <br/>
+ * Base class for all LRB tuples.<br />
+ * <br />
  * All tuples do have the following two attributes: TYPE, TIME
  * <ul>
  * <li>TYPE: the tuple type ID</li>
@@ -62,9 +62,9 @@ public abstract class AbstractLRBTuple extends Values {
 	
 	// LRB output types
 	/** The tuple type ID for toll notifications. */
-	public final static short toll_notifivation = 0;
-	/** The tuple type ID for toll notifications as object (see {@link #toll_notifivation}). */
-	@SuppressWarnings("boxing") public final static Short TOLL_NOTIFICATION = toll_notifivation;
+	public final static short toll_notification = 0;
+	/** The tuple type ID for toll notifications as object (see {@link #toll_notification}). */
+	@SuppressWarnings("boxing") public final static Short TOLL_NOTIFICATION = toll_notification;
 	
 	/** The tuple type ID for accident notifications. */
 	public final static short accident_notification = 1;
@@ -87,7 +87,7 @@ public abstract class AbstractLRBTuple extends Values {
 		assert (time != null);
 		assert (type.shortValue() == position_report || type.shortValue() == account_balance_request
 			|| type.shortValue() == daily_expenditure_request || type.shortValue() == travel_time_request
-			|| type.shortValue() == toll_notifivation || type.shortValue() == accident_notification);
+			|| type.shortValue() == toll_notification || type.shortValue() == accident_notification);
 		assert (time.shortValue() >= 0);
 		
 		super.add(TYPE_IDX, type);

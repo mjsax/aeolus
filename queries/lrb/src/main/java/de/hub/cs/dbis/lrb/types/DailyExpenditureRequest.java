@@ -26,8 +26,8 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * A {@link DailyExpenditureRequest} from the LRB data generator.
- * 
+ * A {@link DailyExpenditureRequest} from the LRB data generator.<br />
+ * <br />
  * Daily expenditure requests do have the following attributes: TYPE=3, TIME, VID, XWay, QID, day
  * <ul>
  * <li>TYPE: the tuple type ID</li>

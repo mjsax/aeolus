@@ -36,7 +36,7 @@ sleep $((sampleInterval * numberOfSamples))
 # get topology id
 id=`storm list | grep ACTIVE | cut -d" " -f 1`
 # stop topology
-storm kill $id
+storm kill $id -w 0
 
 
 

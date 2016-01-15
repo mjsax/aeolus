@@ -133,7 +133,7 @@ public class AccountBalanceBoltTest {
 		AccountBalanceRequest accountBalanceRequest = new AccountBalanceRequest((short)System.currentTimeMillis(),
 			vehicleID0, queryIdentifier);
 		Tuple tuple = new TupleImpl(generalContextMock, new Values(accountBalanceRequest), 1, // taskId
-			TopologyControl.TOLL_ASSESSMENT_STREAM_ID // streamID
+			TopologyControl.TOLL_ASSESSMENTS_STREAM_ID // streamID
 		);
 		instance.execute(tuple);
 		assertEquals(1, collector.acked.size());
@@ -148,7 +148,7 @@ public class AccountBalanceBoltTest {
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(
-			AccountBalanceBolt.FIELDS_INCOMING_TOLL_ASSESSMENT);
+			new Fields(TopologyControl.TOLL_NOTIFICATION_FIELD_NAME));
 		instance = new AccountBalanceBolt();
 		collector = new TestOutputCollector();
 		taskMock = new LinkedList<Integer>();
@@ -162,7 +162,7 @@ public class AccountBalanceBoltTest {
 		instance.declareOutputFields(outputFieldsDeclarer);
 		
 		tuple = new TupleImpl(generalContextMock, new Values(vehicleID0, xWay, assessedToll, posReport0Stopped), 1, // taskId
-			TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM // streamID
+			TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID // streamID
 		);
 		instance.execute(tuple);
 		assertEquals(1, collector.acked.size());

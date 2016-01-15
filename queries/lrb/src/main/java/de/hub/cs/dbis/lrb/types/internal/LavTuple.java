@@ -30,8 +30,8 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 /**
  * {@link LavTuple} represents an intermediate result tuple; the "latest average velocity" (LAV) of a segment within the
- * last 5 minutes (ie, 'minute number'; see {@link Time#getMinute(short)}).<br/>
- * <br/>
+ * last 5 minutes (ie, 'minute number'; see {@link Time#getMinute(short)}).<br />
+ * <br />
  * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR, LAV
  * <ul>
  * <li>MINUTE: the 'minute number' of the LAV value</li>
@@ -77,22 +77,22 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	 *            the expressway the vehicle is on
 	 * @param segment
 	 *            the segment number the vehicle is in
-	 * @param diretion
+	 * @param direction
 	 *            the vehicle's driving direction
 	 * @param lav
 	 *            the latest average velocity of a segment
 	 */
-	public LavTuple(Short minute, Integer xway, Short segment, Short diretion, Integer lav) {
+	public LavTuple(Short minute, Integer xway, Short segment, Short direction, Integer lav) {
 		assert (minute != null);
 		assert (xway != null);
 		assert (segment != null);
-		assert (diretion != null);
+		assert (direction != null);
 		assert (lav != null);
 		
 		super.add(MINUTE_IDX, minute);
 		super.add(XWAY_IDX, xway);
 		super.add(SEG_IDX, segment);
-		super.add(DIR_IDX, diretion);
+		super.add(DIR_IDX, direction);
 		super.add(LAV_IDX, lav);
 	}
 	

@@ -40,8 +40,15 @@ public final class Constants {
 	public static final int MAX_SPEED = 100;
 	public static final int NUMBER_OF_SPEEDS = MAX_SPEED + 1;
 	
-	public static final short ENTRANCE_LANE = 0;
-	public static final short EXIT_LANE = 4;
+	/* lanes: 0..4 */
+	public static final Short l0 = new Short((short)0);
+	public static final Short l1 = new Short((short)1);
+	public static final Short l2 = new Short((short)2);
+	public static final Short l3 = new Short((short)3);
+	public static final Short l4 = new Short((short)4);
+	public static final short ENTRANCE_LANE = l0.shortValue();
+	public static final short EXIT_LANE = l4.shortValue();
+	
 	
 	public static final Short EASTBOUND = new Short((short)0);
 	public static final Short WESTBOUND = new Short((short)1);
@@ -54,8 +61,13 @@ public final class Constants {
 	public final static int MAX_POSITION = 527999;
 	public final static int NUMBER_OF_POSITIONS = MAX_POSITION + 1;
 	
+	/** "If the LAV [...] is greater than or equal to 40 MPH, [...], no toll is assessed." */
+	public static final int TOLL_LAV_THRESHOLD = 40;
+	/** "[...], or if the number of vehicles [...] was 50 or less [...], no toll is assessed." */
+	public static final int TOLL_NUM_CARS_THRESHOLD = 50;
+	
 	/**
-	 * @TODO: search in benchmark specification
+	 * TODO: search in benchmark specification
 	 */
 	public final static int INITIAL_TOLL = 20;
 	

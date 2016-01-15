@@ -66,9 +66,8 @@ public class AverageVehicleSpeedBoltTest {
 	
 	@Test
 	public void testExecute() {
-		TestOutputCollector collector = new TestOutputCollector();
-		
 		AverageVehicleSpeedBolt bolt = new AverageVehicleSpeedBolt();
+		TestOutputCollector collector = new TestOutputCollector();
 		bolt.prepare(null, null, new OutputCollector(collector));
 		
 		final Tuple tuple = mock(Tuple.class);

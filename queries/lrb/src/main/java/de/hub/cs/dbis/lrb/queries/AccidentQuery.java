@@ -22,8 +22,6 @@ import storm.lrb.TopologyControl;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
@@ -66,7 +64,7 @@ public class AccidentQuery {
 		
 		builder.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
 			new TimestampMerger(new AccidentDetectionBolt(), PositionReport.TIME_IDX)).fieldsGrouping(
-			TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM,
+			TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 			PositionIdentifier.getSchema());
 		
 		builder
@@ -78,14 +76,14 @@ public class AccidentQuery {
 						
 						@Override
 						public long getTs(Tuple tuple) {
-							if(tuple.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM)) {
+							if(tuple.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM_ID)) {
 								return Time.getMinute(tuple.getShort(PositionReport.TIME_IDX).longValue());
 							} else {
 								return tuple.getShort(AccidentTuple.MINUTE_IDX).longValue();
 							}
 						}
 					}))
-			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM,
+			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME);
 		
@@ -95,7 +93,7 @@ public class AccidentQuery {
 		return builder.createTopology();
 	}
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws Exception {
 		if(args.length < 2) {
 			showUsage();
 		}
@@ -119,6 +117,7 @@ public class AccidentQuery {
 		} else {
 			Config c = new Config();
 			c.put(FileReaderSpout.INPUT_FILE_NAME, args[0]);
+			c.put(Config.NIMBUS_HOST, "dbis71");
 			
 			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, c, AccidentQuery.createTopology(args[1]));
 		}

@@ -30,8 +30,8 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 /**
  * {@link AvgVehicleSpeedTuple} represents an intermediate result tuple; the average speed of an vehicle in a segment
- * within a 'minute number' time frame (see {@link Time#getMinute(short)}).<br/>
- * <br/>
+ * within a 'minute number' time frame (see {@link Time#getMinute(short)}).<br />
+ * <br />
  * It has the following attributes: VID, MINUTE, XWAY, SEGMENT, DIR, AVGS
  * <ul>
  * <li>VID: the vehicle id</li>

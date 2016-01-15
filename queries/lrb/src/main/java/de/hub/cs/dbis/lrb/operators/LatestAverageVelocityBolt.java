@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -39,13 +40,13 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 
 
 /**
- * LatestAverageVelocityBolt computes the "latest average velocity" (LAV), ie, the average speed over all vehicle within
- * an express way-segment (single direction), over the last five minutes (see Time.getMinute(short)]). The input is
- * expected to be of type {@link AvgSpeedTuple}, to be ordered by timestamp, and must be grouped by
+ * {@link LatestAverageVelocityBolt} computes the "latest average velocity" (LAV), ie, the average speed over all
+ * vehicle within an express way-segment (single direction), over the last five minutes (see Time.getMinute(short)]).
+ * The input is expected to be of type {@link AvgSpeedTuple}, to be ordered by timestamp, and must be grouped by
  * {@link SegmentIdentifier}.<br />
  * <br />
  * <strong>Input schema:</strong> {@link AvgSpeedTuple}<br />
- * <strong>Output schema:</strong> {@link LavTuple}
+ * <strong>Output schema:</strong> {@link LavTuple} ( (stream: {@link TopologyControl#LAVS_STREAM_ID})
  * 
  * @author msoyka
  * @author richter
@@ -64,7 +65,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	
 	/** Internally (re)used object to access individual attributes. */
-	private final AvgSpeedTuple input = new AvgSpeedTuple();
+	private final AvgSpeedTuple inputTuple = new AvgSpeedTuple();
 	/** Internally (re)used object. */
 	private final SegmentIdentifier segmentIdentifier = new SegmentIdentifier();
 	
@@ -78,11 +79,11 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	}
 	
 	@Override
-	public void execute(Tuple tuple) {
-		this.input.clear();
-		this.input.addAll(tuple.getValues());
+	public void execute(Tuple input) {
+		this.inputTuple.clear();
+		this.inputTuple.addAll(input.getValues());
 		
-		Short minuteNumber = this.input.getMinuteNumber();
+		Short minuteNumber = this.inputTuple.getMinuteNumber();
 		short m = minuteNumber.shortValue();
 		
 		assert (m >= this.currentMinute);
@@ -127,7 +128,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 			this.currentMinute = m;
 		}
 		
-		this.segmentIdentifier.set(this.input);
+		this.segmentIdentifier.set(this.inputTuple);
 		List<Integer> latestAvgSpeeds = this.averageSpeedsPerSegment.get(this.segmentIdentifier);
 		List<Short> latestMinuteNumber = this.minuteNumbersPerSegment.get(this.segmentIdentifier);
 		
@@ -137,7 +138,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 			latestMinuteNumber = new LinkedList<Short>();
 			this.minuteNumbersPerSegment.put(this.segmentIdentifier.copy(), latestMinuteNumber);
 		}
-		latestAvgSpeeds.add(this.input.getAvgSpeed());
+		latestAvgSpeeds.add(this.inputTuple.getAvgSpeed());
 		latestMinuteNumber.add(minuteNumber);
 		
 		// discard all values that are more than 5 minutes older than current minute
@@ -156,7 +157,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		this.collector.emit(new LavTuple(new Short((short)(m + 1)), this.segmentIdentifier.getXWay(),
 			this.segmentIdentifier.getSegment(), this.segmentIdentifier.getDirection(), lav));
 		
-		this.collector.ack(tuple);
+		this.collector.ack(input);
 	}
 	
 	private Integer computeLavValue(List<Integer> latestAvgSpeeds) {
@@ -172,7 +173,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(LavTuple.getSchema());
+		declarer.declareStream(TopologyControl.LAVS_STREAM_ID, LavTuple.getSchema());
 	}
 	
 }

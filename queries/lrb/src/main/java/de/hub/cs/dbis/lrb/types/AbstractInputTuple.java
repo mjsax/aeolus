@@ -21,8 +21,8 @@ package de.hub.cs.dbis.lrb.types;
 
 
 /**
- * The base class for all LRB input tuples (ie, position reports and query requests).<br/>
- * <br/>
+ * The base class for all LRB input tuples (ie, position reports and query requests).<br />
+ * <br />
  * All input tuples do have the following attributes: TYPE, TIME, VID
  * <ul>
  * <li>TYPE: the tuple type ID</li>

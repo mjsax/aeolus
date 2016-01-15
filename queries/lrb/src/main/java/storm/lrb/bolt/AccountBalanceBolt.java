@@ -55,8 +55,6 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	private static final Logger LOG = LoggerFactory.getLogger(AccountBalanceBolt.class);
 	
 	private OutputCollector collector;
-	public static final Fields FIELDS_INCOMING_TOLL_NOTIFICATION = TollNotificationBolt.FIELDS_OUTGOING_TOLL_NOTIFICATION;
-	public static final Fields FIELDS_INCOMING_TOLL_ASSESSMENT = TollNotificationBolt.FIELDS_OUTGOING_TOLL_ASSESSMENT;
 	
 	/**
 	 * Contains all vehicles and the accountinformation of the current day.
@@ -71,9 +69,9 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple tuple) {
-		if(tuple.getSourceStreamId().equals(TopologyControl.TOLL_ASSESSMENT_STREAM_ID)) {
+		if(tuple.getSourceStreamId().equals(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID)) {
 			this.getBalanceAndSend(tuple);
-		} else if(tuple.getSourceStreamId().equals(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM)) {
+		} else if(tuple.getSourceStreamId().equals(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID)) {
 			this.updateBalance(tuple);
 		} else {
 			throw new RuntimeException(String.format("Errornous stream subscription. Please report a bug at %s",
@@ -88,7 +86,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 		VehicleAccount account = this.allVehicles.get(vid);
 		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
 		if(account == null) {
-			int assessedToll = tuple.getIntegerByField(TopologyControl.TOLL_ASSESSED_FIELD_NAME);
+			int assessedToll = tuple.getIntegerByField(TopologyControl.TOLL_FIELD_NAME);
 			account = new VehicleAccount(assessedToll, pos);
 			this.allVehicles.put(tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME), account);
 		} else {

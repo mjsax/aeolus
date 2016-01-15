@@ -46,7 +46,7 @@ import de.hub.cs.dbis.lrb.util.Time;
  * {@link AverageVehicleSpeedBolt} computes the average speed of a vehicle within an express way-segment (single
  * direction) every minute. The input is expected to be of type {@link PositionReport}, to be ordered by timestamp, and
  * must be grouped by vehicle. A new average speed computation is trigger each time a vehicle changes the express way,
- * segment or direction as wall as each 60 seconds (ie, changing 'minute number' [see {@link Time#getMinute(short)}]).<br />
+ * segment or direction as well as each 60 seconds (ie, changing 'minute number' [see {@link Time#getMinute(short)}]).<br />
  * <br />
  * <strong>Input schema:</strong> {@link PositionReport}<br />
  * <strong>Output schema:</strong> {@link AvgVehicleSpeedTuple}

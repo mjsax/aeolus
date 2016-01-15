@@ -19,8 +19,8 @@
 package de.hub.cs.dbis.lrb.types;
 
 /**
- * The base class for all LRB output tuples (including intermediate result tuples).<br/>
- * <br/>
+ * The base class for all LRB output tuples (including intermediate result tuples).<br />
+ * <br />
  * All output tuples do have the following attributes: TYPE, TIME, EMIT
  * <ul>
  * <li>TYPE: the tuple type ID</li>

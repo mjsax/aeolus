@@ -28,13 +28,15 @@ import backtype.storm.tuple.Fields;
 /**
  * An {@link AccidentNotification} represent an alert that must be sent to vehicle approaching an accident.
  * 
- * Accident notifications do have the following attributes: TYPE=1, TIME, EMIT, SEG
+ * Accident notifications do have the following attributes: TYPE=1, TIME, EMIT, SEG, VID<br />
+ * (the VID attribute is not part of the LRB specification; we need to add it to know the consumer of the notification)
  * <ul>
  * <li>TYPE: the tuple type ID</li>
  * <li>TIME: the timestamp of the {@link PositionReport} that triggered the accident notification to be generated (in
  * LRB seconds)</li>
  * <li>EMIT: 'the time the notification is emitted' (in LRB seconds)</li>
  * <li>SEG: 'the segment where the accident occured'</li>
+ * <li>VID: the vehicle that is notified about an accident, ie, the consumer of this message</li>
  * </ul>
  * 
  * @author mjsax

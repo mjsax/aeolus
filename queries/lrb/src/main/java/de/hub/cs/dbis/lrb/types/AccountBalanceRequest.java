@@ -26,8 +26,8 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * A {@link AccountBalanceRequest} from the LRB data generator.
- * 
+ * A {@link AccountBalanceRequest} from the LRB data generator.<br />
+ * <br />
  * Account balance requests do have the following attributes: TYPE=2, TIME, VID, QID
  * <ul>
  * <li>TYPE: the tuple type ID</li>

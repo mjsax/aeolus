@@ -20,6 +20,7 @@ package de.hub.cs.dbis.lrb.toll;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -29,8 +30,8 @@ import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * a {@link TollDataStore} which stores data in memory. Due to the fact that data to satisfy historical LRB query can
- * get huge, you're advised to use it carefully, only.
- * 
+ * get huge, you're advised to use it carefully, only.<br />
+ * <br />
  * This implementation is not thread-safe.
  * 
  * @author richter
@@ -47,27 +48,27 @@ public class MemoryTollDataStore implements TollDataStore {
 	
 	@Override
 	public Integer retrieveToll(int xWay, int day, int vehicleIdentifier) {
-		reusableMapKey.setLeft(xWay);
-		reusableMapKey.setMiddle(day);
-		reusableMapKey.setRight(vehicleIdentifier);
-		Integer toll = store.get(reusableMapKey);
+		this.reusableMapKey.setLeft(xWay);
+		this.reusableMapKey.setMiddle(day);
+		this.reusableMapKey.setRight(vehicleIdentifier);
+		Integer toll = this.store.get(this.reusableMapKey);
 		return toll;
 	}
 	
 	@Override
 	public void storeToll(int xWay, int day, int vehicleIdentifier, int toll) {
-		reusableMapKey.setLeft(xWay);
-		reusableMapKey.setMiddle(day);
-		reusableMapKey.setRight(vehicleIdentifier);
-		store.put(reusableMapKey, toll);
+		this.reusableMapKey.setLeft(xWay);
+		this.reusableMapKey.setMiddle(day);
+		this.reusableMapKey.setRight(vehicleIdentifier);
+		this.store.put(this.reusableMapKey, toll);
 	}
 	
 	@Override
 	public Integer removeEntry(int xWay, int day, int vehicleIdentifier) {
-		reusableMapKey.setLeft(xWay);
-		reusableMapKey.setMiddle(day);
-		reusableMapKey.setRight(vehicleIdentifier);
-		Integer toll = store.remove(reusableMapKey);
+		this.reusableMapKey.setLeft(xWay);
+		this.reusableMapKey.setMiddle(day);
+		this.reusableMapKey.setRight(vehicleIdentifier);
+		Integer toll = this.store.remove(this.reusableMapKey);
 		return toll;
 	}
 	

@@ -29,8 +29,8 @@ import de.hub.cs.dbis.lrb.util.Constants;
 
 
 /**
- * A {@link PositionReport} from the LRB data generator.
- * 
+ * A {@link PositionReport} from the LRB data generator.<br />
+ * <br />
  * Position reports do have the following attributes: TYPE=0, TIME, VID, Spd, XWay, Lane, Dir, Seg, Pos
  * <ul>
  * <li>TYPE: the tuple type ID</li>

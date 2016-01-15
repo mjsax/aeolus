@@ -30,9 +30,12 @@ import org.junit.runner.RunWith;
 import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
@@ -172,4 +175,23 @@ public class AccidentDetectionBoltTest {
 		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
 		
 	}
+	
+	@Test
+	public void testDeclareOutputFields() {
+		AccidentDetectionBolt bolt = new AccidentDetectionBolt();
+		
+		TestDeclarer declarer = new TestDeclarer();
+		bolt.declareOutputFields(declarer);
+		
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		
+		Assert.assertEquals(TopologyControl.ACCIDENTS_STREAM_ID, declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME).toList(), declarer.schemaBuffer
+			.get(0).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+	}
+	
 }

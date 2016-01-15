@@ -30,8 +30,10 @@ import org.mockito.stubbing.OngoingStubbing;
 
 import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.AccidentNotification;
 import de.hub.cs.dbis.lrb.types.PositionReport;
@@ -83,28 +85,27 @@ public class AccidentNotificationBoltTest {
 		Tuple tuple = mock(Tuple.class);
 		
 		OngoingStubbing<List<Object>> valueStub = when(tuple.getValues());
-		
 		for(Short[] input : PosRepAndAccs) {
 			if(input.length == 3) {
 				valueStub = valueStub.thenReturn(new PositionReport(input[0], dummyInt, dummyInt, dummyInt, input[1],
 					dummyShort, input[2], dummyInt));
-				
 			} else {
 				assert (input.length == 2);
 				valueStub = valueStub.thenReturn(new AccidentTuple(input[0], dummyInt, input[1], dummyShort));
 			}
 		}
+		valueStub.thenReturn(null);
 		
 		OngoingStubbing<String> streamStub = when(tuple.getSourceStreamId());
 		for(Short[] input : PosRepAndAccs) {
 			if(input.length == 3) {
-				streamStub = streamStub.thenReturn(TopologyControl.POSITION_REPORTS_STREAM);
-				
+				streamStub = streamStub.thenReturn(TopologyControl.POSITION_REPORTS_STREAM_ID);
 			} else {
 				assert (input.length == 2);
 				streamStub = streamStub.thenReturn(Utils.DEFAULT_STREAM_ID);
 			}
 		}
+		streamStub.thenReturn(null);
 		
 		AccidentNotificationBolt bolt = new AccidentNotificationBolt();
 		TestOutputCollector collector = new TestOutputCollector();
@@ -120,4 +121,23 @@ public class AccidentNotificationBoltTest {
 		Assert.assertEquals(1, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
 	}
+	
+	@Test
+	public void testDeclareOutputFields() {
+		AccidentNotificationBolt bolt = new AccidentNotificationBolt();
+		
+		TestDeclarer declarer = new TestDeclarer();
+		bolt.declareOutputFields(declarer);
+		
+		Assert.assertEquals(1, declarer.streamIdBuffer.size());
+		Assert.assertEquals(1, declarer.schemaBuffer.size());
+		Assert.assertEquals(1, declarer.directBuffer.size());
+		
+		Assert.assertNull(declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+			TopologyControl.EMIT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME)
+			.toList(), declarer.schemaBuffer.get(0).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+	}
+	
 }

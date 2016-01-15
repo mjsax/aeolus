@@ -74,7 +74,6 @@ public class LastAverageVelocityBoltTest {
 	@Test
 	public void testExecute() {
 		LatestAverageVelocityBolt instance = new LatestAverageVelocityBolt();
-		
 		TestOutputCollector collector = new TestOutputCollector();
 		instance.prepare(null, null, new OutputCollector(collector));
 		
@@ -224,7 +223,7 @@ public class LastAverageVelocityBoltTest {
 		Assert.assertEquals(1, declarer.schemaBuffer.size());
 		Assert.assertEquals(1, declarer.directBuffer.size());
 		
-		Assert.assertNull(declarer.streamIdBuffer.get(0));
+		Assert.assertEquals(TopologyControl.LAVS_STREAM_ID, declarer.streamIdBuffer.get(0));
 		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
 			TopologyControl.LAST_AVERAGE_SPEED_FIELD_NAME).toList(), declarer.schemaBuffer.get(0).toList());

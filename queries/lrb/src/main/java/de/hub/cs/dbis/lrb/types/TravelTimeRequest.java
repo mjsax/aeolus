@@ -26,8 +26,8 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * A {@link TravelTimeRequest} from the LRB data generator.
- * 
+ * A {@link TravelTimeRequest} from the LRB data generator.<br />
+ * <br />
  * Travel time requests do have the following attributes: TYPE=4, TIME, VID, XWay, QID, S_init, S_end, DOW, TOD
  * <ul>
  * <li>TYPE: the tuple type ID</li>

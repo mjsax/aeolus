@@ -53,12 +53,12 @@ import de.hub.cs.dbis.lrb.util.Constants;
  * {@link PositionReport} and must be grouped by vehicle id. The second input is expected to be of type
  * {@link AccidentTuple} and must be broadcasted. Both inputs most be ordered by time (ie, timestamp for
  * {@link PositionReport} and minute number for {@link AccidentTuple}). It is further assumed, that all
- * {@link AccidentTuple}s with a smaller minute number than a {@link PositionReport} tuples are delivered
+ * {@link AccidentTuple}s with a <em>smaller</em> minute number than a {@link PositionReport} tuple are delivered
  * <em>before</em> those {@link PositionReport}s.<br />
  * <br />
  * This implementation assumes, that {@link PositionReport}s are delivered via a stream called
- * {@link TopologyControl#POSITION_REPORTS_STREAM}. Input tuples of all other streams are assumed to be
- * {@link AccidentTuple}s. <br />
+ * {@link TopologyControl#POSITION_REPORTS_STREAM_ID}. Input tuples of all other streams are assumed to be
+ * {@link AccidentTuple}s.<br />
  * <br />
  * <strong>Input schema:</strong> {@link PositionReport} and {@link AccidentTuple}<br />
  * <strong>Output schema:</strong> {@link AccidentNotification}
@@ -88,7 +88,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	/** Internally (re)used object to access individual attributes. */
 	private final AccidentTuple inputAccidentTuple = new AccidentTuple();
 	/** Internally (re)used object. */
-	private SegmentIdentifier segmentToCheck = new SegmentIdentifier();
+	private final SegmentIdentifier segmentToCheck = new SegmentIdentifier();
 	
 	/** The currently processed 'minute number'. */
 	private int currentMinute = -1;
@@ -102,7 +102,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
-		if(input.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM)) {
+		if(input.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM_ID)) {
 			this.inputPositionReport.clear();
 			this.inputPositionReport.addAll(input.getValues());
 			LOGGER.trace(this.inputPositionReport.toString());
@@ -114,29 +114,30 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 				return;
 			}
 			
-			Short currentSegment = this.inputPositionReport.getSegment();
-			Short previousSegment = this.allCars.put(this.inputPositionReport.getVid(), currentSegment);
+			final Short currentSegment = this.inputPositionReport.getSegment();
+			final Integer vid = this.inputPositionReport.getVid();
+			final Short previousSegment = this.allCars.put(vid, currentSegment);
 			if(previousSegment != null && currentSegment.shortValue() == previousSegment.shortValue()) {
 				this.collector.ack(input);
 				return;
 			}
 			
 			// upstream is either larger or smaller of current segment
-			short dir = this.inputPositionReport.getDirection().shortValue();
+			final Short direction = this.inputPositionReport.getDirection();
+			final short dir = direction.shortValue();
 			// EASTBOUND == 0 => diff := 1
 			// WESTBOUNT == 1 => diff := -1
-			short diff = (short)-(dir - 1 + ((dir + 1) / 2));
+			final short diff = (short)-(dir - 1 + ((dir + 1) / 2));
 			assert (dir == Constants.EASTBOUND.shortValue() ? diff == 1 : diff == -1);
 			
-			Integer xway = this.inputPositionReport.getXWay();
-			Short direction = this.inputPositionReport.getDirection();
-			short curSeg = currentSegment.shortValue();
+			final Integer xway = this.inputPositionReport.getXWay();
+			final short curSeg = currentSegment.shortValue();
 			
 			this.segmentToCheck.setXWay(xway);
 			this.segmentToCheck.setDirection(direction);
 			
 			for(int i = 0; i <= 4; ++i) {
-				short nextSegment = (short)(curSeg + (diff * i));
+				final short nextSegment = (short)(curSeg + (diff * i));
 				assert (dir == Constants.EASTBOUND.shortValue() ? nextSegment >= curSeg : nextSegment <= curSeg);
 				
 				this.segmentToCheck.setSegment(new Short(nextSegment));
@@ -144,8 +145,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 				if(this.previousMinuteAccidents.contains(this.segmentToCheck)) {
 					// TODO get accurate emit time...
 					this.collector.emit(new AccidentNotification(this.inputPositionReport.getTime(),
-						this.inputPositionReport.getTime(), this.segmentToCheck.getSegment(), this.inputPositionReport
-							.getVid()));
+						this.inputPositionReport.getTime(), this.segmentToCheck.getSegment(), vid));
 					
 					break; // send a notification for the closest accident only
 				}

@@ -42,10 +42,18 @@ public class TopologyControl {
 	public final static String ACCIDENT_FILE_WRITER_BOLT_NAME = "Accident File Writer Bolt";
 	
 	// streams
-	public final static String POSITION_REPORTS_STREAM = "pr";
-	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM = "ab";
-	public final static String DAILY_EXPEDITURE_REQUESTS_STREAM = "de";
-	public final static String TRAVEL_TIME_REQUEST_STREAM = "tt";
+	// input
+	public final static String POSITION_REPORTS_STREAM_ID = "pr";
+	public final static String ACCOUNT_BALANCE_REQUESTS_STREAM_ID = "ab";
+	public final static String DAILY_EXPEDITURE_REQUESTS_STREAM_ID = "de";
+	public final static String TRAVEL_TIME_REQUEST_STREAM_ID = "tt";
+	// output
+	public final static String TOLL_NOTIFICATIONS_STREAM_ID = "tn";
+	public final static String TOLL_ASSESSMENTS_STREAM_ID = "ta";
+	// internal
+	public final static String ACCIDENTS_STREAM_ID = "acc";
+	public final static String CAR_COUNTS_STREAM_ID = "cnt";
+	public final static String LAVS_STREAM_ID = "lav";
 	
 	// TODO check usage
 	// bolts
@@ -59,25 +67,23 @@ public class TopologyControl {
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
 	// streams
 	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
-	public final static String TOLL_ASSESSMENT_STREAM_ID = "TollAssessmentStream";
-	public final static String TOLL_NOTIFICATION_STREAM_ID = "TollNotificationStream";
 	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
 	
 	/*
 	 * The identifiers of tuple attributes.
 	 */
-	// General (input and output)
+	// General (all input and output tuples)
 	public final static String TYPE_FIELD_NAME = "type";
 	public final static String TIMESTAMP_FIELD_NAME = "timestamp";
 	
 	// Input (all)
-	public final static String VEHICLE_ID_FIELD_NAME = "vid";
+	public final static String VEHICLE_ID_FIELD_NAME = "vid"; // also used in some output tuples
 	// Position Report
-	public final static String SPEED_FIELD_NAME = "speed";
+	public final static String SPEED_FIELD_NAME = "spd"; // also used in Toll Notification
 	public final static String XWAY_FIELD_NAME = "xway";
 	public final static String LANE_FIELD_NAME = "lane";
 	public final static String DIRECTION_FIELD_NAME = "dir";
-	public final static String SEGMENT_FIELD_NAME = "seg";
+	public final static String SEGMENT_FIELD_NAME = "seg"; // also used in Accident Notification
 	public final static String POSITION_FIELD_NAME = "pos";
 	// Requests (all)
 	public final static String QUERY_ID_FIELD_NAME = "qid";
@@ -88,15 +94,21 @@ public class TopologyControl {
 	public final static String END_SEGMENT_FIELD_NAME = "s-end";
 	public final static String DAY_OF_WEEK_FIELD_NAME = "dow";
 	public final static String TIME_OF_DAY_FIELD_NAME = "tod";
+	
 	// Output (all)
 	public final static String EMIT_FIELD_NAME = "emit";
+	// Accident Notification
+	// re-uses SEGMENT_FIELD_NAME and VEHICLE_ID_FIELD_NAME from PositionReport
+	// Toll Notification
+	// re-uses SPEED_FIELD_NAME from PositionReport
+	public final static String TOLL_FIELD_NAME = "toll";
 	
 	// internal
 	public final static String AVERAGE_VEHICLE_SPEED_FIELD_NAME = "avgvs";
 	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
+	public final static String CAR_COUNT_FIELD_NAME = "cnt";
 	
 	// TODO check if needed
-	public final static String TOLL_ASSESSED_FIELD_NAME = "tollAssessed";
 	public final static String POS_REPORT_FIELD_NAME = "PosReport";
 	public final static String TOLL_NOTIFICATION_FIELD_NAME = "tollnotification";
 	public final static String ACCOUNT_BALANCE_REQUEST_FIELD_NAME = "AccBalRequests";
@@ -106,7 +118,6 @@ public class TopologyControl {
 	public final static String MINUTE_FIELD_NAME = "minute";
 	public final static String NUMBER_OF_VEHICLES_FIELD_NAME = "nov"; // @TODO: is that maybe the same as CAR_COUNT?
 	public final static String EXPEDITURE_NOTIFICATION_FIELD_NAME = "expenditurenotification";
-	public final static String CAR_COUNT_FIELD_NAME = "carcnt";
 	public final static String ACCIDENT_NOTIFICATION_FIELD_NAME = "accnotification";
 	public final static String TUPLE_FIELD_NAME = "tuple";
 	public final static String ACCIDENT_INFO_FIELD_NAME = "accidentInfo";

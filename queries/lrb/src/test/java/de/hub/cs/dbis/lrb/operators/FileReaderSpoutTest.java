@@ -83,6 +83,6 @@ public class FileReaderSpoutTest {
 		Assert.assertEquals(new Values(new Long(73647), line), collector.output.get(Utils.DEFAULT_STREAM_ID)
 			.removeFirst());
 		Assert.assertEquals(0, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
-		
 	}
+	
 }

@@ -28,6 +28,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -47,7 +48,7 @@ import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
  * {@link PositionIdentifier}.<br />
  * <br />
  * <strong>Input schema:</strong> {@link PositionReport}<br />
- * <strong>Output schema:</strong> {@link AccidentTuple}
+ * <strong>Output schema:</strong> {@link AccidentTuple} (stream: {@link TopologyControl#ACCIDENTS_STREAM_ID})
  * 
  * @author msoyka
  * @author richter
@@ -171,7 +172,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(AccidentTuple.getSchema());
+		declarer.declareStream(TopologyControl.ACCIDENTS_STREAM_ID, AccidentTuple.getSchema());
 	}
 	
 }

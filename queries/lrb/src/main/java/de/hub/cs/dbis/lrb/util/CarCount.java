@@ -18,29 +18,14 @@
  */
 package de.hub.cs.dbis.lrb.util;
 
+
+
 /**
- * Helper class to compute the current minute of given millisecond.
+ * {@link CarCount} is an class that helps to count the number of cars in a segment. Its initial count value is one.
  * 
- * @author msoyka
  * @author mjsax
  */
-public class Time {
-	
-	private Time() {}
-	
-	/**
-	 * Computes the 'minute number' if a time (in seconds).
-	 * 
-	 * The 'minute number' m is computed as: {@code m = floor(timestamp / 60) + 1}
-	 * 
-	 * @param timestamp
-	 *            the timestamp value in seconds
-	 * 
-	 * @return the 'minute number' if the given timestamp
-	 */
-	public static short getMinute(long timestamp) {
-		assert (timestamp >= 0);
-		return (short)((timestamp / 60) + 1);
-	}
-	
+public final class CarCount {
+	/** The current count. */
+	public int count = 1;
 }
