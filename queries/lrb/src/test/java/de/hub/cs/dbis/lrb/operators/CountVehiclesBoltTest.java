@@ -82,10 +82,11 @@ public class CountVehiclesBoltTest {
 		OngoingStubbing<List<Object>> tupleStub = when(tuple.getValues());
 		
 		final int startMinute = 1 + this.r.nextInt(5);
+		expectedResult.add(new CountTuple(new Short((short)startMinute)));
 		for(int m = startMinute; m < startMinute + numberOfMinutes; ++m) {
 			final HashMap<SegmentIdentifier, CarCount> counts = new HashMap<SegmentIdentifier, CarCount>();
 			
-			final int numberOfTuplesMinute = 25 + this.r.nextInt(50);
+			final int numberOfTuplesMinute = 200 + this.r.nextInt(200);
 			numberOfTuples += numberOfTuplesMinute;
 			for(int i = 0; i < numberOfTuplesMinute; ++i) {
 				
@@ -107,10 +108,22 @@ public class CountVehiclesBoltTest {
 				}
 			}
 			
+			final int dummyIndex = expectedResult.size();
+			boolean emitted = false;
+			expectedResult.add(new CountTuple(new Short((short)(m + 1))));
+			
 			for(Entry<SegmentIdentifier, CarCount> e : counts.entrySet()) {
 				SegmentIdentifier segId = e.getKey();
-				expectedResult.add(new CountTuple(new Short((short)m), segId.getXWay(), segId.getSegment(), segId
-					.getDirection(), new Integer(e.getValue().count)));
+				int count = e.getValue().count;
+				if(count > 50) {
+					emitted = true;
+					expectedResult.add(new CountTuple(new Short((short)m), segId.getXWay(), segId.getSegment(), segId
+						.getDirection(), new Integer(count)));
+				}
+			}
+			
+			if(emitted) {
+				expectedResult.remove(dummyIndex);
 			}
 		}
 		tupleStub = tupleStub.thenReturn(new PositionReport(

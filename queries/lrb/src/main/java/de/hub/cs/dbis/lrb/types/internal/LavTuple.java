@@ -64,12 +64,10 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	
 	
 	
-	public LavTuple() {
-		super();
-	}
+	public LavTuple() {}
 	
 	/**
-	 * Instantiates a new {@link LavTuple} tuple for the given attributes.
+	 * Instantiates a new {@link LavTuple} for the given attributes.
 	 * 
 	 * @param minute
 	 *            the 'minute number' of the speed average

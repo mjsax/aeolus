@@ -18,6 +18,11 @@
  */
 package de.hub.cs.dbis.lrb.types.util;
 
+import storm.lrb.TopologyControl;
+import backtype.storm.tuple.Fields;
+
+
+
 
 
 /**
@@ -40,9 +45,6 @@ public class SegmentIdentifier implements ISegmentIdentifier {
 	
 	
 	
-	/**
-	 * Instantiates a new {@link SegmentIdentifier}.
-	 */
 	public SegmentIdentifier() {}
 	
 	/**
@@ -132,7 +134,6 @@ public class SegmentIdentifier implements ISegmentIdentifier {
 		this.direction = direction;
 	}
 	
-	
 	/**
 	 * Set express way ID, segment number, and direction from the given record.
 	 * 
@@ -159,6 +160,16 @@ public class SegmentIdentifier implements ISegmentIdentifier {
 		sid.direction = this.direction;
 		
 		return sid;
+	}
+	
+	/**
+	 * Returns the schema of a {@link SegmentIdentifier}.
+	 * 
+	 * @return the schema of a {@link SegmentIdentifier}
+	 */
+	public static Fields getSchema() {
+		return new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+			TopologyControl.DIRECTION_FIELD_NAME);
 	}
 	
 	@Override

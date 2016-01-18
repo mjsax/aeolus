@@ -75,6 +75,8 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	/** Hold all vehicles that have <em>stopped</em> within a segment. */
 	private final Map<PositionIdentifier, Set<Integer>> stoppedCarsPerPosition = new HashMap<PositionIdentifier, Set<Integer>>();
 	
+	/** The currently processed 'minute number'. */
+	private int currentMinute = -1;
 	
 	
 	@Override
@@ -86,8 +88,17 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	public void execute(Tuple input) {
 		this.inputPositionReport.clear();
 		this.inputPositionReport.addAll(input.getValues());
-		Integer vid = this.inputPositionReport.getVid();
 		LOGGER.trace(this.inputPositionReport.toString());
+		
+		Integer vid = this.inputPositionReport.getVid();
+		short minute = this.inputPositionReport.getMinuteNumber();
+		
+		assert (minute >= this.currentMinute);
+		
+		if(minute > this.currentMinute) {
+			this.currentMinute = minute;
+			this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID, new AccidentTuple(new Short(minute)));
+		}
 		
 		if(this.inputPositionReport.isOnExitLane()) {
 			List<PositionReport> vehiclePositions = this.lastPositions.remove(vid);
@@ -148,7 +159,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 					stoppedCars.add(vid);
 					
 					if(stoppedCars.size() > 1) {
-						this.collector.emit(new AccidentTuple(new Short(this.inputPositionReport.getMinuteNumber()),
+						this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID, new AccidentTuple(new Short(minute),
 							this.inputPositionReport.getXWay(), this.inputPositionReport.getSegment(),
 							this.inputPositionReport.getDirection()));
 					}

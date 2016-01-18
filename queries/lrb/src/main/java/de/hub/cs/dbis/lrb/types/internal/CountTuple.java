@@ -64,12 +64,27 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	
 	
 	
-	public CountTuple() {
-		super();
+	public CountTuple() {}
+	
+	/**
+	 * Instantiates a new <em>dummy</em> {@link CountTuple} for the given minute. This dummy tuple does not report an
+	 * count value but is used as a "time progress tuple" to unblock downstream operators.
+	 * 
+	 * @param minute
+	 *            the 'minute number' of the new minute that starts
+	 */
+	public CountTuple(Short minute) {
+		assert (minute != null);
+		
+		super.add(MINUTE_IDX, minute);
+		super.add(XWAY_IDX, null);
+		super.add(SEG_IDX, null);
+		super.add(DIR_IDX, null);
+		super.add(CNT_IDX, null);
 	}
 	
 	/**
-	 * Instantiates a new {@link CountTuple} tuple for the given attributes.
+	 * Instantiates a new {@link CountTuple} for the given attributes.
 	 * 
 	 * @param minute
 	 *            the 'minute number' of the speed average
@@ -144,6 +159,16 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	 */
 	public final Integer getCount() {
 		return (Integer)super.get(CNT_IDX);
+	}
+	
+	/**
+	 * Returns {@code true} if this tuple does not report a count value but only carries the next 'minute number'.
+	 * 
+	 * @return {@code true} if this tuple does not report a count value but only carries the next 'minute number' --
+	 *         {@code false} otherwise
+	 */
+	public final boolean isProgressTuple() {
+		return super.get(XWAY_IDX) == null;
 	}
 	
 	/**

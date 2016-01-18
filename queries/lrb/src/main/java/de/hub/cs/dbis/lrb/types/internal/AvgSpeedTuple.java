@@ -64,12 +64,10 @@ public final class AvgSpeedTuple extends Values implements ISegmentIdentifier {
 	
 	
 	
-	public AvgSpeedTuple() {
-		super();
-	}
+	public AvgSpeedTuple() {}
 	
 	/**
-	 * Instantiates a new {@link AvgSpeedTuple} tuple for the given attributes.
+	 * Instantiates a new {@link AvgSpeedTuple} for the given attributes.
 	 * 
 	 * @param minute
 	 *            the 'minute number' of the speed average

@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -54,6 +57,7 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  */
 public class LatestAverageVelocityBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 5537727428628598519L;
+	private static final Logger LOGGER = LoggerFactory.getLogger(LatestAverageVelocityBolt.class);
 	
 	/** Holds the (at max) last five average speed value for each segment. */
 	private final Map<SegmentIdentifier, List<Integer>> averageSpeedsPerSegment = new HashMap<SegmentIdentifier, List<Integer>>();
@@ -82,6 +86,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	public void execute(Tuple input) {
 		this.inputTuple.clear();
 		this.inputTuple.addAll(input.getValues());
+		LOGGER.trace(this.inputTuple.toString());
 		
 		Short minuteNumber = this.inputTuple.getMinuteNumber();
 		short m = minuteNumber.shortValue();
@@ -115,8 +120,9 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 						
 						if(latestAvgSpeeds.size() > 0) {
 							Integer lav = this.computeLavValue(latestAvgSpeeds);
-							this.collector.emit(new LavTuple(new Short(nextMinute), sid.getXWay(), sid.getSegment(),
-								sid.getDirection(), lav));
+							this.collector.emit(TopologyControl.LAVS_STREAM_ID,
+								new LavTuple(new Short(nextMinute), sid.getXWay(), sid.getSegment(),
+									sid.getDirection(), lav));
 						} else {
 							// remove empty window completely
 							it.remove();
@@ -154,8 +160,10 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		assert (latestMinuteNumber.size() <= 5);
 		
 		Integer lav = this.computeLavValue(latestAvgSpeeds);
-		this.collector.emit(new LavTuple(new Short((short)(m + 1)), this.segmentIdentifier.getXWay(),
-			this.segmentIdentifier.getSegment(), this.segmentIdentifier.getDirection(), lav));
+		this.collector.emit(
+			TopologyControl.LAVS_STREAM_ID,
+			new LavTuple(new Short((short)(m + 1)), this.segmentIdentifier.getXWay(), this.segmentIdentifier
+				.getSegment(), this.segmentIdentifier.getDirection(), lav));
 		
 		this.collector.ack(input);
 	}

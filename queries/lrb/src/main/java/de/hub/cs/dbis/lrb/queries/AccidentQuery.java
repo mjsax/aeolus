@@ -46,8 +46,8 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 
 /**
- * {@ AccidentQuery} assembles the "Accident Processing" query that must detect accidents and notify (close) up-stream
- * vehicles about accidents within 5 seconds.
+ * {@link AccidentQuery} assembles the "Accident Processing" query that must detect accidents and notify (close)
+ * up-stream vehicles about accidents within 5 seconds.
  * 
  * @author mjsax
  */
@@ -56,6 +56,7 @@ public class AccidentQuery {
 	public static StormTopology createTopology(String output) {
 		TopologyBuilder builder = new TopologyBuilder();
 		
+		// TODO TimeUnit.SECONDS
 		builder.setSpout(TopologyControl.SPOUT_NAME, new DataDrivenStreamRateDriverSpout<Long>(new FileReaderSpout(),
 			0, TimeUnit.MILLISECONDS));
 		
@@ -85,7 +86,7 @@ public class AccidentQuery {
 					}))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
-			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME);
+			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
 		
 		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileFlushSinkBolt(output))
 			.localOrShuffleGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME);
@@ -105,6 +106,7 @@ public class AccidentQuery {
 			
 			Config c = new Config();
 			c.put(FileReaderSpout.INPUT_FILE_NAME, args[1]);
+			// c.setDebug(true);
 			
 			long runtime = 1000 * Long.parseLong(args[3]);
 			
@@ -117,7 +119,6 @@ public class AccidentQuery {
 		} else {
 			Config c = new Config();
 			c.put(FileReaderSpout.INPUT_FILE_NAME, args[0]);
-			c.put(Config.NIMBUS_HOST, "dbis71");
 			
 			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, c, AccidentQuery.createTopology(args[1]));
 		}

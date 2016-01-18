@@ -103,8 +103,9 @@ public class LRBTopology {
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
 		
-		builder.setBolt(TopologyControl.TOLL_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_toll"), 1)
-			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENTS_STREAM_ID);
+		builder.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME,
+			new FileSinkBolt(topologyNamePrefix + "_toll"), 1).allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
+			TopologyControl.TOLL_ASSESSMENTS_STREAM_ID);
 		
 		// builder.setBolt("lavBolt", new SegmentStatsBolt(0), cmd.xways*3)
 		// .fieldsGrouping("SplitStreamBolt", "PosReports", new Fields("xsd"));

@@ -88,6 +88,8 @@ public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichS
 	 *            The working spout.
 	 * @param tsIndex
 	 *            The index of the timestamp attribute.
+	 * @param timeUnit
+	 *            The time unit of the timestamp values.
 	 */
 	public DataDrivenStreamRateDriverSpout(IRichSpout spout, int tsIndex, TimeUnit timeUnit) {
 		assert (spout != null);

@@ -233,6 +233,11 @@ public class TollNotificationBolt extends BaseRichBolt {
 			this.checkMinute(this.inputAccidentTuple.getMinuteNumber().shortValue());
 			assert (this.inputAccidentTuple.getMinuteNumber().shortValue() == this.currentMinute);
 			
+			if(this.inputAccidentTuple.isProgressTuple()) {
+				this.collector.ack(input);
+				return;
+			}
+			
 			this.currentMinuteAccidents.add(new SegmentIdentifier(this.inputAccidentTuple));
 			
 		} else if(inputStreamId.equals(TopologyControl.CAR_COUNTS_STREAM_ID)) {
@@ -242,6 +247,11 @@ public class TollNotificationBolt extends BaseRichBolt {
 			
 			this.checkMinute(this.inputCountTuple.getMinuteNumber().shortValue());
 			assert (this.inputCountTuple.getMinuteNumber().shortValue() == this.currentMinute);
+			
+			if(this.inputCountTuple.isProgressTuple()) {
+				this.collector.ack(input);
+				return;
+			}
 			
 			this.currentMinuteCounts.put(new SegmentIdentifier(this.inputCountTuple), this.inputCountTuple.getCount());
 			

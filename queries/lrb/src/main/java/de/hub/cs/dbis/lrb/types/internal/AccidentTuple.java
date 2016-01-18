@@ -60,12 +60,26 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	
 	
 	
-	public AccidentTuple() {
-		super();
+	public AccidentTuple() {}
+	
+	/**
+	 * Instantiates a new <em>dummy</em> {@link AccidentTuple} for the given minute. This dummy tuple does not report an
+	 * accident but is used as a "time progress tuple" to unblock downstream operators.
+	 * 
+	 * @param minute
+	 *            the 'minute number' of the new minute that starts
+	 */
+	public AccidentTuple(Short minute) {
+		assert (minute != null);
+		
+		super.add(MINUTE_IDX, minute);
+		super.add(XWAY_IDX, null);
+		super.add(SEG_IDX, null);
+		super.add(DIR_IDX, null);
 	}
 	
 	/**
-	 * Instantiates a new {@link AccidentTuple} tuple for the given attributes.
+	 * Instantiates a new {@link AccidentTuple} for the given attributes.
 	 * 
 	 * @param minute
 	 *            the 'minute number' of the speed average
@@ -127,6 +141,16 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	@Override
 	public final Short getDirection() {
 		return (Short)super.get(DIR_IDX);
+	}
+	
+	/**
+	 * Returns {@code true} if this tuple does not report an accident but only carries the next 'minute number'.
+	 * 
+	 * @return {@code true} if this tuple does not report an accident but only carries the next 'minute number' --
+	 *         {@code false} otherwise
+	 */
+	public final boolean isProgressTuple() {
+		return super.get(XWAY_IDX) == null;
 	}
 	
 	/**

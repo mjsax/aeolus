@@ -34,7 +34,6 @@ import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.PositionReport;
@@ -163,8 +162,16 @@ public class AccidentDetectionBoltTest {
 		}
 		
 		List<AccidentTuple> expectedResult = new ArrayList<AccidentTuple>();
+		expectedResult.add(new AccidentTuple((short)1));
+		expectedResult.add(new AccidentTuple((short)2));
+		expectedResult.add(new AccidentTuple((short)3));
+		expectedResult.add(new AccidentTuple((short)4));
+		expectedResult.add(new AccidentTuple((short)5));
 		expectedResult.add(new AccidentTuple((short)5, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)6));
 		expectedResult.add(new AccidentTuple((short)6, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)7));
+		expectedResult.add(new AccidentTuple((short)8));
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
@@ -172,7 +179,7 @@ public class AccidentDetectionBoltTest {
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
 		
 		Assert.assertEquals(1, collector.output.size());
-		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
+		Assert.assertEquals(expectedResult, collector.output.get(TopologyControl.ACCIDENTS_STREAM_ID));
 		
 	}
 	

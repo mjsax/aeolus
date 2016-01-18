@@ -40,7 +40,6 @@ import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
-import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
@@ -165,7 +164,7 @@ public class LastAverageVelocityBoltTest {
 				this.addResult(speeds, minute, expectedResult, sid);
 				
 				assertEquals(1, collector.output.size());
-				List<List<Object>> result = collector.output.get(Utils.DEFAULT_STREAM_ID);
+				List<List<Object>> result = collector.output.get(TopologyControl.LAVS_STREAM_ID);
 				while(expectedResult.size() > 0) {
 					LavTuple t = expectedResult.remove(0);
 					HashSet<List<Object>> ers = new HashSet<List<Object>>();

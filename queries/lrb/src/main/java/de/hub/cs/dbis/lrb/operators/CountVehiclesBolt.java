@@ -88,16 +88,24 @@ public class CountVehiclesBolt extends BaseRichBolt {
 		assert (minute >= this.currentMinute);
 		
 		if(minute > this.currentMinute) {
+			boolean emitted = false;
 			// emit all values for last minute
 			// (because input tuples are ordered by ts (ie, minute number), we can close the last minute safely)
 			for(Entry<SegmentIdentifier, CarCount> entry : this.countsMap.entrySet()) {
 				SegmentIdentifier segId = entry.getKey();
 				
 				// Minute-Number, X-Way, Segment, Direction, Avg(speed)
-				this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(this.currentMinute),
-					segId.getXWay(), segId.getSegment(), segId.getDirection(), new Integer(entry.getValue().count)));
+				int count = entry.getValue().count;
+				if(count > 50) {
+					emitted = true;
+					this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(
+						this.currentMinute), segId.getXWay(), segId.getSegment(), segId.getDirection(), new Integer(
+						count)));
+				}
 			}
-			
+			if(!emitted) {
+				this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(minute)));
+			}
 			this.countsMap.clear();
 			this.currentMinute = minute;
 		}

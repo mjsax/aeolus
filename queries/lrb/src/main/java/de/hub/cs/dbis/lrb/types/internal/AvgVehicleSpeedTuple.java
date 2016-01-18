@@ -68,12 +68,10 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	
 	
 	
-	public AvgVehicleSpeedTuple() {
-		super();
-	}
+	public AvgVehicleSpeedTuple() {}
 	
 	/**
-	 * Instantiates a new {@link AvgVehicleSpeedTuple} tuple for the given attributes.
+	 * Instantiates a new {@link AvgVehicleSpeedTuple} for the given attributes.
 	 * 
 	 * @param vid
 	 *            the vehicle id
