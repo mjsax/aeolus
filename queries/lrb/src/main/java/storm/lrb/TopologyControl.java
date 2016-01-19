@@ -29,25 +29,25 @@ package storm.lrb;
 public class TopologyControl {
 	
 	// The identifier of the topology.
-	public final static String TOPOLOGY_NAME = "Linear Road Benchmark";
+	public final static String TOPOLOGY_NAME = "Linear-Road-Benchmark";
 	
 	// spouts
-	public final static String SPOUT_NAME = "File Spout";
+	public final static String SPOUT_NAME = "File-Spout";
 	// helper bolts
-	public final static String SPLIT_STREAM_BOLT_NAME = "Split Stream Bolt";
+	public final static String SPLIT_STREAM_BOLT_NAME = "Split-Stream-Bolt";
 	// operators
-	public final static String ACCIDENT_DETECTION_BOLT_NAME = "Accident Detection Bolt";
-	public final static String ACCIDENT_NOTIFICATION_BOLT_NAME = "Accident Notification Bolt";
-	public final static String COUNT_VEHICLES_BOLT_NAME = "Count Vehicles Bolt";
-	public final static String AVERAGE_VEHICLE_SPEED_BOLT_NAME = "Average Vehicle Speed Bolt";
-	public final static String AVERAGE_SPEED_BOLT_NAME = "Average Speed Bolt";
-	public final static String LAST_AVERAGE_SPEED_BOLT_NAME = "Last Average Speed Bolt";
-	public final static String TOLL_NOTIFICATION_BOLT_NAME = "Toll Notification Bolt";
+	public final static String ACCIDENT_DETECTION_BOLT_NAME = "Accident-Detection-Bolt";
+	public final static String ACCIDENT_NOTIFICATION_BOLT_NAME = "Accident-Notification-Bolt";
+	public final static String COUNT_VEHICLES_BOLT_NAME = "Count-Vehicles-Bolt";
+	public final static String AVERAGE_VEHICLE_SPEED_BOLT_NAME = "Average-Vehicle-Speed-Bolt";
+	public final static String AVERAGE_SPEED_BOLT_NAME = "Average-Speed-Bolt";
+	public final static String LAST_AVERAGE_SPEED_BOLT_NAME = "Last-Average-Speed-Bolt";
+	public final static String TOLL_NOTIFICATION_BOLT_NAME = "Toll-Notification-Bolt";
 	
 	// sinks
-	public final static String ACCIDENT_FILE_WRITER_BOLT_NAME = "Accident File Writer Bolt";
-	public final static String TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME = "Toll Notifications File Writer Bolt";
-	public final static String TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME = "Toll Assessments File Writer Bolt";
+	public final static String ACCIDENT_FILE_WRITER_BOLT_NAME = "Accident-File-Writer-Bolt";
+	public final static String TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME = "Toll-Notifications-File-Writer-Bolt";
+	public final static String TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME = "Toll-Assessments-File-Writer-Bolt";
 	
 	// streams
 	// input
@@ -66,7 +66,7 @@ public class TopologyControl {
 	// TODO check usage
 	// bolts
 	public final static String ACCOUNT_BALANCE_BOLT_NAME = "AccountBalanceBolt";
-	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "Account Balance File Writer Bolt";
+	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "AccountBalanceFileWriterBolt";
 	public final static String DAILY_EXPEDITURE_BOLT_NAME = "DailyExpenditureBolt";
 	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
 	// streams

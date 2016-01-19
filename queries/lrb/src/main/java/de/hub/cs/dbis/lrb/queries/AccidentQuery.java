@@ -56,9 +56,8 @@ public class AccidentQuery {
 	public static StormTopology createTopology(String output) {
 		TopologyBuilder builder = new TopologyBuilder();
 		
-		// TODO TimeUnit.SECONDS
 		builder.setSpout(TopologyControl.SPOUT_NAME, new DataDrivenStreamRateDriverSpout<Long>(new FileReaderSpout(),
-			0, TimeUnit.MILLISECONDS));
+			0, TimeUnit.SECONDS));
 		
 		builder.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0))
 			.localOrShuffleGrouping(TopologyControl.SPOUT_NAME);
@@ -106,7 +105,7 @@ public class AccidentQuery {
 			
 			Config c = new Config();
 			c.put(FileReaderSpout.INPUT_FILE_NAME, args[1]);
-			// c.setDebug(true);
+			
 			
 			long runtime = 1000 * Long.parseLong(args[3]);
 			
