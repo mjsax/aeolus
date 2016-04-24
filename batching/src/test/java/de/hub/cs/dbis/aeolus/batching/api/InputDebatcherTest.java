@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.batching.Batch;
 import de.hub.cs.dbis.aeolus.batching.BatchColumn;
 import de.hub.cs.dbis.aeolus.batching.BatchOutputCollector;
-import de.hub.cs.dbis.aeolus.batching.api.InputDebatcher;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 

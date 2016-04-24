@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
  */
 package de.hub.cs.dbis.aeolus.batching;
 
-import de.hub.cs.dbis.aeolus.batching.api.BoltOutputBatcher;
-import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.batching.api.BoltOutputBatcher;
+import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 
 
 

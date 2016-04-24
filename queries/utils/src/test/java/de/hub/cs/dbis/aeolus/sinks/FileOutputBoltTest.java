@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@
  */
 package de.hub.cs.dbis.aeolus.sinks;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -41,10 +45,6 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 
 

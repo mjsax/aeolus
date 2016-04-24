@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import storm.lrb.model.TollEntry;
 
 
@@ -88,7 +90,7 @@ public class FileTollDataStore implements TollDataStore {
 	@Override
 	public Integer retrieveToll(int xWay, int day, int vehicleIdentifier) {
 		try {
-			FileInputStream is = new FileInputStream(histFile);
+			FileInputStream is = new FileInputStream(this.histFile);
 			ObjectInputStream objectInputStream = new ObjectInputStream(is);
 			Object nextObject = objectInputStream.readObject();
 			while(nextObject != null) {
@@ -110,8 +112,8 @@ public class FileTollDataStore implements TollDataStore {
 	@Override
 	public void storeToll(int xWay, int day, int vehicleIdentifier, int toll) {
 		try {
-			if(!firstWriteDone) {
-				FileOutputStream os = new FileOutputStream(histFile, true // append
+			if(!this.firstWriteDone) {
+				FileOutputStream os = new FileOutputStream(this.histFile, true // append
 				);
 				ObjectOutputStream objectOutputStream = new ObjectOutputStream(os);
 				objectOutputStream.writeObject(null);
@@ -119,9 +121,9 @@ public class FileTollDataStore implements TollDataStore {
 				objectOutputStream.close();
 				os.flush();
 				os.close();
-				firstWriteDone = true;
+				this.firstWriteDone = true;
 			}
-			FileInputStream is = new FileInputStream(histFile);
+			FileInputStream is = new FileInputStream(this.histFile);
 			ObjectInputStream objectInputStream = new ObjectInputStream(is);
 			File tmpStoreFile = File.createTempFile("aeolus-lrb", null);
 			FileOutputStream os = new FileOutputStream(tmpStoreFile);
@@ -145,8 +147,8 @@ public class FileTollDataStore implements TollDataStore {
 			objectOutputStream.close();
 			is.close();
 			os.close();
-			histFile.delete();
-			tmpStoreFile.renameTo(histFile);
+			this.histFile.delete();
+			tmpStoreFile.renameTo(this.histFile);
 		} catch(IOException ex) {
 			throw new RuntimeException(ex);
 		} catch(ClassNotFoundException ex) {
@@ -158,7 +160,7 @@ public class FileTollDataStore implements TollDataStore {
 	public Integer removeEntry(int xWay, int day, int vehicleIdentifier) {
 		Integer retValue = null;
 		try {
-			FileInputStream is = new FileInputStream(histFile);
+			FileInputStream is = new FileInputStream(this.histFile);
 			ObjectInputStream objectInputStream = new ObjectInputStream(is);
 			File tmpStoreFile = File.createTempFile("aeolus-lrb", null);
 			FileOutputStream os = new FileOutputStream(tmpStoreFile);
@@ -184,8 +186,8 @@ public class FileTollDataStore implements TollDataStore {
 			objectOutputStream.close();
 			is.close();
 			os.close();
-			histFile.delete();
-			tmpStoreFile.renameTo(histFile);
+			this.histFile.delete();
+			tmpStoreFile.renameTo(this.histFile);
 		} catch(IOException ex) {
 			throw new RuntimeException(ex);
 		} catch(ClassNotFoundException ex) {

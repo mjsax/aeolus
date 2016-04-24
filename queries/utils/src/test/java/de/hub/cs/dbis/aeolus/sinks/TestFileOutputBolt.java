@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
  */
 package de.hub.cs.dbis.aeolus.sinks;
 
-import de.hub.cs.dbis.aeolus.sinks.AbstractFileOutputBolt;
 import backtype.storm.tuple.Tuple;
 
 

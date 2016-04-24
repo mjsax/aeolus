@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
-import de.hub.cs.dbis.aeolus.monitoring.utils.ConfigReader;
 
 
 

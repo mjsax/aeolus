@@ -1,7 +1,7 @@
 /*
  * #!
  * %
- * Copyright (C) 2014 - 2015 Humboldt-Universität zu Berlin
+ * Copyright (C) 2014 - 2016 Humboldt-Universität zu Berlin
  * %
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ import backtype.storm.topology.TopologyBuilder;
 
 
 /**
- * TODO
+ * {@link AeolusBuilder} allows to specify an output batch size for each Spout/Bolt that is added to the topology. It
+ * automatically inserts wrappers that batch the output and debatch the input if required.
  * 
  * @author Matthias J. Sax
  */
