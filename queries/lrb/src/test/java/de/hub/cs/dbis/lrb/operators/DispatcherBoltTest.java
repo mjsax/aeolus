@@ -32,13 +32,14 @@ import org.junit.runner.RunWith;
 import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
@@ -64,6 +65,7 @@ public class DispatcherBoltTest {
 		expectedResult.add(new TravelTimeRequest((short)8430, 104596, 3, 44, (short)5, (short)8, (short)4, (short)67));
 		
 		Tuple tuple = mock(Tuple.class);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		// Type, Time, VID, Spd, XWay, Lane, Dir, Seg, Pos, QID, S_init, S_end, DOW, TOD, Day
 		OngoingStubbing<String> tupleStub1 = when(tuple.getString(1));
 		tupleStub1 = tupleStub1.thenReturn("0,8400,32,0,0,1,0,2,11559,-1,-1,-1,-1,-1,-1");
@@ -104,6 +106,14 @@ public class DispatcherBoltTest {
 		Assert.assertEquals(expectedResult.get(3), collector.output.get(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID)
 			.get(0));
 		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
+		
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -113,7 +123,7 @@ public class DispatcherBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		final int numberOfOutputStreams = 4;
+		final int numberOfOutputStreams = 5;
 		
 		Assert.assertEquals(numberOfOutputStreams, declarer.streamIdBuffer.size());
 		Assert.assertEquals(numberOfOutputStreams, declarer.schemaBuffer.size());
@@ -121,20 +131,23 @@ public class DispatcherBoltTest {
 		
 		HashMap<String, Fields> expectedStreams = new HashMap<String, Fields>();
 		expectedStreams.put(TopologyControl.POSITION_REPORTS_STREAM_ID, new Fields(TopologyControl.TYPE_FIELD_NAME,
-			TopologyControl.TIME_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.SPEED_FIELD_NAME,
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.LANE_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
-			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.POSITION_FIELD_NAME));
+			TopologyControl.TIMESTAMP_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME,
+			TopologyControl.SPEED_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME, TopologyControl.LANE_FIELD_NAME,
+			TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+			TopologyControl.POSITION_FIELD_NAME));
 		expectedStreams.put(TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID, new Fields(
-			TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME,
-			TopologyControl.QUERY_ID_FIELD_NAME));
+			TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
+			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.QUERY_ID_FIELD_NAME));
 		expectedStreams.put(TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID, new Fields(
-			TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME,
-			TopologyControl.XWAY_FIELD_NAME, TopologyControl.QUERY_ID_FIELD_NAME, TopologyControl.DAY_FIELD_NAME));
+			TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
+			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+			TopologyControl.QUERY_ID_FIELD_NAME, TopologyControl.DAY_FIELD_NAME));
 		expectedStreams.put(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, new Fields(TopologyControl.TYPE_FIELD_NAME,
-			TopologyControl.TIME_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
-			TopologyControl.QUERY_ID_FIELD_NAME, TopologyControl.START_SEGMENT_FIELD_NAME,
-			TopologyControl.END_SEGMENT_FIELD_NAME, TopologyControl.DAY_OF_WEEK_FIELD_NAME,
-			TopologyControl.TIME_OF_DAY_FIELD_NAME));
+			TopologyControl.TIMESTAMP_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME,
+			TopologyControl.XWAY_FIELD_NAME, TopologyControl.QUERY_ID_FIELD_NAME,
+			TopologyControl.START_SEGMENT_FIELD_NAME, TopologyControl.END_SEGMENT_FIELD_NAME,
+			TopologyControl.DAY_OF_WEEK_FIELD_NAME, TopologyControl.TIME_OF_DAY_FIELD_NAME));
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 		
 		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
 		

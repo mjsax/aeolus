@@ -26,12 +26,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.TollNotification;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
@@ -130,6 +133,12 @@ public class TollNotificationBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		final String inputStreamId = input.getSourceStreamId();
+		
+		if(inputStreamId.equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			return;
+		}
+		
 		if(inputStreamId.equals(TopologyControl.POSITION_REPORTS_STREAM_ID)) {
 			this.inputPositionReport.clear();
 			this.inputPositionReport.addAll(input.getValues());
@@ -164,8 +173,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 			if(lav != null) {
 				lavValue = lav.intValue();
 			} else {
-				lav = new Integer(0);
-				lavValue = 0;
+				lav = new Integer(-1);
+				lavValue = -1;
 			}
 			
 			if(lavValue < 40) {
@@ -292,6 +301,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID, TollNotification.getSchema());
 		declarer.declareStream(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID, TollNotification.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 	}
 	
 }

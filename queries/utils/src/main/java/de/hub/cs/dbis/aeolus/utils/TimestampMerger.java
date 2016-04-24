@@ -41,12 +41,18 @@ import backtype.storm.tuple.Tuple;
  * {@link TimestampMerger} merges all incoming streams (all physical substreams from all tasks) over all logical
  * producers in ascending timestamp order. Input tuples must be in ascending timestamp order within each incoming
  * substream. The timestamp attribute is expected to be of type {@link Number}.
+ * <p>
+ * The internal buffer can be flushed by sending an <strong>ID less</strong> zero-attribute tuple via stream
+ * {@link #FLUSH_STREAM_ID}.
  * 
  * @author Matthias J. Sax
  */
 public class TimestampMerger implements IRichBolt {
 	private final static long serialVersionUID = -6930627449574381467L;
 	private final static Logger logger = LoggerFactory.getLogger(TimestampMerger.class);
+	
+	/** The name of the flush stream. */
+	public final static String FLUSH_STREAM_ID = "flush";
 	
 	/** The original bolt that consumers a stream of input tuples that are ordered by their timestamp attribute. */
 	private final IRichBolt wrappedBolt;
@@ -152,13 +158,22 @@ public class TimestampMerger implements IRichBolt {
 	
 	@Override
 	public void execute(Tuple tuple) {
-		logger.trace("Adding tuple to internal buffer tuple: {}", tuple);
-		this.merger.addTuple(new Integer(tuple.getSourceTask()), tuple);
+		if(tuple.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			this.merger.disablePartition(new Integer(tuple.getSourceTask()));
+		} else {
+			logger.trace("Adding tuple to internal buffer tuple: {}", tuple);
+			this.merger.addTuple(new Integer(tuple.getSourceTask()), tuple);
+		}
 		
 		Tuple t;
 		while((t = this.merger.getNextTuple()) != null) {
 			logger.trace("Extrated tuple from internal buffer for processing: {}", tuple);
 			this.wrappedBolt.execute(t);
+		}
+		
+		if(this.merger.getNumberOpenPartitions() == 0) {
+			assert (tuple.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID));
+			this.wrappedBolt.execute(tuple);
 		}
 	}
 	

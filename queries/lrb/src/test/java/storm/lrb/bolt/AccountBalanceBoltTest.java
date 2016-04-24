@@ -16,21 +16,6 @@
  * limitations under the License.
  * #_
  */
-/*
- * Copyright 2015 Humboldt-Universität zu Berlin.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package storm.lrb.bolt;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +37,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.model.AccountBalance;
 import storm.lrb.tools.EntityHelper;
 import backtype.storm.Config;
@@ -65,6 +50,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
@@ -105,7 +91,7 @@ public class AccountBalanceBoltTest {
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(
-			new Fields(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
+			new Fields(TopologyControlOld.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
 		AccountBalanceBolt instance = new AccountBalanceBolt();
 		TestOutputCollector collector = new TestOutputCollector();
 		List<Integer> taskMock = new LinkedList<Integer>();
@@ -148,7 +134,7 @@ public class AccountBalanceBoltTest {
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(
-			new Fields(TopologyControl.TOLL_NOTIFICATION_FIELD_NAME));
+			new Fields(TopologyControlOld.TOLL_NOTIFICATION_FIELD_NAME));
 		instance = new AccountBalanceBolt();
 		collector = new TestOutputCollector();
 		taskMock = new LinkedList<Integer>();

@@ -43,6 +43,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.generated.GlobalStreamId;
@@ -55,6 +56,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.TupleImpl;
+import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
@@ -93,8 +95,7 @@ public class TimestampMergerTest {
 	
 	@BeforeClass
 	public static void prepareStatic() {
-		// final long seed = System.currentTimeMillis();
-		final long seed = 1432597577997L;
+		final long seed = System.currentTimeMillis();
 		Random r = new Random(seed);
 		System.out.println("Static test seed: " + seed);
 		
@@ -116,7 +117,6 @@ public class TimestampMergerTest {
 	@Before
 	public void prepare() {
 		this.seed = System.currentTimeMillis();
-		this.seed = 1432597581706L;
 		this.r = new Random(this.seed);
 		System.out.println("Test seed: " + this.seed);
 		forwarder.prepare(TimestampMergerTest.boltConfig, null, null);
@@ -252,6 +252,8 @@ public class TimestampMergerTest {
 			checkerBolt = new TimestampOrderChecker(forwarder, "ts", duplicatesFraction != 0);
 			merger = new TimestampMerger(checkerBolt, "ts");
 		}
+		final boolean flush = this.r.nextBoolean();
+		
 		TestOutputCollector collector = new TestOutputCollector();
 		
 		merger.prepare(null, this.topologyContextMock, new OutputCollector(collector));
@@ -279,7 +281,7 @@ public class TimestampMergerTest {
 			value.set(schema.fieldIndex("ts"), ts);
 			
 			this.result.add(value);
-			this.input[taskId].add(new TupleImpl(this.contextMock, value, taskId, null));
+			this.input[taskId].add(new TupleImpl(this.contextMock, value, taskId, "streamId"));
 			
 			if(++counter == numberOfTuples) {
 				break;
@@ -312,14 +314,37 @@ public class TimestampMergerTest {
 		
 		
 		
-		int stillBuffered = numberOfTuples;
-		int smallestMax = Collections.min(Arrays.asList(ArrayUtils.toObject(max))).intValue();
-		for(int i = 0; i < createdTasks; ++i) {
-			for(int j = 0; j <= smallestMax; ++j) {
-				stillBuffered -= bucketSums[i][j];
+		List<List<Object>> expectedResult;
+		int stillBuffered;
+		if(flush) {
+			Tuple flushTuple = mock(Tuple.class);
+			when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+			
+			@SuppressWarnings("boxing")
+			OngoingStubbing<Integer> flushTupleTaskStub = when(flushTuple.getSourceTask());
+			for(int tid = 0; tid < createdTasks; ++tid) {
+				flushTupleTaskStub = flushTupleTaskStub.thenReturn(new Integer(tid));
 			}
+			when(flushTuple.getLong(0)).thenReturn(new Long(Long.MAX_VALUE));
+			when(flushTuple.getLongByField("ts")).thenReturn(new Long(Long.MAX_VALUE));
+			
+			for(int tid = 0; tid < createdTasks; ++tid) {
+				merger.execute(flushTuple);
+			}
+			
+			expectedResult = this.result;
+			expectedResult.add(new Values());
+			stillBuffered = -1;
+		} else {
+			stillBuffered = numberOfTuples;
+			int smallestMax = Collections.min(Arrays.asList(ArrayUtils.toObject(max))).intValue();
+			for(int i = 0; i < createdTasks; ++i) {
+				for(int j = 0; j <= smallestMax; ++j) {
+					stillBuffered -= bucketSums[i][j];
+				}
+			}
+			expectedResult = this.result.subList(0, this.result.size() - stillBuffered);
 		}
-		List<List<Object>> expectedResult = this.result.subList(0, this.result.size() - stillBuffered);
 		
 		if(expectedResult.size() > 0) {
 			Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
@@ -328,7 +353,6 @@ public class TimestampMergerTest {
 		}
 		Assert.assertTrue(collector.acked.size() == numberOfTuples - stillBuffered);
 		Assert.assertTrue(collector.failed.size() == 0);
-		
 	}
 	
 	@Test

@@ -31,7 +31,10 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
@@ -84,6 +87,13 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
+		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			this.flushBuffer();
+			
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			return;
+		}
+		
 		this.inputPositionReport.clear();
 		this.inputPositionReport.addAll(input.getValues());
 		LOGGER.trace(this.inputPositionReport.toString());
@@ -98,14 +108,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		if(minute > this.currentMinute) {
 			// emit all values for last minute
 			// (because input tuples are ordered by ts, we can close the last minute safely)
-			for(Entry<Integer, Pair<AvgValue, SegmentIdentifier>> entry : this.avgSpeedsMap.entrySet()) {
-				Pair<AvgValue, SegmentIdentifier> value = entry.getValue();
-				SegmentIdentifier segId = value.getRight();
-				
-				// VID, Minute-Number, X-Way, Segment, Direction, Avg(speed)
-				this.collector.emit(new AvgVehicleSpeedTuple(entry.getKey(), new Short(this.currentMinute), segId
-					.getXWay(), segId.getSegment(), segId.getDirection(), value.getLeft().getAverage()));
-			}
+			this.flushBuffer();
 			
 			this.avgSpeedsMap.clear();
 			this.currentMinute = minute;
@@ -137,6 +140,17 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(AvgVehicleSpeedTuple.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 	}
 	
+	private void flushBuffer() {
+		for(Entry<Integer, Pair<AvgValue, SegmentIdentifier>> entry : this.avgSpeedsMap.entrySet()) {
+			Pair<AvgValue, SegmentIdentifier> value = entry.getValue();
+			SegmentIdentifier segId = value.getRight();
+			
+			// VID, Minute-Number, X-Way, Segment, Direction, Avg(speed)
+			this.collector.emit(new AvgVehicleSpeedTuple(entry.getKey(), new Short(this.currentMinute),
+				segId.getXWay(), segId.getSegment(), segId.getDirection(), value.getLeft().getAverage()));
+		}
+	}
 }

@@ -18,7 +18,6 @@
  */
 package de.hub.cs.dbis.lrb.operators;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,13 +34,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
 import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.util.Constants;
@@ -77,6 +78,7 @@ public class AverageSpeedBoltTest {
 		bolt.prepare(null, null, new OutputCollector(collector));
 		
 		final Tuple tuple = mock(Tuple.class);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		OngoingStubbing<List<Object>> tupleStub = when(tuple.getValues());
 		
 		final int numberOfVehicles = 1 + this.r.nextInt(50);
@@ -122,7 +124,7 @@ public class AverageSpeedBoltTest {
 				
 				if(idx < numberOfVehicles / 2) {
 					tupleStub = tupleStub.thenReturn(new AvgVehicleSpeedTuple(vids[idx], new Short(minute),
-						new Integer(1), segment[idx], new Short((short)0), new Integer(speed)));
+						new Integer(1), segment[idx], new Short((short)0), new Double(speed)));
 					
 					this.addToSpeedList(speedValuesPerSegment1[minute - 1], segment[idx], speed);
 					if(this.r.nextInt(5) > 0) {
@@ -130,7 +132,7 @@ public class AverageSpeedBoltTest {
 					}
 				} else {
 					tupleStub = tupleStub.thenReturn(new AvgVehicleSpeedTuple(vids[idx], new Short(minute),
-						new Integer(1), segment[idx], new Short((short)1), new Integer(speed)));
+						new Integer(1), segment[idx], new Short((short)1), new Double(speed)));
 					
 					this.addToSpeedList(speedValuesPerSegment2[minute - 1], segment[idx], speed);
 					if(this.r.nextInt(5) > 0) {
@@ -149,9 +151,11 @@ public class AverageSpeedBoltTest {
 			for(int i = 0; i < numberOfVehicles; ++i) {
 				bolt.execute(tuple);
 			}
-			assertEquals(1, collector.output.size());
-			assertEquals(expectedResult, Sets.newHashSet(collector.output.get(Utils.DEFAULT_STREAM_ID)));
-			assertEquals(minute * numberOfVehicles, collector.acked.size());
+			Assert.assertEquals(1, collector.output.size());
+			Assert.assertEquals(expectedResult, Sets.newHashSet(collector.output.get(Utils.DEFAULT_STREAM_ID)));
+			
+			Assert.assertEquals(minute * numberOfVehicles, collector.acked.size());
+			Assert.assertEquals(0, collector.failed.size());
 			
 			collector.output.clear();
 			collector.output.put(Utils.DEFAULT_STREAM_ID, new LinkedList<List<Object>>());
@@ -159,6 +163,22 @@ public class AverageSpeedBoltTest {
 			this.addToExpectedResult(speedValuesPerSegment1[minute - 1], minute, (short)0, expectedResult);
 			this.addToExpectedResult(speedValuesPerSegment2[minute - 1], minute, (short)1, expectedResult);
 		}
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
+		
+		Assert.assertEquals(2, collector.output.size());
+		
+		Assert.assertEquals(expectedResult, Sets.newHashSet(collector.output.get(Utils.DEFAULT_STREAM_ID)));
+		Assert.assertEquals(numberOfMinutes * numberOfVehicles, collector.acked.size());
+		
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		
+		Assert.assertEquals(0, collector.failed.size());
 	}
 	
 	private void addToSpeedList(HashMap<Short, List<Integer>> speedValuesPerSegment, Short seg, int speed) {
@@ -180,7 +200,7 @@ public class AverageSpeedBoltTest {
 				++cnt;
 			}
 			expectedResult.add(new AvgSpeedTuple(new Short(minute), new Integer(1), segment.getKey(), new Short(
-				direction), new Integer(sumSpeed / cnt)));
+				direction), new Double(sumSpeed / (double)cnt)));
 		}
 		
 		speedValuesPerSegment.clear();
@@ -193,15 +213,19 @@ public class AverageSpeedBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.streamIdBuffer.size());
-		Assert.assertEquals(1, declarer.schemaBuffer.size());
-		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(2, declarer.streamIdBuffer.size());
+		Assert.assertEquals(2, declarer.schemaBuffer.size());
+		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertNull(declarer.streamIdBuffer.get(0));
 		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
 			TopologyControl.AVERAGE_SPEED_FIELD_NAME).toList(), declarer.schemaBuffer.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+		
+		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
+		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	
 }

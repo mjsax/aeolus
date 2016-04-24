@@ -182,8 +182,8 @@ public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInput
 					} catch(IOException e) {
 						logger.error("Closing input file reader failed.", e);
 					}
-					this.inputFiles.set(this.emitIndex, null); // do not remove -> would change partition IDs in
-																// super.emitNextTuple
+					// set to null but do not remove from list -> would change partition IDs in super.emitNextTuple
+					this.inputFiles.set(this.emitIndex, null);
 				} else {
 					// we cannot put any more data,
 					this.emitted = super.emitNextTuple(null, null, null);

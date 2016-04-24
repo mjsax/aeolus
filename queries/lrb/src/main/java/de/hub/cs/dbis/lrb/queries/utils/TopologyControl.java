@@ -16,12 +16,16 @@
  * limitations under the License.
  * #_
  */
-package storm.lrb;
+package de.hub.cs.dbis.lrb.queries.utils;
+
+import de.hub.cs.dbis.lrb.queries.LinearRoad;
+
+
 
 
 
 /**
- * TODO
+ * Names of Spouts, Bolts, fields/attributes, and streams used by {@link LinearRoad} and sub-queries.
  * 
  * @author richter
  * @author mjsax
@@ -63,16 +67,6 @@ public class TopologyControl {
 	public final static String CAR_COUNTS_STREAM_ID = "cnt";
 	public final static String LAVS_STREAM_ID = "lav";
 	
-	// TODO check usage
-	// bolts
-	public final static String ACCOUNT_BALANCE_BOLT_NAME = "AccountBalanceBolt";
-	public final static String ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME = "AccountBalanceFileWriterBolt";
-	public final static String DAILY_EXPEDITURE_BOLT_NAME = "DailyExpenditureBolt";
-	public final static String DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME = "DailyExpeditureFileWriterBolt";
-	// streams
-	public final static String ACCIDENT_INFO_STREAM_ID = "AccidentInfoStream";
-	public final static String LAST_AVERAGE_SPEED_STREAM_ID = "LastAverageSpeedStream";
-	
 	/*
 	 * The identifiers of tuple attributes.
 	 */
@@ -111,22 +105,8 @@ public class TopologyControl {
 	public final static String AVERAGE_VEHICLE_SPEED_FIELD_NAME = "avgvs";
 	public final static String AVERAGE_SPEED_FIELD_NAME = "avgs";
 	public final static String CAR_COUNT_FIELD_NAME = "cnt";
-	
-	// TODO check if needed
-	public final static String POS_REPORT_FIELD_NAME = "PosReport";
-	public final static String TOLL_NOTIFICATION_FIELD_NAME = "tollnotification";
-	public final static String ACCOUNT_BALANCE_REQUEST_FIELD_NAME = "AccBalRequests";
-	public final static String DAILY_EXPEDITURE_REQUEST_FIELD_NAME = "DaiExpRequests";
-	public final static String TRAVEL_TIME_REQUEST_FIELD_NAME = "TTEstRequests";
 	public final static String LAST_AVERAGE_SPEED_FIELD_NAME = "lav";
 	public final static String MINUTE_FIELD_NAME = "minute";
-	public final static String NUMBER_OF_VEHICLES_FIELD_NAME = "nov"; // @TODO: is that maybe the same as CAR_COUNT?
-	public final static String EXPEDITURE_NOTIFICATION_FIELD_NAME = "expenditurenotification";
-	public final static String ACCIDENT_NOTIFICATION_FIELD_NAME = "accnotification";
-	public final static String TUPLE_FIELD_NAME = "tuple";
-	public final static String ACCIDENT_INFO_FIELD_NAME = "accidentInfo";
-	public final static String TIME_FIELD_NAME = "StormTimer";
-	public final static String BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME = "balancenotification";
 	
 	private TopologyControl() {}
 }

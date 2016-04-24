@@ -207,6 +207,7 @@ public class StreamMergerTest {
 		}
 		final int numberOfTuples = numberOfPartitions * 10
 			+ this.r.nextInt(numberOfPartitions * (1 + this.r.nextInt(10)));
+		final boolean doFlush = this.r.nextBoolean();
 		
 		ArrayList<Integer> partitionIds = new ArrayList<Integer>(numberOfPartitions);
 		int[] currentTs = new int[numberOfPartitions];
@@ -247,26 +248,42 @@ public class StreamMergerTest {
 				}
 			}
 			
-			int reads = this.r.nextInt(2 * numberOfPartitions);
-			for(int i = 0; i < reads; ++i) {
-				Values res = merger.getNextTuple();
-				if(res != null) {
-					result.add(res);
-				}
+			Values res;
+			while((res = merger.getNextTuple()) != null) {
+				result.add(res);
 			}
-			
 		}
 		
 		Collections.sort(expectedResult, new TimestampComperator());
 		
-		List<Object> lastRemoved = null;
-		while(expectedResult.size() > result.size()) {
-			lastRemoved = expectedResult.removeLast();
-		}
-		if(lastRemoved != null) {
-			while(expectedResult.size() > 0
-				&& ((Long)lastRemoved.get(0)).longValue() == ((Long)expectedResult.getLast().get(0)).longValue()) {
-				expectedResult.removeLast();
+		if(doFlush) {
+			while(merger.getNumberOpenPartitions() > 0) {
+				
+				boolean closeSuccess = false;
+				for(Integer p : partitionIds) {
+					try {
+						closeSuccess |= merger.closePartition(p);
+					} catch(NullPointerException e) {
+						// ignore; happens for alread closed partitions
+					}
+				}
+				assert (closeSuccess);
+				
+				Values res;
+				while((res = merger.getNextTuple()) != null) {
+					result.add(res);
+				}
+			}
+		} else {
+			List<Object> lastRemoved = null;
+			while(expectedResult.size() > result.size()) {
+				lastRemoved = expectedResult.removeLast();
+			}
+			if(lastRemoved != null) {
+				while(expectedResult.size() > 0
+					&& ((Long)lastRemoved.get(0)).longValue() == ((Long)expectedResult.getLast().get(0)).longValue()) {
+					expectedResult.removeLast();
+				}
 			}
 		}
 		
@@ -286,7 +303,6 @@ public class StreamMergerTest {
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}
-		
 	}
 	
 }

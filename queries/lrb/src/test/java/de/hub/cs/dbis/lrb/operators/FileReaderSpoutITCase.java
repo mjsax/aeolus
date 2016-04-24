@@ -84,13 +84,16 @@ public class FileReaderSpoutITCase {
 		final int dop = 1 + this.r.nextInt(10);
 		builder.setSpout("Spout", new FileReaderSpout(), new Integer(dop));
 		SpoutDataFileOutputBolt sink = new SpoutDataFileOutputBolt();
-		builder.setBolt("Sink", new TimestampMerger(sink, 0), new Integer(1)).shuffleGrouping("Spout");
+		builder.setBolt("Sink", new TimestampMerger(sink, 0), new Integer(1)).shuffleGrouping("Spout")
+			.allGrouping("Spout", TimestampMerger.FLUSH_STREAM_ID);
 		
 		
 		
 		LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("LR-SpoutTest", conf, builder.createTopology());
 		Utils.sleep(10 * 1000);
+		cluster.deactivate("LR-SpoutTest");
+		Utils.sleep(1000);
 		cluster.killTopology("LR-SpoutTest");
 		Utils.sleep(5 * 1000); // give "kill" some time to clean up; otherwise, test might hang and time out
 		cluster.shutdown();
@@ -117,9 +120,7 @@ public class FileReaderSpoutITCase {
 			reader.close();
 		}
 		Collections.sort(expectedResult);
-		for(int i = 1; i < dop; ++i) {
-			expectedResult.removeLast();
-		}
+		expectedResult.add("FLUSH");
 		
 		Assert.assertEquals(expectedResult, result);
 	}

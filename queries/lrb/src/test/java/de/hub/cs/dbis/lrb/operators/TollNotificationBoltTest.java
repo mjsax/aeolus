@@ -23,10 +23,11 @@ import static de.hub.cs.dbis.lrb.util.Constants.l1;
 import static de.hub.cs.dbis.lrb.util.Constants.l2;
 import static de.hub.cs.dbis.lrb.util.Constants.l4;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,12 +36,14 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.TollNotification;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
@@ -80,7 +83,7 @@ public class TollNotificationBoltTest {
 		time = (short)0;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l0, d, (short)5, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 0));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 0));
 		
 		// same segment different lane
 		time = (short)30;
@@ -94,13 +97,13 @@ public class TollNotificationBoltTest {
 		time = (short)60;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)6, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 0));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 0));
 		
 		// crossing segment different lane
 		time = (short)90;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l2, d, (short)7, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 0));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 0));
 		
 		// crossing segment but exit highway
 		time = (short)120;
@@ -118,7 +121,7 @@ public class TollNotificationBoltTest {
 		time = (short)200;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l0, d, (short)10, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 2));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 2));
 		
 		// same segment different lane
 		time = (short)230;
@@ -141,7 +144,7 @@ public class TollNotificationBoltTest {
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)11, pos));
 		expectedNotifications.add(new TollNotification(time, time, vid, 39, 8));
-		expectedAssessments.add(new TollNotification((short)200, (short)200, vid, 0, 2));
+		expectedAssessments.add(new TollNotification((short)200, (short)200, vid, -1, 2));
 		
 		// crossing segment but exit highway
 		time = (short)290;
@@ -175,7 +178,7 @@ public class TollNotificationBoltTest {
 		time = (short)500;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l0, d, (short)30, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 2));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 2));
 		
 		// same segment different lane
 		time = (short)530;
@@ -194,7 +197,7 @@ public class TollNotificationBoltTest {
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)31, pos));
 		expectedNotifications.add(new TollNotification(time, time, vid, 39, 0));
-		expectedAssessments.add(new TollNotification((short)500, (short)500, vid, 0, 2));
+		expectedAssessments.add(new TollNotification((short)500, (short)500, vid, -1, 2));
 		
 		// crossing segment but exit highway
 		time = (short)590;
@@ -212,7 +215,7 @@ public class TollNotificationBoltTest {
 		time = (short)600;
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l0, d, (short)30, pos));
-		expectedNotifications.add(new TollNotification(time, time, vid, 0, 2));
+		expectedNotifications.add(new TollNotification(time, time, vid, -1, 2));
 		
 		// same segment different lane
 		time = (short)630;
@@ -231,7 +234,7 @@ public class TollNotificationBoltTest {
 		streamIdsToBeMocked.add(TopologyControl.POSITION_REPORTS_STREAM_ID);
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)31, pos));
 		expectedNotifications.add(new TollNotification(time, time, vid, 39, 0));
-		expectedAssessments.add(new TollNotification((short)600, (short)600, vid, 0, 2));
+		expectedAssessments.add(new TollNotification((short)600, (short)600, vid, -1, 2));
 		
 		// crossing segment but exit highway
 		time = (short)690;
@@ -258,6 +261,17 @@ public class TollNotificationBoltTest {
 		Assert.assertEquals(2, collector.output.size());
 		Assert.assertEquals(expectedNotifications, collector.output.get(TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID));
 		Assert.assertEquals(expectedAssessments, collector.output.get(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID));
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
+		
+		Assert.assertEquals(3, collector.output.size());
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		
 	}
 	
 	@Test
@@ -307,24 +321,26 @@ public class TollNotificationBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		final int numberOfOutputStreams = 2;
+		final int numberOfOutputStreams = 3;
 		
 		Assert.assertEquals(numberOfOutputStreams, declarer.streamIdBuffer.size());
 		Assert.assertEquals(numberOfOutputStreams, declarer.schemaBuffer.size());
 		Assert.assertEquals(numberOfOutputStreams, declarer.directBuffer.size());
 		
-		Fields schema = new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+		Fields schema = new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
 			TopologyControl.EMIT_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.SPEED_FIELD_NAME,
 			TopologyControl.TOLL_FIELD_NAME);
 		
-		HashSet<String> expectedStreams = new HashSet<String>();
-		expectedStreams.add(TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID);
-		expectedStreams.add(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID);
+		HashMap<String, Fields> expectedStreams = new HashMap<String, Fields>();
+		expectedStreams.put(TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID, schema);
+		expectedStreams.put(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID, schema);
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 		
-		Assert.assertEquals(expectedStreams, new HashSet<String>(declarer.streamIdBuffer));
+		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
 		
 		for(int i = 0; i < numberOfOutputStreams; ++i) {
-			Assert.assertEquals(schema.toList(), declarer.schemaBuffer.get(i).toList());
+			Assert.assertEquals(expectedStreams.get(declarer.streamIdBuffer.get(i)).toList(), declarer.schemaBuffer
+				.get(i).toList());
 			Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(i));
 		}
 	}

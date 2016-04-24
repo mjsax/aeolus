@@ -23,7 +23,11 @@ import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
 
@@ -50,6 +54,9 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	/** The prefix of all input file names. */
 	private final String defaultPrefix = "xway";
 	
+	/** The output collector to be used. */
+	private SpoutOutputCollector collector;
+	
 	
 	
 	/**
@@ -73,11 +80,13 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
 		if(conf.get(INPUT_FILE_NAME) == null) {
 			conf.put(INPUT_FILE_NAME, this.defaultPrefix);
 		}
 		super.open(conf, context, collector);
+		
+		this.collector = collector;
 	}
 	
 	/**
@@ -105,10 +114,18 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	}
 	
 	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		super.declareOutputFields(declarer);
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+	}
+	
+	@Override
 	public void activate() {/* empty */}
 	
 	@Override
-	public void deactivate() {/* empty */}
+	public void deactivate() {
+		this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+	}
 	
 	@Override
 	public void ack(Object msgId) {/* empty */}

@@ -29,7 +29,10 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
 import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
@@ -77,12 +80,19 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
+		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			this.flushBuffer();
+			
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			return;
+		}
+		
 		this.inputTuple.clear();
 		this.inputTuple.addAll(input.getValues());
 		LOGGER.trace(this.inputTuple.toString());
 		
 		short minute = this.inputTuple.getMinute().shortValue();
-		int avgVehicleSpeed = this.inputTuple.getAvgSpeed().intValue();
+		double avgVehicleSpeed = this.inputTuple.getAvgSpeed().doubleValue();
 		this.segment.set(this.inputTuple);
 		
 		assert (minute >= this.currentMinute);
@@ -90,13 +100,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		if(minute > this.currentMinute) {
 			// emit all values for last minute
 			// (because input tuples are ordered by ts (ie, minute number), we can close the last minute safely)
-			for(Entry<SegmentIdentifier, AvgValue> entry : this.avgSpeedsMap.entrySet()) {
-				SegmentIdentifier segId = entry.getKey();
-				
-				// Minute-Number, X-Way, Segment, Direction, Avg(speed)
-				this.collector.emit(new AvgSpeedTuple(new Short(this.currentMinute), segId.getXWay(), segId
-					.getSegment(), segId.getDirection(), entry.getValue().getAverage()));
-			}
+			this.flushBuffer();
 			
 			this.avgSpeedsMap.clear();
 			this.currentMinute = minute;
@@ -116,6 +120,16 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(AvgSpeedTuple.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 	}
 	
+	private void flushBuffer() {
+		for(Entry<SegmentIdentifier, AvgValue> entry : this.avgSpeedsMap.entrySet()) {
+			SegmentIdentifier segId = entry.getKey();
+			
+			// Minute-Number, X-Way, Segment, Direction, Avg(speed)
+			this.collector.emit(new AvgSpeedTuple(new Short(this.currentMinute), segId.getXWay(), segId.getSegment(),
+				segId.getDirection(), entry.getValue().getAverage()));
+		}
+	}
 }

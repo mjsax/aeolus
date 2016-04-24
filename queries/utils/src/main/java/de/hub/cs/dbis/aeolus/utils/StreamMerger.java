@@ -20,6 +20,8 @@ package de.hub.cs.dbis.aeolus.utils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -55,6 +57,9 @@ public class StreamMerger<T> {
 	
 	/** Input tuple buffer for merging. Contains a list of input tuples for each producer task. */
 	private final HashMap<Integer, LinkedList<T>> mergeBuffer = new HashMap<Integer, LinkedList<T>>();
+	
+	/** Contains a ID of all disabled partitions. */
+	private final HashSet<Integer> disabledPartitions = new HashSet<Integer>();
 	
 	/** Maximum timestamp value that was emitted already; */
 	private long latestTs = Long.MIN_VALUE;
@@ -157,7 +162,9 @@ public class StreamMerger<T> {
 		boolean eachBufferFilled = true;
 		Integer minTsPartitionNumber = null;
 		
-		for(Entry<Integer, LinkedList<T>> partition : this.mergeBuffer.entrySet()) {
+		Iterator<Entry<Integer, LinkedList<T>>> it = this.mergeBuffer.entrySet().iterator();
+		while(it.hasNext()) {
+			Entry<Integer, LinkedList<T>> partition = it.next();
 			LinkedList<T> partitionBuffer = partition.getValue();
 			try {
 				long ts = this.getTsValue(partitionBuffer.getFirst());
@@ -174,10 +181,15 @@ public class StreamMerger<T> {
 					minTsPartitionNumber = partition.getKey();
 				}
 			} catch(NoSuchElementException e) {
-				// in this case, we stay in the loop, because we still might find a tuple with equal ts value as last
-				// returned tuple
-				logger.trace("Found empty parition: {}", partition.getKey());
-				eachBufferFilled = false;
+				if(this.disabledPartitions.contains(partition.getKey())) {
+					logger.trace("Closing empty and disabled parition: {}", partition.getKey());
+					it.remove();
+				} else {
+					logger.trace("Found empty parition: {}", partition.getKey());
+					eachBufferFilled = false;
+					// no BREAK: we stay in the loop, because we still might find a tuple with equal ts value as last
+					// returned tuple
+				}
 			}
 		}
 		
@@ -234,4 +246,24 @@ public class StreamMerger<T> {
 		logger.debug("Closing partition {} failed.", partitionId);
 		return false;
 	}
+	
+	/**
+	 * Returns the number of open partitions.
+	 * 
+	 * @return the number of open partitions
+	 */
+	public int getNumberOpenPartitions() {
+		return this.mergeBuffer.size();
+	}
+	
+	/**
+	 * Disables a partition. A disabled partition cannot block the merger even if it is empty.
+	 * 
+	 * @param partitionId
+	 *            the partition that should be disabled
+	 */
+	public void disablePartition(Integer partitionId) {
+		this.disabledPartitions.add(partitionId);
+	}
+	
 }

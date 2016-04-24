@@ -36,6 +36,7 @@ import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.spouts.AbstractOrderedFileInputSpout;
 import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 
 
 

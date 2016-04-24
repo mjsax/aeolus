@@ -18,8 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.operators;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +28,15 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.AccidentNotification;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
@@ -115,11 +117,20 @@ public class AccidentNotificationBoltTest {
 			bolt.execute(tuple);
 		}
 		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
+		
 		List<AccidentNotification> expectedResult = new ArrayList<AccidentNotification>();
 		expectedResult.add(new AccidentNotification((short)121, (short)121, (short)2, dummyInt));
 		
-		Assert.assertEquals(1, collector.output.size());
+		Assert.assertEquals(2, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
+		
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -129,15 +140,19 @@ public class AccidentNotificationBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.streamIdBuffer.size());
-		Assert.assertEquals(1, declarer.schemaBuffer.size());
-		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(2, declarer.streamIdBuffer.size());
+		Assert.assertEquals(2, declarer.schemaBuffer.size());
+		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertNull(declarer.streamIdBuffer.get(0));
-		Assert.assertEquals(new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+		Assert.assertEquals(new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
 			TopologyControl.EMIT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.VEHICLE_ID_FIELD_NAME)
 			.toList(), declarer.schemaBuffer.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+		
+		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
+		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	
 }

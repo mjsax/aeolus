@@ -28,15 +28,15 @@ package de.hub.cs.dbis.lrb.util;
  */
 public final class Constants {
 	
-	/** 0...10799 */
+	/* 0...10799 */
 	public final static short MAX_TIME_SECONDS = 10799;
 	public final static short NUMBER_OF_SECONDS = MAX_TIME_SECONDS + 1;
 	
-	/** 0...MAXINT */
+	/* 0...MAXINT */
 	public final static int MAX_VID = Integer.MAX_VALUE;
 	public final static long NUMBER_OF_VIDS = MAX_VID + 1L;
 	
-	/** 0...100 */
+	/* 0...100 */
 	public static final int MAX_SPEED = 100;
 	public static final int NUMBER_OF_SPEEDS = MAX_SPEED + 1;
 	
@@ -49,27 +49,21 @@ public final class Constants {
 	public static final short ENTRANCE_LANE = l0.shortValue();
 	public static final short EXIT_LANE = l4.shortValue();
 	
-	
 	public static final Short EASTBOUND = new Short((short)0);
 	public static final Short WESTBOUND = new Short((short)1);
 	
-	/** 0...100 */
+	/* 0...100 */
 	public static final short MAX_SEGMENT = 100;
 	public static final short NUMBER_OF_SEGMENT = MAX_SEGMENT + 1;
 	
-	/** 0...527999 */
+	/* 0...527999 */
 	public final static int MAX_POSITION = 527999;
 	public final static int NUMBER_OF_POSITIONS = MAX_POSITION + 1;
 	
-	/** "If the LAV [...] is greater than or equal to 40 MPH, [...], no toll is assessed." */
+	/* "If the LAV [...] is greater than or equal to 40 MPH, [...], no toll is assessed." */
 	public static final int TOLL_LAV_THRESHOLD = 40;
-	/** "[...], or if the number of vehicles [...] was 50 or less [...], no toll is assessed." */
+	/* "[...], or if the number of vehicles [...] was 50 or less [...], no toll is assessed." */
 	public static final int TOLL_NUM_CARS_THRESHOLD = 50;
-	
-	/**
-	 * TODO: search in benchmark specification
-	 */
-	public final static int INITIAL_TOLL = 20;
 	
 	
 	

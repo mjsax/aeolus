@@ -18,9 +18,9 @@
  */
 package de.hub.cs.dbis.lrb.types.internal;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 
@@ -86,7 +86,7 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	 * @param avgSpeed
 	 *            the average speed of the vehicle
 	 */
-	public AvgVehicleSpeedTuple(Integer vid, Short minute, Integer xway, Short segment, Short diretion, Integer avgSpeed) {
+	public AvgVehicleSpeedTuple(Integer vid, Short minute, Integer xway, Short segment, Short diretion, Double avgSpeed) {
 		assert (vid != null);
 		assert (minute != null);
 		assert (xway != null);
@@ -157,8 +157,8 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	 * 
 	 * @return the average speed of this tuple
 	 */
-	public final Integer getAvgSpeed() {
-		return (Integer)super.get(AVGS_IDX);
+	public final Double getAvgSpeed() {
+		return (Double)super.get(AVGS_IDX);
 	}
 	
 	/**

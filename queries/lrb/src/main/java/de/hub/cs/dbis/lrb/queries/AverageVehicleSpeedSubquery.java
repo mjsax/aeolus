@@ -22,44 +22,45 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
-import de.hub.cs.dbis.lrb.operators.AccidentNotificationBolt;
-import de.hub.cs.dbis.lrb.operators.AccidentSink;
-import de.hub.cs.dbis.lrb.queries.utils.MinuteNumberExtractor;
+import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
 import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
+import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
 
 
 
 /**
- * {@link AccidentQuery} assembles the "Accident Processing" query that must detect accidents and notify (close)
- * up-stream vehicles about accidents within 5 seconds.
+ * {@link AverageVehicleSpeedSubquery} assembles the "Average Vehicle Speed" subquery that computes the average speed of
+ * each vehicle per minute within each segment (ie, x-way, segment, and direction).
  * 
- * @author mjsax
+ * * @author mjsax
  */
-public class AccidentQuery extends AbstractQuery {
+public class AverageVehicleSpeedSubquery extends AbstractQuery {
 	
 	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
-		new AccidentQuery().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput"});
+		new AverageVehicleSpeedSubquery().parseArgumentsAndRun(args, new String[] {"averageVehicleSpeedOutput"});
 	}
 	
 	@Override
 	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new AccidentDetectionSubquery().addBolts(builder, null);
-		
 		builder
-			.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME,
-				new TimestampMerger(new AccidentNotificationBolt(), new MinuteNumberExtractor()))
+			.setBolt(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME,
+				new TimestampMerger(new AverageVehicleSpeedBolt(), PositionReport.TIME_IDX))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
-			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
-			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID)
-			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(outputs[0]))
-			.localOrShuffleGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME)
-			.allGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+		if(outputs != null) {
+			if(outputs.length == 1) {
+				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+					TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME);
+			} else {
+				System.err.println("<outputs>.length != 1 => ignored");
+			}
+		}
 	}
 	
 }

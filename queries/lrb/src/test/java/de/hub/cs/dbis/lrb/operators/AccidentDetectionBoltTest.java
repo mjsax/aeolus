@@ -30,12 +30,14 @@ import org.junit.runner.RunWith;
 import org.mockito.stubbing.OngoingStubbing;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
 import de.hub.cs.dbis.lrb.util.Constants;
@@ -137,7 +139,8 @@ public class AccidentDetectionBoltTest {
 	@Test
 	public void testExecute() {
 		Tuple tuple = mock(Tuple.class);
-		OngoingStubbing<List<Object>> tupleStub = when(tuple.getValues());
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
+		OngoingStubbing<List<Object>> tupleValueStub = when(tuple.getValues());
 		
 		final int numberOfVehicles = timeAndPositions.length;
 		final int numberOfReporst = timeAndPositions[0].length;
@@ -148,10 +151,10 @@ public class AccidentDetectionBoltTest {
 					timeAndPositions[vid - 1][m][0], (short)0, Constants.EASTBOUND,
 					(short)(timeAndPositions[vid - 1][m][2].intValue() / 5280), timeAndPositions[vid - 1][m][2]);
 				
-				tupleStub = tupleStub.thenReturn(pr);
+				tupleValueStub = tupleValueStub.thenReturn(pr);
 			}
 		}
-		tupleStub.thenReturn(null);
+		tupleValueStub.thenReturn(null);
 		
 		AccidentDetectionBolt bolt = new AccidentDetectionBolt();
 		TestOutputCollector collector = new TestOutputCollector();
@@ -160,6 +163,12 @@ public class AccidentDetectionBoltTest {
 		for(int i = 0; i < numberOfReporst * numberOfVehicles; ++i) {
 			bolt.execute(tuple);
 		}
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
 		
 		List<AccidentTuple> expectedResult = new ArrayList<AccidentTuple>();
 		expectedResult.add(new AccidentTuple((short)1));
@@ -178,9 +187,11 @@ public class AccidentDetectionBoltTest {
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
 		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
 		
-		Assert.assertEquals(1, collector.output.size());
+		Assert.assertEquals(2, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(TopologyControl.ACCIDENTS_STREAM_ID));
 		
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -190,15 +201,19 @@ public class AccidentDetectionBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.streamIdBuffer.size());
-		Assert.assertEquals(1, declarer.schemaBuffer.size());
-		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(2, declarer.streamIdBuffer.size());
+		Assert.assertEquals(2, declarer.schemaBuffer.size());
+		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertEquals(TopologyControl.ACCIDENTS_STREAM_ID, declarer.streamIdBuffer.get(0));
 		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME).toList(), declarer.schemaBuffer
 			.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+		
+		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
+		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	
 }

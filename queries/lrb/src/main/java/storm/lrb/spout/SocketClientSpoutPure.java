@@ -29,7 +29,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.tools.StopWatch;
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
@@ -40,6 +40,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.lrb.operators.DispatcherBolt;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 
 
 
@@ -195,7 +196,7 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields(TopologyControl.TUPLE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME));
+		declarer.declare(new Fields(TopologyControlOld.TUPLE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME));
 	}
 	
 }

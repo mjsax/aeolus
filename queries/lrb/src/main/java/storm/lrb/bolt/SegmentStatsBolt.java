@@ -24,7 +24,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.model.SegmentStatistics;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -33,6 +33,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
@@ -122,7 +123,7 @@ public class SegmentStatsBolt extends BaseRichBolt {
 	
 	private void countAndAck(Tuple tuple) {
 		
-		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
+		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControlOld.POS_REPORT_FIELD_NAME);
 		
 		SegmentIdentifier segment = null;// new SegmentIdentifier(pos);
 		
@@ -139,7 +140,7 @@ public class SegmentStatsBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
-			TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.NUMBER_OF_VEHICLES_FIELD_NAME,
+			TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.CAR_COUNT_FIELD_NAME,
 			TopologyControl.LAST_AVERAGE_SPEED_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME));
 	}
 	

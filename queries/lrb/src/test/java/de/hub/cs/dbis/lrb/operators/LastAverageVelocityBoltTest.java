@@ -36,12 +36,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
 import de.hub.cs.dbis.lrb.types.internal.LavTuple;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
@@ -80,12 +82,13 @@ public class LastAverageVelocityBoltTest {
 		final int numberOfHighways = 1 + this.r.nextInt(3);
 		final int numberOfSegments = 1 + this.r.nextInt(5);
 		
-		final Map<SegmentIdentifier, List<Integer>> allSpeedsPerSegments = new HashMap<SegmentIdentifier, List<Integer>>();
+		final Map<SegmentIdentifier, List<Double>> allSpeedsPerSegments = new HashMap<SegmentIdentifier, List<Double>>();
 		final List<SegmentIdentifier> allSegments = new LinkedList<SegmentIdentifier>();
 		final List<SegmentIdentifier> skippedSegments = new LinkedList<SegmentIdentifier>();
 		
 		
 		Tuple tuple = mock(Tuple.class);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		OngoingStubbing<List<Object>> tupleStub = when(tuple.getValues());
 		
 		for(short minute = 1; minute <= numberOfMinutes; ++minute) {
@@ -103,7 +106,7 @@ public class LastAverageVelocityBoltTest {
 					
 					int avgSpeed = 1 + this.r.nextInt(Constants.MAX_SPEED);
 					input.add(new AvgSpeedTuple(new Short(minute), new Integer(xway), new Short(segment),
-						Constants.EASTBOUND, new Integer(avgSpeed)));
+						Constants.EASTBOUND, new Double(avgSpeed)));
 				}
 			}
 			
@@ -117,9 +120,9 @@ public class LastAverageVelocityBoltTest {
 				}
 				allSegments.add(sid);
 				
-				List<Integer> speeds = allSpeedsPerSegments.get(sid);
+				List<Double> speeds = allSpeedsPerSegments.get(sid);
 				if(speeds == null) {
-					speeds = new LinkedList<Integer>();
+					speeds = new LinkedList<Double>();
 					allSpeedsPerSegments.put(sid, speeds);
 				}
 				
@@ -138,7 +141,7 @@ public class LastAverageVelocityBoltTest {
 			boolean firstTupleOfMinute = true;
 			for(int i = 0; i < numberOfHighways * numberOfSegments; ++i) {
 				SegmentIdentifier sid = allSegments.remove(0);
-				List<Integer> speeds = allSpeedsPerSegments.get(sid);
+				List<Double> speeds = allSpeedsPerSegments.get(sid);
 				if(speeds.get(minute - 1) == null) {
 					continue;
 				}
@@ -152,8 +155,8 @@ public class LastAverageVelocityBoltTest {
 							continue;
 						}
 						lastMinute = m;
-						for(Entry<SegmentIdentifier, List<Integer>> e : allSpeedsPerSegments.entrySet()) {
-							List<Integer> speedList = e.getValue();
+						for(Entry<SegmentIdentifier, List<Double>> e : allSpeedsPerSegments.entrySet()) {
+							List<Double> speedList = e.getValue();
 							if(speedList.get(m) == null) {
 								this.addResult(speedList, (short)(m + 1), expectedResult, e.getKey());
 							}
@@ -165,12 +168,12 @@ public class LastAverageVelocityBoltTest {
 				
 				assertEquals(1, collector.output.size());
 				List<List<Object>> result = collector.output.get(TopologyControl.LAVS_STREAM_ID);
+				HashSet<List<Object>> ers = new HashSet<List<Object>>();
+				HashSet<List<Object>> rs = new HashSet<List<Object>>();
 				while(expectedResult.size() > 0) {
 					LavTuple t = expectedResult.remove(0);
-					HashSet<List<Object>> ers = new HashSet<List<Object>>();
 					ers.add(t);
 					
-					HashSet<List<Object>> rs = new HashSet<List<Object>>();
 					rs.add(result.remove(0));
 					
 					while(expectedResult.size() > 0) {
@@ -183,21 +186,79 @@ public class LastAverageVelocityBoltTest {
 						}
 					}
 					
-					assertEquals(ers, rs);
 				}
+				assertEquals(ers, rs);
 				assertEquals(0, result.size());
 				assertEquals(++executeCounter, collector.acked.size());
 				
 				firstTupleOfMinute = false;
 			}
 		}
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		instance.execute(flushTuple);
+		
+		short minute = numberOfMinutes + 1;
+		List<LavTuple> expectedResult = new LinkedList<LavTuple>();
+		for(int m = minute - 5; m < minute - 1; ++m) {
+			if(m < 0 || m <= lastMinute) {
+				continue;
+			}
+			lastMinute = m;
+			boolean lastMinuteEmpty = true;
+			for(Entry<SegmentIdentifier, List<Double>> e : allSpeedsPerSegments.entrySet()) {
+				List<Double> speedList = e.getValue();
+				
+				if(speedList.get(m) == null) {
+					this.addResult(speedList, (short)(m + 1), expectedResult, e.getKey());
+				} else {
+					lastMinuteEmpty = false;
+				}
+			}
+			if(lastMinuteEmpty) {
+				for(int i = 0; i < numberOfHighways; ++i) {
+					expectedResult.remove(expectedResult.size() - 1);
+				}
+			}
+		}
+		
+		List<List<Object>> result = collector.output.get(TopologyControl.LAVS_STREAM_ID);
+		HashSet<List<Object>> ers = new HashSet<List<Object>>();
+		HashSet<List<Object>> rs = new HashSet<List<Object>>();
+		while(expectedResult.size() > 0) {
+			LavTuple t = expectedResult.remove(0);
+			ers.add(t);
+			
+			rs.add(result.remove(0));
+			
+			while(expectedResult.size() > 0) {
+				LavTuple t2 = expectedResult.get(0);
+				if(t2.getMinuteNumber() == t.getMinuteNumber()) {
+					ers.add(expectedResult.remove(0));
+					rs.add(result.remove(0));
+				} else {
+					break;
+				}
+			}
+			
+		}
+		assertEquals(ers, rs);
+		assertEquals(0, result.size());
+		assertEquals(executeCounter, collector.acked.size());
+		
+		Assert.assertEquals(2, collector.output.size());
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
-	private void addResult(List<Integer> speeds, short minute, List<LavTuple> expectedResult, SegmentIdentifier sid) {
-		int sum = 0;
+	private void addResult(List<Double> speeds, short minute, List<LavTuple> expectedResult, SegmentIdentifier sid) {
+		double sum = 0;
 		int cnt = 0;
-		List<Integer> window = speeds.subList(minute > 5 ? minute - 5 : 0, minute);
-		for(Integer avgs : window) {
+		List<Double> window = speeds.subList(minute > 5 ? minute - 5 : 0, minute);
+		for(Double avgs : window) {
 			if(avgs == null) {
 				continue;
 			}
@@ -208,7 +269,7 @@ public class LastAverageVelocityBoltTest {
 			return;
 		}
 		expectedResult.add(new LavTuple(new Short((short)(minute + 1)), sid.getXWay(), sid.getSegment(), sid
-			.getDirection(), new Integer(sum / cnt)));
+			.getDirection(), new Integer((int)(sum / cnt))));
 	}
 	
 	@Test
@@ -218,15 +279,19 @@ public class LastAverageVelocityBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.streamIdBuffer.size());
-		Assert.assertEquals(1, declarer.schemaBuffer.size());
-		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(2, declarer.streamIdBuffer.size());
+		Assert.assertEquals(2, declarer.schemaBuffer.size());
+		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertEquals(TopologyControl.LAVS_STREAM_ID, declarer.streamIdBuffer.get(0));
 		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
 			TopologyControl.LAST_AVERAGE_SPEED_FIELD_NAME).toList(), declarer.schemaBuffer.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+		
+		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
+		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	
 }

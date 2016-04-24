@@ -21,6 +21,7 @@ package de.hub.cs.dbis.aeolus.spouts;
 import java.util.List;
 
 import backtype.storm.spout.SpoutOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
 
@@ -68,7 +69,9 @@ public class DataDrivenStreamRateDriverCollector<T extends Number> extends Spout
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Integer> emit(String streamId, List<Object> tuple, Object messageId) {
-		this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		if(!TimestampMerger.FLUSH_STREAM_ID.equals(streamId)) {
+			this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		}
 		return this.collector.emit(streamId, tuple, messageId);
 	}
 	
@@ -89,14 +92,18 @@ public class DataDrivenStreamRateDriverCollector<T extends Number> extends Spout
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Integer> emit(String streamId, List<Object> tuple) {
-		this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		if(!TimestampMerger.FLUSH_STREAM_ID.equals(streamId)) {
+			this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		}
 		return this.collector.emit(streamId, tuple);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId) {
-		this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		if(!TimestampMerger.FLUSH_STREAM_ID.equals(streamId)) {
+			this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		}
 		this.collector.emitDirect(taskId, streamId, tuple, messageId);
 	}
 	
@@ -110,7 +117,9 @@ public class DataDrivenStreamRateDriverCollector<T extends Number> extends Spout
 	@SuppressWarnings("unchecked")
 	@Override
 	public void emitDirect(int taskId, String streamId, List<Object> tuple) {
-		this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		if(!TimestampMerger.FLUSH_STREAM_ID.equals(streamId)) {
+			this.timestampLastTuple = ((T)tuple.get(this.tsIndex)).longValue();
+		}
 		this.collector.emitDirect(taskId, streamId, tuple);
 	}
 	

@@ -18,8 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.types.util;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 
 
 

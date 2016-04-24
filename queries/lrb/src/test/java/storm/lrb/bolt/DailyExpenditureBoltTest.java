@@ -32,7 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.tools.Helper;
 import backtype.storm.Config;
 import backtype.storm.task.GeneralTopologyContext;
@@ -48,7 +48,6 @@ import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
-import de.hub.cs.dbis.lrb.util.Constants;
 
 
 
@@ -73,7 +72,7 @@ public class DailyExpenditureBoltTest {
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("dummy"));
 		when(generalContextMock.getComponentId(anyInt())).thenReturn("componentID");
 		
-		Fields schema = new Fields(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
+		Fields schema = new Fields(TopologyControlOld.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
 		
 		when(generalContextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(schema);
 		TestOutputCollector collector = new TestOutputCollector();
@@ -133,7 +132,7 @@ public class DailyExpenditureBoltTest {
 		assertEquals(dailyExpenditureRequest.getTime(), resultTuple2.get(1));
 		// don't care about the processing time
 		assertEquals(queryIdentifier, resultTuple2.get(3));
-		assertEquals(Constants.INITIAL_TOLL, resultTuple2.get(4));
+		assertEquals(20, resultTuple2.get(4));
 		
 		
 	}

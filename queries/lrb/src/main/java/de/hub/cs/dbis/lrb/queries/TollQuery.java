@@ -18,31 +18,15 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
-import storm.lrb.TopologyControl;
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.StormSubmitter;
-import backtype.storm.generated.StormTopology;
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
-import backtype.storm.utils.Utils;
-import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
-import de.hub.cs.dbis.aeolus.spouts.DataDrivenStreamRateDriverSpout;
-import de.hub.cs.dbis.aeolus.spouts.DataDrivenStreamRateDriverSpout.TimeUnit;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
-import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
-import de.hub.cs.dbis.lrb.operators.AverageSpeedBolt;
-import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
-import de.hub.cs.dbis.lrb.operators.CountVehiclesBolt;
-import de.hub.cs.dbis.lrb.operators.DispatcherBolt;
-import de.hub.cs.dbis.lrb.operators.FileReaderSpout;
-import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
-import de.hub.cs.dbis.lrb.types.PositionReport;
-import de.hub.cs.dbis.lrb.types.internal.AvgSpeedTuple;
-import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
-import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
-import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
+import de.hub.cs.dbis.lrb.operators.TollSink;
+import de.hub.cs.dbis.lrb.queries.utils.TollInputStreamsTsExtractor;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 
 
 
@@ -54,95 +38,42 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  * 
  * @author mjsax
  */
-public class TollQuery {
+public class TollQuery extends AbstractQuery {
 	
-	public static StormTopology createTopology(String notificationsOutput, String assessmentsOutput) {
-		TopologyBuilder builder = new TopologyBuilder();
-		
-		builder.setSpout(TopologyControl.SPOUT_NAME, new DataDrivenStreamRateDriverSpout<Long>(new FileReaderSpout(),
-			0, TimeUnit.SECONDS));
-		
-		builder.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0))
-			.localOrShuffleGrouping(TopologyControl.SPOUT_NAME);
-		
-		builder.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-			new TimestampMerger(new AccidentDetectionBolt(), PositionReport.TIME_IDX)).fieldsGrouping(
-			TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
-			PositionIdentifier.getSchema());
-		
-		builder.setBolt(TopologyControl.COUNT_VEHICLES_BOLT_NAME,
-			new TimestampMerger(new CountVehiclesBolt(), PositionReport.TIME_IDX)).fieldsGrouping(
-			TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
-			SegmentIdentifier.getSchema());
-		
-		builder.setBolt(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME,
-			new TimestampMerger(new AverageVehicleSpeedBolt(), PositionReport.TIME_IDX)).fieldsGrouping(
-			TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
-			new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME));
-		
-		builder.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME,
-			new TimestampMerger(new AverageSpeedBolt(), AvgVehicleSpeedTuple.MINUTE_IDX)).fieldsGrouping(
-			TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema());
-		
-		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME,
-			new TimestampMerger(new LatestAverageVelocityBolt(), AvgSpeedTuple.MINUTE_IDX)).fieldsGrouping(
-			TopologyControl.AVERAGE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema());
+	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+		new TollQuery().parseArgumentsAndRun(args, new String[] {"tollNotificationsOutput", "tollAssessmentsOutput"});
+	}
+	
+	@Override
+	protected void addBolts(TopologyBuilder builder, String[] outputs) {
+		new AccidentDetectionSubquery().addBolts(builder, null);
+		new LatestAverageVelocitySubquery().addBolts(builder, null);
+		new CountVehicleSubquery().addBolts(builder, null);
 		
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
-				new TimestampMerger(new TollNotificationBolt(), new TollInputStreamsMerger()))
+				new TimestampMerger(new TollNotificationBolt(), new TollInputStreamsTsExtractor()))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
+			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID)
+			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
 			.allGrouping(TopologyControl.COUNT_VEHICLES_BOLT_NAME, TopologyControl.CAR_COUNTS_STREAM_ID)
-			.allGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
+			.allGrouping(TopologyControl.COUNT_VEHICLES_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
+			.allGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID)
+			.allGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		builder.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME,
-			new FileFlushSinkBolt(notificationsOutput)).localOrShuffleGrouping(
-			TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID);
+		builder
+			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[0]))
+			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
+				TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID)
+			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		builder.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME,
-			new FileFlushSinkBolt(assessmentsOutput)).localOrShuffleGrouping(
-			TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENTS_STREAM_ID);
-		
-		return builder.createTopology();
-	}
-	
-	public static void main(String[] args) throws Exception {
-		if(args.length < 3) {
-			showUsage();
-		}
-		
-		if(args[0].equals("--local")) {
-			if(args.length < 5) {
-				showUsage();
-			}
-			
-			Config c = new Config();
-			c.put(FileReaderSpout.INPUT_FILE_NAME, args[1]);
-			
-			long runtime = 1000 * Long.parseLong(args[4]);
-			
-			LocalCluster lc = new LocalCluster();
-			lc.submitTopology(TopologyControl.TOPOLOGY_NAME, c, TollQuery.createTopology(args[2], args[3]));
-			
-			Utils.sleep(runtime);
-			
-			lc.shutdown();
-		} else {
-			Config c = new Config();
-			c.put(FileReaderSpout.INPUT_FILE_NAME, args[0]);
-			
-			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, c, TollQuery.createTopology(args[1], args[2]));
-		}
-	}
-	
-	private static void showUsage() {
-		System.err.println("Missing arguments. Usage:");
-		System.err
-			.println("bin/storm jar jarfile.jar [--local] <input> <notificationsOutput> <assessmentsOutput> [<runtime>]");
-		System.err.println("  <runtime> is only valid AND required if'--local' is specified");
-		System.exit(-1);
+		builder
+			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[1]))
+			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
+				TopologyControl.TOLL_ASSESSMENTS_STREAM_ID)
+			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 	}
 	
 }

@@ -19,12 +19,13 @@
 package de.hub.cs.dbis.lrb.operators;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,9 +38,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
 
@@ -83,6 +87,39 @@ public class FileReaderSpoutTest {
 		Assert.assertEquals(new Values(new Long(73647), line), collector.output.get(Utils.DEFAULT_STREAM_ID)
 			.removeFirst());
 		Assert.assertEquals(0, collector.output.get(Utils.DEFAULT_STREAM_ID).size());
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		spout.deactivate();
+		
+		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
+		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+	}
+	
+	@Test
+	public void testDeclareOutputFields() {
+		FileReaderSpout spout = new FileReaderSpout();
+		
+		TestDeclarer declarer = new TestDeclarer();
+		spout.declareOutputFields(declarer);
+		
+		final int numberOfOutputStreams = 2;
+		
+		Assert.assertEquals(numberOfOutputStreams, declarer.streamIdBuffer.size());
+		Assert.assertEquals(numberOfOutputStreams, declarer.schemaBuffer.size());
+		Assert.assertEquals(numberOfOutputStreams, declarer.directBuffer.size());
+		
+		HashMap<String, Fields> expectedStreams = new HashMap<String, Fields>();
+		expectedStreams.put(null, new Fields("ts", "rawTuple"));
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		
+		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
+		
+		for(int i = 0; i < numberOfOutputStreams; ++i) {
+			Assert.assertEquals(expectedStreams.get(declarer.streamIdBuffer.get(i)).toList(), declarer.schemaBuffer
+				.get(i).toList());
+			Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(i));
+		}
 	}
 	
 }

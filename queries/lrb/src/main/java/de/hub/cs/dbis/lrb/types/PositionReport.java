@@ -18,8 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.types;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.util.IPositionIdentifier;
 import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Constants;
@@ -177,9 +177,9 @@ public final class PositionReport extends AbstractInputTuple implements IPositio
 	}
 	
 	/**
-	 * TODO check if needed (only if used multiple times)
+	 * Checks if the vehicle is on the exit lane or not.
 	 * 
-	 * @return TODO
+	 * @return {@code true} if the vehicle is on the exit lane -- {@code false} otherwise
 	 */
 	public boolean isOnExitLane() {
 		return this.getLane().shortValue() == Constants.EXIT_LANE;
@@ -202,7 +202,7 @@ public final class PositionReport extends AbstractInputTuple implements IPositio
 	 * @return the schema of a {@link PositionReport}
 	 */
 	public static Fields getSchema() {
-		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
 			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.SPEED_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.LANE_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 			TopologyControl.POSITION_FIELD_NAME);

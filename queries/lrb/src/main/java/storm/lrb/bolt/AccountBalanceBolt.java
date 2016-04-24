@@ -24,7 +24,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.model.AccountBalance;
 import storm.lrb.model.VehicleAccount;
 import storm.lrb.tools.Helper;
@@ -35,6 +35,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 
@@ -84,7 +85,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	private void updateBalance(Tuple tuple) {
 		Integer vid = tuple.getIntegerByField(TopologyControl.VEHICLE_ID_FIELD_NAME);
 		VehicleAccount account = this.allVehicles.get(vid);
-		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControl.POS_REPORT_FIELD_NAME);
+		PositionReport pos = (PositionReport)tuple.getValueByField(TopologyControlOld.POS_REPORT_FIELD_NAME);
 		if(account == null) {
 			int assessedToll = tuple.getIntegerByField(TopologyControl.TOLL_FIELD_NAME);
 			account = new VehicleAccount(assessedToll, pos);
@@ -97,7 +98,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	
 	private void getBalanceAndSend(Tuple tuple) {
 		AccountBalanceRequest bal = (AccountBalanceRequest)tuple
-			.getValueByField(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
+			.getValueByField(TopologyControlOld.ACCOUNT_BALANCE_REQUEST_FIELD_NAME);
 		VehicleAccount account = this.allVehicles.get(bal.getVid());
 		
 		if(account == null) {
@@ -118,7 +119,7 @@ public class AccountBalanceBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields(TopologyControl.BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME));
+		declarer.declare(new Fields(TopologyControlOld.BALANCE_NOTIFICATION_REQUESTS_FIELD_NAME));
 	}
 	
 }

@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import storm.lrb.TopologyControl;
 import storm.lrb.tools.EntityHelper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
@@ -36,6 +35,8 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AvgVehicleSpeedTuple;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
@@ -93,6 +94,7 @@ public class AverageVehicleSpeedBoltTest {
 			0 // maxSpeed
 			);
 		when(tuple.getValues()).thenReturn(posReport0Stopped);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		
 		bolt.execute(tuple);
 		
@@ -107,6 +109,7 @@ public class AverageVehicleSpeedBoltTest {
 			0 // maxSpeed
 			);
 		when(tuple.getValues()).thenReturn(posReport1Stopped);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		
 		bolt.execute(tuple);
 		
@@ -118,7 +121,7 @@ public class AverageVehicleSpeedBoltTest {
 		AvgVehicleSpeedTuple result = (AvgVehicleSpeedTuple)collector.output.get(Utils.DEFAULT_STREAM_ID).get(0);
 		assertEquals(new SegmentIdentifier(posReport1Stopped), new SegmentIdentifier(result));
 		assertEquals(time1 / 60, result.getMinute().shortValue());
-		assertEquals(0, result.getAvgSpeed().intValue());
+		assertEquals(0.0, result.getAvgSpeed().doubleValue(), 0.0);
 		
 		
 		
@@ -133,6 +136,7 @@ public class AverageVehicleSpeedBoltTest {
 			speed2 // maxSpeed
 			);
 		when(tuple.getValues()).thenReturn(posReport2Running);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		
 		bolt.execute(tuple);
 		assertEquals(3, collector.acked.size());
@@ -142,6 +146,7 @@ public class AverageVehicleSpeedBoltTest {
 			speed3 // maxSpeed
 			);
 		when(tuple.getValues()).thenReturn(posReport3Running);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		
 		bolt.execute(tuple);
 		assertEquals(4, collector.acked.size());
@@ -151,6 +156,7 @@ public class AverageVehicleSpeedBoltTest {
 			speed4 // maxSpeed
 			);
 		when(tuple.getValues()).thenReturn(posReport4Running);
+		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		
 		bolt.execute(tuple);
 		
@@ -163,13 +169,25 @@ public class AverageVehicleSpeedBoltTest {
 			assertEquals(new SegmentIdentifier(posReport1Stopped), new SegmentIdentifier(result));
 			// average update only occurs after emission
 			if(result.getVid().intValue() == vehicleID0) {
-				assertEquals(0, result.getAvgSpeed().intValue());
+				assertEquals(0.0, result.getAvgSpeed().doubleValue(), 0.0);
 			} else {
 				assertEquals(result.getVid().intValue(), vehicleID1);
-				assertEquals((speed2 + speed3) / 2, result.getAvgSpeed().intValue());
+				assertEquals((speed2 + speed3) / 2.0, result.getAvgSpeed().doubleValue(), 0.0);
 			}
 			assertEquals(time2 / 60, result.getMinute().shortValue());
 		}
+		
+		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+		
+		Tuple flushTuple = mock(Tuple.class);
+		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
+		bolt.execute(flushTuple);
+		
+		result = (AvgVehicleSpeedTuple)collector.output.get(Utils.DEFAULT_STREAM_ID).get(3);
+		assertEquals(new SegmentIdentifier(posReport1Stopped), new SegmentIdentifier(result));
+		assertEquals(result.getVid().intValue(), vehicleID2);
+		assertEquals(speed4, result.getAvgSpeed().doubleValue(), 0.0);
+		assertEquals((time2 + 60) / 60, result.getMinute().shortValue());
 	}
 	
 	@Test
@@ -179,15 +197,19 @@ public class AverageVehicleSpeedBoltTest {
 		TestDeclarer declarer = new TestDeclarer();
 		bolt.declareOutputFields(declarer);
 		
-		Assert.assertEquals(1, declarer.streamIdBuffer.size());
-		Assert.assertEquals(1, declarer.schemaBuffer.size());
-		Assert.assertEquals(1, declarer.directBuffer.size());
+		Assert.assertEquals(2, declarer.streamIdBuffer.size());
+		Assert.assertEquals(2, declarer.schemaBuffer.size());
+		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertNull(declarer.streamIdBuffer.get(0));
 		Assert.assertEquals(new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.MINUTE_FIELD_NAME,
 			TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME,
 			TopologyControl.AVERAGE_VEHICLE_SPEED_FIELD_NAME).toList(), declarer.schemaBuffer.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
+		
+		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
+		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	
 }

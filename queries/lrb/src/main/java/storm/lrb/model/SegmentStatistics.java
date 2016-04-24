@@ -18,7 +18,6 @@
  */
 package storm.lrb.model;
 
-//import com.citusdata.elven.linearRoad.FullSegment;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;

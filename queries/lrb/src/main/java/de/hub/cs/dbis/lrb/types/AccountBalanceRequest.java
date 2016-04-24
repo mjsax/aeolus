@@ -18,8 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.types;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 
 
 
@@ -89,7 +89,7 @@ public class AccountBalanceRequest extends AbstractInputTuple {
 	 * @return the schema of a {@link AccountBalanceRequest}
 	 */
 	public static Fields getSchema() {
-		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIME_FIELD_NAME,
+		return new Fields(TopologyControl.TYPE_FIELD_NAME, TopologyControl.TIMESTAMP_FIELD_NAME,
 			TopologyControl.VEHICLE_ID_FIELD_NAME, TopologyControl.QUERY_ID_FIELD_NAME);
 	}
 	

@@ -20,6 +20,7 @@ package de.hub.cs.dbis.lrb.operators;
 
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.aeolus.sinks.AbstractFileOutputBolt;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 
 
 
@@ -33,6 +34,9 @@ public class SpoutDataFileOutputBolt extends AbstractFileOutputBolt {
 	
 	@Override
 	protected String tupleToString(Tuple t) {
+		if(t.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			return "FLUSH";
+		}
 		return t.getLong(0) + "," + t.getString(1) + "\n";
 	}
 	

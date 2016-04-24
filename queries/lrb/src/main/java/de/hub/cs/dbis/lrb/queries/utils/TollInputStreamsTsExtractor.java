@@ -16,12 +16,11 @@
  * limitations under the License.
  * #_
  */
-package de.hub.cs.dbis.lrb.queries;
+package de.hub.cs.dbis.lrb.queries.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Tuple;
 import de.hub.cs.dbis.aeolus.utils.TimeStampExtractor;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
@@ -36,13 +35,13 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 
 /**
- * {@link TollInputStreamsMerger} helps to merge the four incoming streams of {@link TollNotificationBolt}.
+ * {@link TollInputStreamsTsExtractor} helps to merge the four incoming streams of {@link TollNotificationBolt}.
  * 
  * @author mjsax
  */
-class TollInputStreamsMerger implements TimeStampExtractor<Tuple> {
+public class TollInputStreamsTsExtractor implements TimeStampExtractor<Tuple> {
 	private static final long serialVersionUID = -234551807946550L;
-	private static final Logger LOGGER = LoggerFactory.getLogger(TollInputStreamsMerger.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(TollInputStreamsTsExtractor.class);
 	
 	@Override
 	public long getTs(Tuple tuple) {

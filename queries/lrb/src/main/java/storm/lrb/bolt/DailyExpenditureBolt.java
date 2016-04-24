@@ -23,7 +23,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
+import storm.lrb.TopologyControlOld;
 import storm.lrb.tools.Helper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -33,10 +33,10 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.toll.TollDataStore;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
-import de.hub.cs.dbis.lrb.util.Constants;
 
 
 
@@ -106,10 +106,10 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 		
 		Fields fields = tuple.getFields();
 		
-		if(fields.contains(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME)) {
+		if(fields.contains(TopologyControlOld.DAILY_EXPEDITURE_REQUEST_FIELD_NAME)) {
 			
 			DailyExpenditureRequest exp = (DailyExpenditureRequest)tuple
-				.getValueByField(TopologyControl.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
+				.getValueByField(TopologyControlOld.DAILY_EXPEDITURE_REQUEST_FIELD_NAME);
 			int vehicleIdentifier = exp.getVid();
 			Values values;
 			Integer toll = this.dataStore.retrieveToll(exp.getXWay(), exp.getDay(), vehicleIdentifier);
@@ -121,8 +121,9 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 				
 				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(), exp.getQid(), toll);
 			} else {
-				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(), exp.getQid(),
-					Constants.INITIAL_TOLL);
+				values = new Values(AbstractLRBTuple.DAILY_EXPENDITURE_REQUEST, exp.getTime(), exp.getQid(), 20); // initial
+																													// toll:
+																													// 20
 				
 			}
 			this.collector.emit(values);
@@ -132,7 +133,7 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields(TopologyControl.EXPEDITURE_NOTIFICATION_FIELD_NAME));
+		declarer.declare(new Fields(TopologyControlOld.EXPEDITURE_NOTIFICATION_FIELD_NAME));
 	}
 	
 }

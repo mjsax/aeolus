@@ -18,9 +18,9 @@
  */
 package de.hub.cs.dbis.lrb.types.internal;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Time;
 

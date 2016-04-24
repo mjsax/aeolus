@@ -41,6 +41,7 @@ import de.hub.cs.dbis.lrb.operators.AverageVehicleSpeedBolt;
 import de.hub.cs.dbis.lrb.operators.DispatcherBolt;
 import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.toll.MemoryTollDataStore;
 
 
@@ -98,7 +99,7 @@ public class LRBTopology {
 		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LatestAverageVelocityBolt(), xways * 3)
 			.fieldsGrouping(
 				TopologyControl.AVERAGE_SPEED_BOLT_NAME,
-				TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,
+				TopologyControlOld.LAST_AVERAGE_SPEED_STREAM_ID,
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
@@ -112,13 +113,13 @@ public class LRBTopology {
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, new TollNotificationBolt(), executors)
 			.setNumTasks(tasks)
-			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAST_AVERAGE_SPEED_STREAM_ID,
-				new Fields(fields))
+			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME,
+				TopologyControlOld.LAST_AVERAGE_SPEED_STREAM_ID, new Fields(fields))
 			.fieldsGrouping(
 				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-				TopologyControl.ACCIDENT_INFO_STREAM_ID,
-				new Fields(TopologyControl.POS_REPORT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
-					TopologyControl.ACCIDENT_INFO_FIELD_NAME))
+				TopologyControlOld.ACCIDENT_INFO_STREAM_ID,
+				new Fields(TopologyControlOld.POS_REPORT_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
+					TopologyControlOld.ACCIDENT_INFO_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(fields));
 		
@@ -127,30 +128,31 @@ public class LRBTopology {
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, new AccidentNotificationBolt(), xways)
-			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENT_INFO_STREAM_ID, // streamId
-				new Fields(TopologyControl.POS_REPORT_FIELD_NAME))
+			.fieldsGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControlOld.ACCIDENT_INFO_STREAM_ID, // streamId
+				new Fields(TopologyControlOld.POS_REPORT_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID, // streamId
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME));
 		
 		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileSinkBolt(topologyNamePrefix + "_acc"),
-			1).allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENT_INFO_STREAM_ID);
+			1).allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControlOld.ACCIDENT_INFO_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME, new AccountBalanceBolt(), xways)
+			.setBolt(TopologyControlOld.ACCOUNT_BALANCE_BOLT_NAME, new AccountBalanceBolt(), xways)
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.ACCOUNT_BALANCE_REQUESTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.fieldsGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TopologyControl.TOLL_ASSESSMENTS_STREAM_ID,
-				new Fields(TopologyControl.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
+				new Fields(TopologyControlOld.ACCOUNT_BALANCE_REQUEST_FIELD_NAME));
 		
-		builder.setBolt(TopologyControl.ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME,
-			new FileSinkBolt(topologyNamePrefix + "_bal"), 1).allGrouping(TopologyControl.ACCOUNT_BALANCE_BOLT_NAME);
+		builder.setBolt(TopologyControlOld.ACCOUNT_BALANCE_FILE_WRITER_BOLT_NAME,
+			new FileSinkBolt(topologyNamePrefix + "_bal"), 1).allGrouping(TopologyControlOld.ACCOUNT_BALANCE_BOLT_NAME);
 		
-		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(), xways * 1)
+		builder.setBolt(TopologyControlOld.DAILY_EXPEDITURE_BOLT_NAME, new DailyExpenditureBolt(), xways * 1)
 			.shuffleGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME,
 				TopologyControl.DAILY_EXPEDITURE_REQUESTS_STREAM_ID);
 		
-		builder.setBolt(TopologyControl.DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME,
-			new FileSinkBolt(topologyNamePrefix + "_exp"), 1).allGrouping(TopologyControl.DAILY_EXPEDITURE_BOLT_NAME);
+		builder.setBolt(TopologyControlOld.DAILY_EXPEDITURE_FILE_WRITER_BOLT_NAME,
+			new FileSinkBolt(topologyNamePrefix + "_exp"), 1)
+			.allGrouping(TopologyControlOld.DAILY_EXPEDITURE_BOLT_NAME);
 		
 		
 		stormConfig.registerSerialization(de.hub.cs.dbis.lrb.types.PositionReport.class);

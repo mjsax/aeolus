@@ -23,12 +23,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import storm.lrb.TopologyControl;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
+import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
+import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
 import de.hub.cs.dbis.lrb.types.AbstractLRBTuple;
 import de.hub.cs.dbis.lrb.types.AccountBalanceRequest;
 import de.hub.cs.dbis.lrb.types.DailyExpenditureRequest;
@@ -70,6 +73,11 @@ public class DispatcherBolt extends BaseRichBolt {
 	
 	@Override
 	public void execute(Tuple input) {
+		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			return;
+		}
+		
 		String raw = null;
 		try {
 			raw = input.getString(1);
@@ -138,6 +146,7 @@ public class DispatcherBolt extends BaseRichBolt {
 			DailyExpenditureRequest.getSchema());
 		outputFieldsDeclarer
 			.declareStream(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, TravelTimeRequest.getSchema());
+		outputFieldsDeclarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
 	}
 	
 }

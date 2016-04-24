@@ -27,7 +27,7 @@ package de.hub.cs.dbis.lrb.util;
  */
 public final class AvgValue {
 	/** The current sum over all values. */
-	private int sum;
+	private double sum;
 	
 	/** The current number of base values. */
 	private int count;
@@ -40,7 +40,7 @@ public final class AvgValue {
 	 * @param initalValue
 	 *            the first value of the average
 	 */
-	public AvgValue(int initalValue) {
+	public AvgValue(double initalValue) {
 		this.sum = initalValue;
 		this.count = 1;
 	}
@@ -53,7 +53,7 @@ public final class AvgValue {
 	 * @param value
 	 *            the value to be added to the average
 	 */
-	public void updateAverage(int value) {
+	public void updateAverage(double value) {
 		this.sum += value;
 		++this.count;
 	}
@@ -63,8 +63,8 @@ public final class AvgValue {
 	 * 
 	 * @return the current average
 	 */
-	public Integer getAverage() {
-		return new Integer(this.sum / this.count);
+	public Double getAverage() {
+		return new Double(this.sum / this.count);
 	}
 	
 }
