@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -40,7 +42,7 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  */
 public class AverageSpeedSubquery extends AbstractQuery {
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new AverageSpeedSubquery().parseArgumentsAndRun(args, new String[] {"averageSpeedOutput"});
 	}
 	
@@ -50,7 +52,8 @@ public class AverageSpeedSubquery extends AbstractQuery {
 		
 		builder
 			.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME,
-				new TimestampMerger(new AverageSpeedBolt(), AvgVehicleSpeedTuple.MINUTE_IDX))
+				new TimestampMerger(new AverageSpeedBolt(), AvgVehicleSpeedTuple.MINUTE_IDX),
+				OperatorParallelism.get(TopologyControl.AVERAGE_SPEED_BOLT_NAME))
 			.fieldsGrouping(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		

@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -40,7 +42,7 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  */
 public class TollQuery extends AbstractQuery {
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new TollQuery().parseArgumentsAndRun(args, new String[] {"tollNotificationsOutput", "tollAssessmentsOutput"});
 	}
 	
@@ -52,7 +54,8 @@ public class TollQuery extends AbstractQuery {
 		
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
-				new TimestampMerger(new TollNotificationBolt(), new TollInputStreamsTsExtractor()))
+				new TimestampMerger(new TollNotificationBolt(), new TollInputStreamsTsExtractor()),
+				OperatorParallelism.get(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
@@ -64,13 +67,15 @@ public class TollQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[0]))
+			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[0]),
+				OperatorParallelism.get(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
 				TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID)
 			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[1]))
+			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[1]),
+				OperatorParallelism.get(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
 				TopologyControl.TOLL_ASSESSMENTS_STREAM_ID)
 			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);

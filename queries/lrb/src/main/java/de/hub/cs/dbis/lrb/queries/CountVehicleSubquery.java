@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -41,7 +43,7 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  */
 public class CountVehicleSubquery extends AbstractQuery {
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new CountVehicleSubquery().parseArgumentsAndRun(args, new String[] {"vehicleCountsOutput"});
 	}
 	
@@ -49,7 +51,8 @@ public class CountVehicleSubquery extends AbstractQuery {
 	protected void addBolts(TopologyBuilder builder, String[] outputs) {
 		builder
 			.setBolt(TopologyControl.COUNT_VEHICLES_BOLT_NAME,
-				new TimestampMerger(new CountVehiclesBolt(), PositionReport.TIME_IDX))
+				new TimestampMerger(new CountVehiclesBolt(), PositionReport.TIME_IDX),
+				OperatorParallelism.get(TopologyControl.COUNT_VEHICLES_BOLT_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);

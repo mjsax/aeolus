@@ -18,6 +18,10 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
@@ -65,9 +69,11 @@ abstract class AbstractQuery {
 		if(realtime) {
 			spout = new DataDrivenStreamRateDriverSpout<Long>(spout, 0, TimeUnit.SECONDS);
 		}
-		builder.setSpout(TopologyControl.SPOUT_NAME, spout);
+		builder.setSpout(TopologyControl.SPOUT_NAME, spout, OperatorParallelism.get(TopologyControl.SPOUT_NAME));
 		
-		builder.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0))
+		builder
+			.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0),
+				OperatorParallelism.get(TopologyControl.SPLIT_STREAM_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.SPOUT_NAME)
 			.allGrouping(TopologyControl.SPOUT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
@@ -84,11 +90,15 @@ abstract class AbstractQuery {
 	 * @param outputInfos
 	 *            expected outputs
 	 * 
+	 * @throws IOException
+	 *             if the configuration file 'lrb.cfg' could not be processed
 	 * @throws InvalidTopologyException
+	 *             should never happen&mdash;otherwise there is a bug in the code
 	 * @throws AlreadyAliveException
+	 *             if the topology is already deployed
 	 */
-	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos) throws AlreadyAliveException,
-		InvalidTopologyException {
+	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos) throws IOException,
+		InvalidTopologyException, AlreadyAliveException {
 		final Config config = new Config();
 		long runtime = -1;
 		boolean realtime = false;
@@ -108,12 +118,75 @@ abstract class AbstractQuery {
 				showUsage(outputInfos);
 			}
 			runtime = 1000 * Long.parseLong(args[index + 1 + outputInfos.length]);
+			if(runtime < 0) {
+				System.err.println("Parameter <runtime> cannot be negative.");
+				System.exit(-1);
+			}
 		}
 		config.put(FileReaderSpout.INPUT_FILE_NAME, args[index]);
 		
 		String[] outputs = new String[outputInfos.length];
 		for(int i = 0; i < outputs.length; ++i) {
 			outputs[i] = args[index + 1 + i];
+		}
+		
+		if(runtime == -1) {
+			BufferedReader configReader = null;
+			try {
+				configReader = new BufferedReader(new FileReader("lrb.cfg"));
+				
+				String line;
+				while((line = configReader.readLine()) != null) {
+					line = line.trim();
+					if(line.startsWith("#")) {
+						continue;
+					}
+					String[] tokens = line.split(":");
+					if(tokens.length != 2) {
+						System.err.println("Invalid line: must be <KEY>:<VALUE>");
+						System.err.println("> " + line);
+						continue;
+					}
+					
+					if(tokens[0].equals("NIMBUS_HOST")) {
+						config.put(Config.NIMBUS_HOST, tokens[1]);
+					} else if(tokens[0].equals("TOPOLOGY_WORKERS")) {
+						try {
+							config.setNumWorkers(Integer.parseInt(tokens[1]));
+						} catch(NumberFormatException e) {
+							System.err.println("Invalid line: <VALUE> for key TOPOLOGY_WORKERS must be a number.");
+							System.err.println("> " + line);
+						}
+					} else {
+						try {
+							OperatorParallelism.set((String)TopologyControl.class.getField(tokens[0]).get(null),
+								Integer.parseInt(tokens[1]));
+							
+							continue; // no error -- continue to avoid printing of error message after try-catch-block
+						} catch(NoSuchFieldException e) {
+							// error message is printed after try-catch-block
+						} catch(SecurityException e) {
+							// error message is printed after try-catch-block
+						} catch(NumberFormatException e) {
+							System.err.println("Invalid line: <VALUE> for key <operatorName> must be a number.");
+							System.err.println("> " + line);
+							continue; // different error message -- continue to avoid printing of standard error message
+						} catch(IllegalArgumentException e) {
+							// error message is printed after try-catch-block
+						} catch(IllegalAccessException e) {
+							// error message is printed after try-catch-block
+						}
+						
+						System.err
+							.println("Invalid line: <KEY> (operatorName) unknown. See TopologyControl.java for valid keys.");
+						System.err.println("> " + line);
+					}
+				}
+			} finally {
+				if(configReader != null) {
+					configReader.close();
+				}
+			}
 		}
 		
 		StormTopology topology = this.createTopology(outputs, realtime);

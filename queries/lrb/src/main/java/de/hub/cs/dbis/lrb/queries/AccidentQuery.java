@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -40,7 +42,7 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  */
 public class AccidentQuery extends AbstractQuery {
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new AccidentQuery().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput"});
 	}
 	
@@ -50,14 +52,17 @@ public class AccidentQuery extends AbstractQuery {
 		
 		builder
 			.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME,
-				new TimestampMerger(new AccidentNotificationBolt(), new MinuteNumberExtractor()))
+				new TimestampMerger(new AccidentNotificationBolt(), new MinuteNumberExtractor()),
+				OperatorParallelism.get(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME))
 			.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 				new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
 			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID)
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		builder.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(outputs[0]))
+		builder
+			.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(outputs[0]),
+				OperatorParallelism.get(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME)
 			.allGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 	}

@@ -18,6 +18,8 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -39,7 +41,7 @@ import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
  */
 public class AccidentDetectionSubquery extends AbstractQuery {
 	
-	public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new AccidentDetectionSubquery().parseArgumentsAndRun(args, new String[] {"accidentsOutput"});
 	}
 	
@@ -48,7 +50,8 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 		try {
 			builder
 				.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-					new TimestampMerger(new AccidentDetectionBolt(), PositionReport.TIME_IDX))
+					new TimestampMerger(new AccidentDetectionBolt(), PositionReport.TIME_IDX),
+					OperatorParallelism.get(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME))
 				.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
 					PositionIdentifier.getSchema())
 				.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
@@ -66,7 +69,8 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 		if(outputs != null) {
 			if(outputs.length == 1) {
 				builder
-					.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileFlushSinkBolt(outputs[0]))
+					.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new FileFlushSinkBolt(outputs[0]),
+						OperatorParallelism.get(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME))
 					.localOrShuffleGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
 						TopologyControl.ACCIDENTS_STREAM_ID)
 					.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);

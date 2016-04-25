@@ -18,6 +18,10 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
+import java.io.IOException;
+
+import backtype.storm.generated.AlreadyAliveException;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
 
 
@@ -32,7 +36,7 @@ import backtype.storm.topology.TopologyBuilder;
  */
 public class LinearRoad extends AbstractQuery {
 	
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
 		new LinearRoad().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput",
 			"tollNotificationsOutput", "tollAssessmentsOutput"});
 	}
