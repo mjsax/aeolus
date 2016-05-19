@@ -23,44 +23,42 @@ import java.io.IOException;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
-import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
+import de.hub.cs.dbis.lrb.operators.StoppedCarsBolt;
 import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
-import de.hub.cs.dbis.lrb.types.internal.StoppedCarTuple;
-import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
+import de.hub.cs.dbis.lrb.types.PositionReport;
 
 
 
 
 
 /**
- * {@link AccidentDetectionSubquery} assembles the "Accident Detection" subquery that must detect accidents.
+ * {@link StoppedCarsSubquery} assembles the "stopped cars" subquery that must detect stopped cars (for non-exit lanes).
  * 
  * @author mjsax
  */
-public class AccidentDetectionSubquery extends AbstractQuery {
+public class StoppedCarsSubquery extends AbstractQuery {
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new AccidentDetectionSubquery().parseArgumentsAndRun(args, new String[] {"accidentsOutput"});
+		new StoppedCarsSubquery().parseArgumentsAndRun(args, new String[] {"stoppedOutput"});
 	}
 	
 	@Override
 	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new StoppedCarsSubquery().addBolts(builder, null);
-		
 		try {
 			builder
-				.setBolt(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,
-					new TimestampMerger(new AccidentDetectionBolt(), StoppedCarTuple.TIME_IDX),
-					OperatorParallelism.get(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME))
-				.fieldsGrouping(TopologyControl.STOPPED_CARS_BOLT_NAME, PositionIdentifier.getSchema())
-				.allGrouping(TopologyControl.STOPPED_CARS_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+				.setBolt(TopologyControl.STOPPED_CARS_BOLT_NAME,
+					new TimestampMerger(new StoppedCarsBolt(), PositionReport.TIME_IDX),
+					OperatorParallelism.get(TopologyControl.STOPPED_CARS_BOLT_NAME))
+				.fieldsGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TopologyControl.POSITION_REPORTS_STREAM_ID,
+					new Fields(TopologyControl.VEHICLE_ID_FIELD_NAME))
+				.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		} catch(IllegalArgumentException e) {
-			// happens if complete LRB is assembled, because "accident detection" is part of "accident query" and
+			// happens if complete LRB is assembled, because "stopped cars" is part of "accident query" and
 			// "toll query"
-			if(e.getMessage().equals(
-				"Bolt has already been declared for id " + TopologyControl.ACCIDENT_DETECTION_BOLT_NAME)) {
+			if(e.getMessage().equals("Bolt has already been declared for id " + TopologyControl.STOPPED_CARS_BOLT_NAME)) {
 				/* ignore */
 			} else {
 				throw e;
@@ -70,7 +68,7 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 		if(outputs != null) {
 			if(outputs.length == 1) {
 				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
+					TopologyControl.STOPPED_CARS_BOLT_NAME);
 			} else {
 				System.err.println("<outputs>.length != 1 => ignored");
 			}

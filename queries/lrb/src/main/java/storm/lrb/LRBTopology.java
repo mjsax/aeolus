@@ -96,7 +96,7 @@ public class LRBTopology {
 				new Fields(TopologyControl.XWAY_FIELD_NAME, TopologyControl.SEGMENT_FIELD_NAME,
 					TopologyControl.DIRECTION_FIELD_NAME));
 		
-		builder.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, new LatestAverageVelocityBolt(), xways * 3)
+		builder.setBolt(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, new LatestAverageVelocityBolt(), xways * 3)
 			.fieldsGrouping(
 				TopologyControl.AVERAGE_SPEED_BOLT_NAME,
 				TopologyControlOld.LAST_AVERAGE_SPEED_STREAM_ID,
@@ -113,7 +113,7 @@ public class LRBTopology {
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, new TollNotificationBolt(), executors)
 			.setNumTasks(tasks)
-			.fieldsGrouping(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME,
+			.fieldsGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME,
 				TopologyControlOld.LAST_AVERAGE_SPEED_STREAM_ID, new Fields(fields))
 			.fieldsGrouping(
 				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME,

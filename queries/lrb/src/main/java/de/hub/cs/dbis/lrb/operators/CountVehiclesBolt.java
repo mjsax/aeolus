@@ -86,9 +86,11 @@ public class CountVehiclesBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.flushBuffer();
-			
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			if(input.getValue(0) == null) {
+				this.flushBuffer();
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			}
+			this.collector.ack(input);
 			return;
 		}
 		
@@ -107,9 +109,8 @@ public class CountVehiclesBolt extends BaseRichBolt {
 			if(this.countsMap.size() > 0) {
 				this.flushBuffer();
 				this.countsMap.clear();
-			} else {
-				this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(minute)));
 			}
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
 			this.currentMinute = minute;
 		}
 		
@@ -125,12 +126,6 @@ public class CountVehiclesBolt extends BaseRichBolt {
 		this.collector.ack(input);
 	}
 	
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declareStream(TopologyControl.CAR_COUNTS_STREAM_ID, CountTuple.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
-	}
-	
 	private void flushBuffer() {
 		for(Entry<SegmentIdentifier, Set<Integer>> entry : this.countsMap.entrySet()) {
 			SegmentIdentifier segId = entry.getKey();
@@ -140,4 +135,11 @@ public class CountVehiclesBolt extends BaseRichBolt {
 				segId.getXWay(), segId.getSegment(), segId.getDirection(), new Integer(entry.getValue().size())));
 		}
 	}
+	
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		declarer.declareStream(TopologyControl.CAR_COUNTS_STREAM_ID, CountTuple.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
+	}
+	
 }

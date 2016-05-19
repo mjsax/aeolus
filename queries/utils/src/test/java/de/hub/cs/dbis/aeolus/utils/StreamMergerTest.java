@@ -36,7 +36,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import backtype.storm.task.GeneralTopologyContext;
@@ -55,8 +54,6 @@ import de.hub.cs.dbis.aeolus.testUtils.TimestampComperator;
  */
 @RunWith(PowerMockRunner.class)
 public class StreamMergerTest {
-	@Mock private GeneralTopologyContext contextMock;
-	
 	private long seed;
 	private Random r;
 	
@@ -83,25 +80,23 @@ public class StreamMergerTest {
 	public void testTuple() {
 		StreamMerger<Tuple> merger = new StreamMerger<Tuple>(Arrays.asList(new Integer(0)), "ts");
 		
-		when(this.contextMock.getComponentId(0)).thenReturn("bolt1");
-		when(this.contextMock.getComponentId(1)).thenReturn("bolt2");
-		when(this.contextMock.getComponentId(2)).thenReturn("bolt3");
-		when(this.contextMock.getComponentOutputFields(eq("bolt1"), anyString())).thenReturn(new Fields("ts"));
-		when(this.contextMock.getComponentOutputFields(eq("bolt2"), anyString()))
-			.thenReturn(new Fields("x", "ts", "y"));
-		when(this.contextMock.getComponentOutputFields(eq("bolt3"), anyString()))
-			.thenReturn(new Fields("a", "b", "ts"));
+		GeneralTopologyContext contextMock = mock(GeneralTopologyContext.class);
+		when(contextMock.getComponentId(0)).thenReturn("bolt1");
+		when(contextMock.getComponentId(1)).thenReturn("bolt2");
+		when(contextMock.getComponentId(2)).thenReturn("bolt3");
+		when(contextMock.getComponentOutputFields(eq("bolt1"), anyString())).thenReturn(new Fields("ts"));
+		when(contextMock.getComponentOutputFields(eq("bolt2"), anyString())).thenReturn(new Fields("x", "ts", "y"));
+		when(contextMock.getComponentOutputFields(eq("bolt3"), anyString())).thenReturn(new Fields("a", "b", "ts"));
 		
-		Tuple t = new TupleImpl(this.contextMock, new Values(new Long(0)), 0, null);
+		Tuple t = new TupleImpl(contextMock, new Values(new Long(0)), 0, "");
 		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t, merger.getNextTuple());
 		Assert.assertNull(merger.getNextTuple());
 		
-		Tuple t2 = new TupleImpl(this.contextMock, new Values(mock(Object.class), new Long(0), mock(Object.class)), 1,
-			null);
+		Tuple t2 = new TupleImpl(contextMock, new Values(mock(Object.class), new Long(0), mock(Object.class)), 1, "");
 		merger.addTuple(new Integer(0), t2);
-		t = new TupleImpl(this.contextMock, new Values(mock(Object.class), mock(Object.class), new Long(0)), 2, null);
+		t = new TupleImpl(contextMock, new Values(mock(Object.class), mock(Object.class), new Long(0)), 2, "");
 		merger.addTuple(new Integer(0), t);
 		
 		Assert.assertSame(t2, merger.getNextTuple());
@@ -303,6 +298,25 @@ public class StreamMergerTest {
 			
 			Assert.assertEquals(expectedSubset, resultSubset);
 		}
+	}
+	
+	@Test
+	public void testFlush() {
+		StreamMerger<Tuple> merger = new StreamMerger<Tuple>(Arrays.asList(new Integer(0), new Integer(1)), 0);
+		
+		GeneralTopologyContext contextMock = mock(GeneralTopologyContext.class);
+		when(contextMock.getComponentOutputFields(anyString(), anyString())).thenReturn(new Fields("ts"));
+		
+		Tuple t = new TupleImpl(contextMock, new Values(new Long(0)), 0, "");
+		merger.addTuple(new Integer(0), t);
+		
+		Assert.assertNull(merger.getNextTuple());
+		
+		Tuple t2 = new TupleImpl(contextMock, new Values(new Long(1)), 1, TimestampMerger.FLUSH_STREAM_ID);
+		merger.addTuple(new Integer(1), t2);
+		
+		Assert.assertSame(t, merger.getNextTuple());
+		Assert.assertNull(merger.getNextTuple());
 	}
 	
 }

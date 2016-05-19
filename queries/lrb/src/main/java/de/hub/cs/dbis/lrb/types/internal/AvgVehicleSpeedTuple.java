@@ -100,6 +100,8 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, diretion);
 		super.add(AVGS_IDX, avgSpeed);
+		
+		assert (super.size() == 6);
 	}
 	
 	
@@ -125,7 +127,7 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	/**
 	 * Returns the expressway ID of this {@link AvgVehicleSpeedTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the expressway of this tuple
 	 */
 	@Override
 	public final Integer getXWay() {
@@ -135,7 +137,7 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	/**
 	 * Returns the segment of this {@link AvgVehicleSpeedTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the segment of this tuple
 	 */
 	@Override
 	public final Short getSegment() {
@@ -145,7 +147,7 @@ public final class AvgVehicleSpeedTuple extends Values implements ISegmentIdenti
 	/**
 	 * Returns the vehicle's direction of this {@link AvgVehicleSpeedTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the direction of this tuple
 	 */
 	@Override
 	public final Short getDirection() {

@@ -205,19 +205,26 @@ public class StreamMerger<T> {
 	}
 	
 	private long getTsValue(T tuple) {
-		if(this.tsIndex != -1) {
-			if(tuple instanceof Tuple) {
-				return ((Number)((Tuple)tuple).getValue(this.tsIndex)).longValue();
+		if(tuple instanceof Tuple) {
+			Tuple t = (Tuple)tuple;
+			
+			if(t.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+				return ((Number)t.getValue(0)).longValue();
 			}
+			
+			if(this.tsIndex != -1) {
+				return ((Number)t.getValue(this.tsIndex)).longValue();
+			}
+			
+			if(this.tsAttributeName != null) {
+				return ((Number)((Tuple)tuple).getValueByField(this.tsAttributeName)).longValue();
+			}
+			
+			return this.tsExtractor.getTs(tuple);
+		} else {
 			assert (tuple instanceof Values);
 			return ((Number)((Values)tuple).get(this.tsIndex)).longValue();
-			
 		}
-		if(this.tsAttributeName != null) {
-			return ((Number)((Tuple)tuple).getValueByField(this.tsAttributeName)).longValue();
-		}
-		
-		return this.tsExtractor.getTs(tuple);
 	}
 	
 	/**

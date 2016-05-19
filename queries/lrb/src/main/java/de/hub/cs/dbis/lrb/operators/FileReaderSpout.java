@@ -116,7 +116,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		super.declareOutputFields(declarer);
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 	}
 	
 	@Override
@@ -124,7 +124,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	
 	@Override
 	public void deactivate() {
-		this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+		this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
 	}
 	
 	@Override

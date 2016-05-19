@@ -130,7 +130,7 @@ public class AccidentNotificationBoltTest {
 		Assert.assertEquals(expectedResult, collector.output.get(Utils.DEFAULT_STREAM_ID));
 		
 		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(new Values((Object)null), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -151,7 +151,7 @@ public class AccidentNotificationBoltTest {
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
 		
 		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
-		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Fields("ts").toList(), declarer.schemaBuffer.get(1).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	

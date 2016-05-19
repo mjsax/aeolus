@@ -76,7 +76,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	private final Map<SegmentIdentifier, List<Short>> minuteNumbersPerSegment = new HashMap<SegmentIdentifier, List<Short>>();
 	
 	/** The currently processed 'minute number'. */
-	private short currentMinute = 1;
+	private short currentMinute = -1;
 	
 	
 	
@@ -88,9 +88,14 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.flushBuffer(this.currentMinute + 1);
-			
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			Object ts = input.getValue(0);
+			if(ts == null) {
+				this.flushBuffer(this.currentMinute + 1);
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			} else {
+				this.checkMinute(((Number)ts).shortValue());
+			}
+			this.collector.ack(input);
 			return;
 		}
 		
@@ -101,15 +106,7 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		Short minuteNumber = this.inputTuple.getMinuteNumber();
 		short m = minuteNumber.shortValue();
 		
-		assert (m >= this.currentMinute);
-		
-		if(m > this.currentMinute) {
-			// each time we step from one minute to another, we need to check the previous time range for "unfinished"
-			// open windows; this can happen, if there is not AvgSpeedTuple for a segment in the minute before the
-			// current one; we need to truncate all open windows and compute LAV values for each open segment
-			this.flushBuffer(m);
-			this.currentMinute = m;
-		}
+		this.checkMinute(m);
 		
 		this.segmentIdentifier.set(this.inputTuple);
 		List<Double> latestAvgSpeeds = this.averageSpeedsPerSegment.get(this.segmentIdentifier);
@@ -145,15 +142,18 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		this.collector.ack(input);
 	}
 	
-	private Integer computeLavValue(List<Double> latestAvgSpeeds) {
-		double speedSum = 0;
-		int valueCount = 0;
-		for(Double speed : latestAvgSpeeds) {
-			speedSum += speed.doubleValue();
-			++valueCount;
-		}
+	private void checkMinute(short minute) {
+		assert (minute >= this.currentMinute);
 		
-		return new Integer((int)(speedSum / valueCount));
+		if(minute > this.currentMinute) {
+			LOGGER.trace("new minute: {}", new Short(minute));
+			// each time we step from one minute to another, we need to check the previous time range for "unfinished"
+			// open windows; this can happen, if there is not AvgSpeedTuple for a segment in the minute before the
+			// current one; we need to truncate all open windows and compute LAV values for each open segment
+			this.flushBuffer(minute);
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
+			this.currentMinute = minute;
+		}
 	}
 	
 	private void flushBuffer(int m) {
@@ -192,10 +192,21 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		}
 	}
 	
+	private Integer computeLavValue(List<Double> latestAvgSpeeds) {
+		double speedSum = 0;
+		int valueCount = 0;
+		for(Double speed : latestAvgSpeeds) {
+			speedSum += speed.doubleValue();
+			++valueCount;
+		}
+		
+		return new Integer((int)(speedSum / valueCount));
+	}
+	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.LAVS_STREAM_ID, LavTuple.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 	}
 	
 }

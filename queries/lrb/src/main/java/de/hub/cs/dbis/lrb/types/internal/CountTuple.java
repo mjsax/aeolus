@@ -67,23 +67,6 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	public CountTuple() {}
 	
 	/**
-	 * Instantiates a new <em>dummy</em> {@link CountTuple} for the given minute. This dummy tuple does not report an
-	 * count value but is used as a "time progress tuple" to unblock downstream operators.
-	 * 
-	 * @param minute
-	 *            the 'minute number' of the new minute that starts
-	 */
-	public CountTuple(Short minute) {
-		assert (minute != null);
-		
-		super.add(MINUTE_IDX, minute);
-		super.add(XWAY_IDX, null);
-		super.add(SEG_IDX, null);
-		super.add(DIR_IDX, null);
-		super.add(CNT_IDX, null);
-	}
-	
-	/**
 	 * Instantiates a new {@link CountTuple} for the given attributes.
 	 * 
 	 * @param minute
@@ -109,6 +92,8 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, diretion);
 		super.add(CNT_IDX, count);
+		
+		assert (super.size() == 5);
 	}
 	
 	
@@ -125,7 +110,7 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Returns the expressway ID of this {@link CountTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the expressway of this tuple
 	 */
 	@Override
 	public final Integer getXWay() {
@@ -135,7 +120,7 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Returns the segment of this {@link CountTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the segment of this tuple
 	 */
 	@Override
 	public final Short getSegment() {
@@ -145,7 +130,7 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Returns the vehicle's direction of this {@link CountTuple}.
 	 * 
-	 * @return the VID of this tuple
+	 * @return the direction of this tuple
 	 */
 	@Override
 	public final Short getDirection() {
@@ -159,16 +144,6 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	 */
 	public final Integer getCount() {
 		return (Integer)super.get(CNT_IDX);
-	}
-	
-	/**
-	 * Returns {@code true} if this tuple does not report a count value but only carries the next 'minute number'.
-	 * 
-	 * @return {@code true} if this tuple does not report a count value but only carries the next 'minute number' --
-	 *         {@code false} otherwise
-	 */
-	public final boolean isProgressTuple() {
-		return super.get(XWAY_IDX) == null;
 	}
 	
 	/**

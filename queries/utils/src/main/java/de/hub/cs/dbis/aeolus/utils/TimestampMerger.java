@@ -158,7 +158,7 @@ public class TimestampMerger implements IRichBolt {
 	
 	@Override
 	public void execute(Tuple tuple) {
-		if(tuple.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
+		if(tuple.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID) && tuple.getValue(0) == null) {
 			this.merger.disablePartition(new Integer(tuple.getSourceTask()));
 		} else {
 			logger.trace("Adding tuple to internal buffer tuple: {}", tuple);

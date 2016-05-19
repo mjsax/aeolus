@@ -74,7 +74,7 @@ public class DispatcherBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
 			return;
 		}
 		
@@ -146,7 +146,7 @@ public class DispatcherBolt extends BaseRichBolt {
 			DailyExpenditureRequest.getSchema());
 		outputFieldsDeclarer
 			.declareStream(TopologyControl.TRAVEL_TIME_REQUEST_STREAM_ID, TravelTimeRequest.getSchema());
-		outputFieldsDeclarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		outputFieldsDeclarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 	}
 	
 }

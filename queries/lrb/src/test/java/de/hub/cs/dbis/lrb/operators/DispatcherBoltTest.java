@@ -113,7 +113,7 @@ public class DispatcherBoltTest {
 		bolt.execute(flushTuple);
 		
 		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(new Values((Object)null), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -147,7 +147,7 @@ public class DispatcherBoltTest {
 			TopologyControl.XWAY_FIELD_NAME, TopologyControl.QUERY_ID_FIELD_NAME,
 			TopologyControl.START_SEGMENT_FIELD_NAME, TopologyControl.END_SEGMENT_FIELD_NAME,
 			TopologyControl.DAY_OF_WEEK_FIELD_NAME, TopologyControl.TIME_OF_DAY_FIELD_NAME));
-		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 		
 		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
 		

@@ -108,7 +108,13 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 		final String sourceStreamId = input.getSourceStreamId();
 		
 		if(sourceStreamId.equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			Object ts = input.getValue(0);
+			if(ts == null) {
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			} else {
+				this.checkMinute(((Number)ts).shortValue());
+			}
+			this.collector.ack(input);
 			return;
 		}
 		
@@ -164,6 +170,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 			this.inputAccidentTuple.clear();
 			this.inputAccidentTuple.addAll(input.getValues());
 			LOGGER.trace(this.inputAccidentTuple.toString());
+			
 			this.checkMinute(this.inputAccidentTuple.getMinuteNumber().shortValue());
 			assert (this.inputAccidentTuple.getMinuteNumber().shortValue() == this.currentMinute);
 			
@@ -187,7 +194,7 @@ public class AccidentNotificationBolt extends BaseRichBolt {
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(AccidentNotification.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 	}
 	
 }

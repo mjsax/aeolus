@@ -51,16 +51,16 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 		new AverageSpeedSubquery().addBolts(builder, null);
 		
 		builder
-			.setBolt(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME,
+			.setBolt(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME,
 				new TimestampMerger(new LatestAverageVelocityBolt(), AvgSpeedTuple.MINUTE_IDX),
-				OperatorParallelism.get(TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME))
+				OperatorParallelism.get(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME))
 			.fieldsGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		if(outputs != null) {
 			if(outputs.length == 1) {
 				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.LAST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
+					TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
 			} else {
 				System.err.println("<outputs>.length != 1 => ignored");
 			}

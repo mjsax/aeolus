@@ -93,7 +93,7 @@ public class FileReaderSpoutTest {
 		spout.deactivate();
 		
 		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(new Values((Object)null), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ public class FileReaderSpoutTest {
 		
 		HashMap<String, Fields> expectedStreams = new HashMap<String, Fields>();
 		expectedStreams.put(null, new Fields("ts", "rawTuple"));
-		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 		
 		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
 		

@@ -270,7 +270,7 @@ public class TollNotificationBoltTest {
 		
 		Assert.assertEquals(3, collector.output.size());
 		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(new Values((Object)null), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 		
 	}
 	
@@ -334,7 +334,7 @@ public class TollNotificationBoltTest {
 		HashMap<String, Fields> expectedStreams = new HashMap<String, Fields>();
 		expectedStreams.put(TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID, schema);
 		expectedStreams.put(TopologyControl.TOLL_ASSESSMENTS_STREAM_ID, schema);
-		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		expectedStreams.put(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 		
 		Assert.assertEquals(expectedStreams.keySet(), new HashSet<String>(declarer.streamIdBuffer));
 		

@@ -106,8 +106,9 @@
               <finalName>LinearRoadBenchmark</finalName>
               <includes>
                 <include>org/apache/commons/lang3/**/*.class</include>
-                <include>de/hub/cs/dbis/**/*.class</include>
-                <include>storm.lrb.TopologyControl.class</include>
+                <include>de/hub/cs/dbis/lrb/**/*.class</include>
+                <!--  include module "utils" -->
+                <include>de/hub/cs/dbis/aeolus/**/*.class</include>
               </includes>
             </configuration>
           </execution>

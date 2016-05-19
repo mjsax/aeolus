@@ -67,6 +67,8 @@ public class CountVehiclesBoltTest {
 		System.out.println("Test seed: " + this.seed);
 	}
 	
+	
+	
 	@Test
 	public void testExecute() {
 		final int numberOfSegments = 1 + this.r.nextInt(5);
@@ -79,15 +81,17 @@ public class CountVehiclesBoltTest {
 				(short)this.r.nextInt(Constants.NUMBER_OF_SEGMENT)), new Short((short)this.r.nextInt(1)));
 		}
 		
-		final LinkedList<CountTuple> expectedResult = new LinkedList<CountTuple>();
+		final LinkedList<Values> expectedResult = new LinkedList<Values>();
+		final LinkedList<Values> expectedFlushs = new LinkedList<Values>();
 		
 		Tuple tuple = mock(Tuple.class);
 		when(tuple.getSourceStreamId()).thenReturn("streamId");
 		OngoingStubbing<List<Object>> tupleStub = when(tuple.getValues());
 		
 		final int startMinute = 1 + this.r.nextInt(5);
-		expectedResult.add(new CountTuple(new Short((short)startMinute)));
 		for(int m = startMinute; m < startMinute + numberOfMinutes; ++m) {
+			expectedFlushs.add(new Values(new Short((short)m)));
+			
 			final HashMap<SegmentIdentifier, Set<Integer>> counts = new HashMap<SegmentIdentifier, Set<Integer>>();
 			
 			final int numberOfTuplesMinute = 200 + this.r.nextInt(200);
@@ -114,7 +118,7 @@ public class CountVehiclesBoltTest {
 			}
 			
 			final int dummyIndex = expectedResult.size();
-			expectedResult.add(new CountTuple(new Short((short)(m + 1))));
+			expectedResult.add(new Values(new Short((short)(m + 1))));
 			
 			for(Entry<SegmentIdentifier, Set<Integer>> e : counts.entrySet()) {
 				SegmentIdentifier segId = e.getKey();
@@ -139,16 +143,15 @@ public class CountVehiclesBoltTest {
 			bolt.execute(tuple);
 		}
 		
-		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 		
 		Tuple flushTuple = mock(Tuple.class);
 		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
 		bolt.execute(flushTuple);
+		expectedFlushs.add(new Values((Object)null));
 		
+		Assert.assertEquals(2, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(TopologyControl.CAR_COUNTS_STREAM_ID));
-		
-		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(expectedFlushs, collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 	}
 	
 	@Test
@@ -169,7 +172,7 @@ public class CountVehiclesBoltTest {
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
 		
 		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
-		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Fields("ts").toList(), declarer.schemaBuffer.get(1).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	

@@ -53,7 +53,7 @@ public final class Constants {
 	public static final Short WESTBOUND = new Short((short)1);
 	
 	/* 0...100 */
-	public static final short MAX_SEGMENT = 100;
+	public static final short MAX_SEGMENT = 99;
 	public static final short NUMBER_OF_SEGMENT = MAX_SEGMENT + 1;
 	
 	/* 0...527999 */

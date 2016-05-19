@@ -146,13 +146,17 @@ public class AverageSpeedBoltTest {
 		
 		
 		final HashSet<AvgSpeedTuple> expectedResult = new HashSet<AvgSpeedTuple>();
+		final LinkedList<Values> expectedFlushs = new LinkedList<Values>();
 		
 		for(short minute = 1; minute <= numberOfMinutes; ++minute) {
 			for(int i = 0; i < numberOfVehicles; ++i) {
 				bolt.execute(tuple);
 			}
-			Assert.assertEquals(1, collector.output.size());
+			expectedFlushs.add(new Values(new Short(minute)));
+			
+			Assert.assertEquals(2, collector.output.size());
 			Assert.assertEquals(expectedResult, Sets.newHashSet(collector.output.get(Utils.DEFAULT_STREAM_ID)));
+			Assert.assertEquals(expectedFlushs, collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 			
 			Assert.assertEquals(minute * numberOfVehicles, collector.acked.size());
 			Assert.assertEquals(0, collector.failed.size());
@@ -160,6 +164,7 @@ public class AverageSpeedBoltTest {
 			collector.output.clear();
 			collector.output.put(Utils.DEFAULT_STREAM_ID, new LinkedList<List<Object>>());
 			expectedResult.clear();
+			expectedFlushs.clear();
 			this.addToExpectedResult(speedValuesPerSegment1[minute - 1], minute, (short)0, expectedResult);
 			this.addToExpectedResult(speedValuesPerSegment2[minute - 1], minute, (short)1, expectedResult);
 		}
@@ -173,10 +178,10 @@ public class AverageSpeedBoltTest {
 		Assert.assertEquals(2, collector.output.size());
 		
 		Assert.assertEquals(expectedResult, Sets.newHashSet(collector.output.get(Utils.DEFAULT_STREAM_ID)));
-		Assert.assertEquals(numberOfMinutes * numberOfVehicles, collector.acked.size());
+		Assert.assertEquals(numberOfMinutes * numberOfVehicles + 1, collector.acked.size());
 		
 		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		Assert.assertEquals(new Values((Object)null), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
 		
 		Assert.assertEquals(0, collector.failed.size());
 	}
@@ -224,7 +229,7 @@ public class AverageSpeedBoltTest {
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
 		
 		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
-		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Fields("ts").toList(), declarer.schemaBuffer.get(1).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	

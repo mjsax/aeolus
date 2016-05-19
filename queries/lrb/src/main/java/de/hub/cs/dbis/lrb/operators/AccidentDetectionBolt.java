@@ -20,8 +20,6 @@ package de.hub.cs.dbis.lrb.operators;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,20 +35,22 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
-import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
+import de.hub.cs.dbis.lrb.types.internal.StoppedCarTuple;
 import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
+import de.hub.cs.dbis.lrb.util.Constants;
+import de.hub.cs.dbis.lrb.util.Time;
 
 
 
 
 
 /**
- * {@link AccidentDetectionBolt} registers every stopped vehicle and emits accident information for further processing.
- * The input is expected to be of type {@link PositionReport}, to be ordered by timestamp, and must be grouped by
- * {@link PositionIdentifier}.<br />
+ * {@link AccidentDetectionBolt} processed stopped vehicle reports and emits accident information for further
+ * processing. The input is expected to be of type {@link StoppedCarTuple}, to be ordered by timestamp, and must be
+ * grouped by {@link PositionIdentifier}.<br />
  * <br />
- * <strong>Input schema:</strong> {@link PositionReport}<br />
+ * <strong>Input schema:</strong> {@link StoppedCarTuple}<br />
  * <strong>Output schema:</strong> {@link AccidentTuple} (stream: {@link TopologyControl#ACCIDENTS_STREAM_ID})
  * 
  * @author msoyka
@@ -65,21 +65,15 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	
 	/** Internally (re)used object to access individual attributes. */
-	private final PositionReport inputPositionReport = new PositionReport();
+	private final StoppedCarTuple inputStoppedCarTuple = new StoppedCarTuple();
 	/** Internally (re)used object. */
-	private final PositionIdentifier vehiclePosition = new PositionIdentifier();
-	/** Internally (re)used object. */
-	private final PositionReport lastPositionReport = new PositionReport();
-	/** Internally (re)used object. */
-	private final PositionIdentifier lastVehiclePosition = new PositionIdentifier();
+	private final PositionIdentifier stoppedVehiclePosition = new PositionIdentifier();
 	
-	/** Holds the last positions for each vehicle (if those positions are equal to each other). */
-	private final Map<Integer, List<PositionReport>> lastPositions = new HashMap<Integer, List<PositionReport>>();
 	/** Hold all vehicles that have <em>stopped</em> within a segment. */
 	private final Map<PositionIdentifier, Set<Integer>> stoppedCarsPerPosition = new HashMap<PositionIdentifier, Set<Integer>>();
 	
 	/** The currently processed 'minute number'. */
-	private int currentMinute = -1;
+	private short currentMinute = -1;
 	
 	
 	@Override
@@ -90,109 +84,69 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
-			return;
-		}
-		
-		this.inputPositionReport.clear();
-		this.inputPositionReport.addAll(input.getValues());
-		LOGGER.trace(this.inputPositionReport.toString());
-		
-		Integer vid = this.inputPositionReport.getVid();
-		short minute = this.inputPositionReport.getMinuteNumber();
-		
-		assert (minute >= this.currentMinute);
-		
-		if(minute > this.currentMinute) {
-			this.currentMinute = minute;
-			this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID, new AccidentTuple(new Short(minute)));
-		}
-		
-		if(this.inputPositionReport.isOnExitLane()) {
-			List<PositionReport> vehiclePositions = this.lastPositions.remove(vid);
-			
-			if(vehiclePositions != null && vehiclePositions.size() == 4) {
-				this.lastPositionReport.clear();
-				this.lastPositionReport.addAll(vehiclePositions.get(0));
-				
-				assert (this.inputPositionReport.getTime().shortValue() == this.lastPositionReport.getTime()
-					.shortValue() + 30);
-				
-				this.lastVehiclePosition.set(this.lastPositionReport);
-				
-				Set<Integer> stoppedCars = this.stoppedCarsPerPosition.get(this.lastVehiclePosition);
-				stoppedCars.remove(vid);
-				if(stoppedCars.size() == 0) {
-					this.stoppedCarsPerPosition.remove(this.lastVehiclePosition);
-				}
+			Object ts = input.getValue(0);
+			if(ts == null) {
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			} else {
+				this.checkMinute(Time.getMinute(((Number)ts).longValue()));
 			}
-			
 			this.collector.ack(input);
 			return;
 		}
 		
+		this.inputStoppedCarTuple.clear();
+		this.inputStoppedCarTuple.addAll(input.getValues());
+		LOGGER.trace(this.inputStoppedCarTuple.toString());
 		
-		List<PositionReport> vehiclePositions = this.lastPositions.get(vid);
-		if(vehiclePositions == null) {
-			vehiclePositions = new LinkedList<PositionReport>();
-			vehiclePositions.add(this.inputPositionReport.copy());
-			this.lastPositions.put(vid, vehiclePositions);
-			
-			this.collector.ack(input);
-			return;
-		}
+		this.checkMinute(this.inputStoppedCarTuple.getMinuteNumber());
+		assert (this.inputStoppedCarTuple.getLane().shortValue() != Constants.EXIT_LANE);
 		
-		this.lastPositionReport.clear();
-		this.lastPositionReport.addAll(vehiclePositions.get(0));
+		Integer vid = this.inputStoppedCarTuple.getVid();
+		// negative VID implies "move" after "stop"
+		int v = vid.intValue();
+		boolean isStopReport = v > 0;
 		
-		assert (this.inputPositionReport.getTime().shortValue() == this.lastPositionReport.getTime().shortValue() + 30);
+		this.stoppedVehiclePosition.set(this.inputStoppedCarTuple);
 		
-		this.vehiclePosition.set(this.inputPositionReport);
-		this.lastVehiclePosition.set(this.lastPositionReport);
-		if(this.vehiclePosition.equals(this.lastVehiclePosition)) {
-			vehiclePositions.add(0, this.inputPositionReport.copy());
-			if(vehiclePositions.size() >= 4) {
-				LOGGER.trace("Car {} stopped at {} ({})", vid, this.vehiclePosition,
-					new Short(this.inputPositionReport.getMinuteNumber()));
-				if(vehiclePositions.size() > 4) {
-					assert (vehiclePositions.size() == 5);
-					vehiclePositions.remove(4);
-				}
-				Set<Integer> stoppedCars = this.stoppedCarsPerPosition.get(this.vehiclePosition);
-				if(stoppedCars == null) {
-					stoppedCars = new HashSet<Integer>();
-					stoppedCars.add(vid);
-					this.stoppedCarsPerPosition.put(this.vehiclePosition.copy(), stoppedCars);
-				} else {
-					stoppedCars.add(vid);
-					
-					if(stoppedCars.size() > 1) {
-						this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID, new AccidentTuple(new Short(minute),
-							this.inputPositionReport.getXWay(), this.inputPositionReport.getSegment(),
-							this.inputPositionReport.getDirection()));
-					}
-				}
+		Set<Integer> stoppedCars = this.stoppedCarsPerPosition.get(this.stoppedVehiclePosition);
+		if(isStopReport) {
+			if(stoppedCars == null) {
+				stoppedCars = new HashSet<Integer>();
+				stoppedCars.add(vid);
+				this.stoppedCarsPerPosition.put(this.stoppedVehiclePosition.copy(), stoppedCars);
+			} else {
+				stoppedCars.add(vid);
 				
+				if(stoppedCars.size() > 1) {
+					this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID,
+						new AccidentTuple(new Short(this.currentMinute), this.inputStoppedCarTuple.getXWay(),
+							this.inputStoppedCarTuple.getSegment(), this.inputStoppedCarTuple.getDirection()));
+				}
 			}
 		} else {
-			if(vehiclePositions.size() == 4) {
-				Set<Integer> stoppedCars = this.stoppedCarsPerPosition.get(this.lastVehiclePosition);
-				stoppedCars.remove(vid);
-				if(stoppedCars.size() == 0) {
-					this.stoppedCarsPerPosition.remove(this.lastVehiclePosition);
-				}
+			stoppedCars.remove(new Integer(-v));
+			if(stoppedCars.isEmpty()) {
+				this.stoppedCarsPerPosition.remove(this.inputStoppedCarTuple);
 			}
-			vehiclePositions.clear();
-			vehiclePositions.add(this.inputPositionReport.copy());
 		}
 		
 		this.collector.ack(input);
 	}
 	
+	private void checkMinute(short minute) {
+		assert (minute >= this.currentMinute);
+		
+		if(minute > this.currentMinute) {
+			LOGGER.trace("New minute: {}", new Short(minute));
+			this.currentMinute = minute;
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
+		}
+	}
+	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declareStream(TopologyControl.ACCIDENTS_STREAM_ID, AccidentTuple.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
 	}
 	
 }

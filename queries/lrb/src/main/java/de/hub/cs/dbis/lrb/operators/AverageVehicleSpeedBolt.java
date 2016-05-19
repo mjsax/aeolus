@@ -88,9 +88,11 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.flushBuffer();
-			
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			if(input.getValue(0) == null) {
+				this.flushBuffer();
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			}
+			this.collector.ack(input);
 			return;
 		}
 		
@@ -109,6 +111,7 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 			// emit all values for last minute
 			// (because input tuples are ordered by ts, we can close the last minute safely)
 			this.flushBuffer();
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
 			
 			this.avgSpeedsMap.clear();
 			this.currentMinute = minute;
@@ -137,12 +140,6 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 		this.collector.ack(input);
 	}
 	
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(AvgVehicleSpeedTuple.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
-	}
-	
 	private void flushBuffer() {
 		for(Entry<Integer, Pair<AvgValue, SegmentIdentifier>> entry : this.avgSpeedsMap.entrySet()) {
 			Pair<AvgValue, SegmentIdentifier> value = entry.getValue();
@@ -153,4 +150,11 @@ public class AverageVehicleSpeedBolt extends BaseRichBolt {
 				segId.getXWay(), segId.getSegment(), segId.getDirection(), value.getLeft().getAverage()));
 		}
 	}
+	
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		declarer.declare(AvgVehicleSpeedTuple.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
+	}
+	
 }

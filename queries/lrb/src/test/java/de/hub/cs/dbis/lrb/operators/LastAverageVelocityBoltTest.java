@@ -137,8 +137,13 @@ public class LastAverageVelocityBoltTest {
 		
 		int executeCounter = 0;
 		int lastMinute = 0;
+		
+		LinkedList<Values> expectedFlushs = null;
+		
 		for(short minute = 1; minute <= numberOfMinutes; ++minute) {
 			boolean firstTupleOfMinute = true;
+			
+			boolean flushed = false;
 			for(int i = 0; i < numberOfHighways * numberOfSegments; ++i) {
 				SegmentIdentifier sid = allSegments.remove(0);
 				List<Double> speeds = allSpeedsPerSegments.get(sid);
@@ -147,6 +152,15 @@ public class LastAverageVelocityBoltTest {
 				}
 				
 				instance.execute(tuple);
+				++executeCounter;
+				
+				if(!flushed) {
+					if(expectedFlushs == null) {
+						expectedFlushs = new LinkedList<Values>();
+					}
+					expectedFlushs.add(new Values(new Short(minute)));
+					flushed = true;
+				}
 				
 				List<LavTuple> expectedResult = new LinkedList<LavTuple>();
 				if(firstTupleOfMinute && minute > 1) { // process open (incomplete windows)
@@ -166,8 +180,12 @@ public class LastAverageVelocityBoltTest {
 				
 				this.addResult(speeds, minute, expectedResult, sid);
 				
-				assertEquals(1, collector.output.size());
+				assertEquals(2, collector.output.size());
+				assertEquals(executeCounter, collector.acked.size());
+				assertEquals(expectedFlushs, collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
+				
 				List<List<Object>> result = collector.output.get(TopologyControl.LAVS_STREAM_ID);
+				
 				HashSet<List<Object>> ers = new HashSet<List<Object>>();
 				HashSet<List<Object>> rs = new HashSet<List<Object>>();
 				while(expectedResult.size() > 0) {
@@ -187,19 +205,20 @@ public class LastAverageVelocityBoltTest {
 					}
 					
 				}
+				
 				assertEquals(ers, rs);
 				assertEquals(0, result.size());
-				assertEquals(++executeCounter, collector.acked.size());
 				
 				firstTupleOfMinute = false;
 			}
+			
+			assertEquals(expectedFlushs, collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 		}
-		
-		Assert.assertNull(collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 		
 		Tuple flushTuple = mock(Tuple.class);
 		when(flushTuple.getSourceStreamId()).thenReturn(TimestampMerger.FLUSH_STREAM_ID);
 		instance.execute(flushTuple);
+		++executeCounter;
 		
 		short minute = numberOfMinutes + 1;
 		List<LavTuple> expectedResult = new LinkedList<LavTuple>();
@@ -245,13 +264,17 @@ public class LastAverageVelocityBoltTest {
 			}
 			
 		}
+		if(expectedFlushs == null) {
+			expectedFlushs = new LinkedList<Values>();
+		}
+		expectedFlushs.add(new Values((Object)null));
+		
 		assertEquals(ers, rs);
 		assertEquals(0, result.size());
 		assertEquals(executeCounter, collector.acked.size());
 		
-		Assert.assertEquals(2, collector.output.size());
-		Assert.assertEquals(1, collector.output.get(TimestampMerger.FLUSH_STREAM_ID).size());
-		Assert.assertEquals(new Values(), collector.output.get(TimestampMerger.FLUSH_STREAM_ID).get(0));
+		assertEquals(2, collector.output.size());
+		assertEquals(expectedFlushs, collector.output.get(TimestampMerger.FLUSH_STREAM_ID));
 	}
 	
 	private void addResult(List<Double> speeds, short minute, List<LavTuple> expectedResult, SegmentIdentifier sid) {
@@ -290,7 +313,7 @@ public class LastAverageVelocityBoltTest {
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));
 		
 		Assert.assertEquals(TimestampMerger.FLUSH_STREAM_ID, declarer.streamIdBuffer.get(1));
-		Assert.assertEquals(new Fields().toList(), declarer.schemaBuffer.get(1).toList());
+		Assert.assertEquals(new Fields("ts").toList(), declarer.schemaBuffer.get(1).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(1));
 	}
 	

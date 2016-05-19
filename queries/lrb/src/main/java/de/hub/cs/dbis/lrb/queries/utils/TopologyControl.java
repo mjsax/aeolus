@@ -40,12 +40,13 @@ public class TopologyControl {
 	// helper bolts
 	public final static String SPLIT_STREAM_BOLT_NAME = "Split-Stream-Bolt";
 	// operators
+	public final static String STOPPED_CARS_BOLT_NAME = "Stopped-Cars-Bolt";
 	public final static String ACCIDENT_DETECTION_BOLT_NAME = "Accident-Detection-Bolt";
 	public final static String ACCIDENT_NOTIFICATION_BOLT_NAME = "Accident-Notification-Bolt";
 	public final static String COUNT_VEHICLES_BOLT_NAME = "Count-Vehicles-Bolt";
 	public final static String AVERAGE_VEHICLE_SPEED_BOLT_NAME = "Average-Vehicle-Speed-Bolt";
 	public final static String AVERAGE_SPEED_BOLT_NAME = "Average-Speed-Bolt";
-	public final static String LAST_AVERAGE_SPEED_BOLT_NAME = "Last-Average-Speed-Bolt";
+	public final static String LATEST_AVERAGE_SPEED_BOLT_NAME = "Latest-Average-Speed-Bolt";
 	public final static String TOLL_NOTIFICATION_BOLT_NAME = "Toll-Notification-Bolt";
 	
 	// sinks

@@ -69,7 +69,7 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	private final Map<SegmentIdentifier, AvgValue> avgSpeedsMap = new HashMap<SegmentIdentifier, AvgValue>();
 	
 	/** The currently processed 'minute number'. */
-	private short currentMinute = 1;
+	private short currentMinute = -1;
 	
 	
 	
@@ -81,9 +81,14 @@ public class AverageSpeedBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
-			this.flushBuffer();
-			
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values());
+			Object ts = input.getValue(0);
+			if(ts == null) {
+				this.flushBuffer();
+				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			} else {
+				this.checkMinute(((Number)ts).shortValue());
+			}
+			this.collector.ack(input);
 			return;
 		}
 		
@@ -91,20 +96,10 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		this.inputTuple.addAll(input.getValues());
 		LOGGER.trace(this.inputTuple.toString());
 		
-		short minute = this.inputTuple.getMinute().shortValue();
+		this.checkMinute(this.inputTuple.getMinute().shortValue());
+		
 		double avgVehicleSpeed = this.inputTuple.getAvgSpeed().doubleValue();
 		this.segment.set(this.inputTuple);
-		
-		assert (minute >= this.currentMinute);
-		
-		if(minute > this.currentMinute) {
-			// emit all values for last minute
-			// (because input tuples are ordered by ts (ie, minute number), we can close the last minute safely)
-			this.flushBuffer();
-			
-			this.avgSpeedsMap.clear();
-			this.currentMinute = minute;
-		}
 		
 		AvgValue segAvg = this.avgSpeedsMap.get(this.segment);
 		if(segAvg == null) {
@@ -117,10 +112,18 @@ public class AverageSpeedBolt extends BaseRichBolt {
 		this.collector.ack(input);
 	}
 	
-	@Override
-	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(AvgSpeedTuple.getSchema());
-		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields());
+	private void checkMinute(short minute) {
+		assert (minute >= this.currentMinute);
+		
+		if(minute > this.currentMinute) {
+			// emit all values for last minute
+			// (because input tuples are ordered by ts (ie, minute number), we can close the last minute safely)
+			this.flushBuffer();
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
+			
+			this.avgSpeedsMap.clear();
+			this.currentMinute = minute;
+		}
 	}
 	
 	private void flushBuffer() {
@@ -132,4 +135,11 @@ public class AverageSpeedBolt extends BaseRichBolt {
 				segId.getDirection(), entry.getValue().getAverage()));
 		}
 	}
+	
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		declarer.declare(AvgSpeedTuple.getSchema());
+		declarer.declareStream(TimestampMerger.FLUSH_STREAM_ID, new Fields("ts"));
+	}
+	
 }
