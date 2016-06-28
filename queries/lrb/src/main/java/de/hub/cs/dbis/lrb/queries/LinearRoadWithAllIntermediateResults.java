@@ -29,23 +29,28 @@ import backtype.storm.topology.TopologyBuilder;
 
 
 /**
- * {@link LinearRoad} assembles the {@link AccidentQuery Accident} and the {@link TollQuery Toll} processing queries in
- * a single topology.
+ * {@link LinearRoadWithAllIntermediateResults} assembles the {@link AccidentQuery Accident} and the {@link TollQuery
+ * Toll} processing queries in a single topology.
  * 
  * * @author mjsax
  */
-public class LinearRoad extends AbstractQuery {
+public class LinearRoadWithAllIntermediateResults extends AbstractQuery {
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new LinearRoad().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput",
-			"tollNotificationsOutput", "tollAssessmentsOutput"});
+		new LinearRoadWithAllIntermediateResults().parseArgumentsAndRun(args, new String[] {
+			"accidentNotificationsOutput", "tollNotificationsOutput", "tollAssessmentsOutput"}, new String[] {
+			"/data/mjsax/lrb/accidentsOutput.txt", "/data/mjsax/lrb/stoppedOutput.txt",
+			"/data/mjsax/lrb/lavOutput.txt", "/data/mjsax/lrb/avgSpdOutput.txt",
+			"/data/mjsax/lrb/avgVehicleSpdOutput.txt", "/data/mjsax/lrb/cntOutput.txt"});
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Requires three specified outputs for "accident notification", "toll notification" and "toll assessments". Does
-	 * not have any intermediate output. Parameter {@code intermediateOutput} is void.
+	 * Requires three specified outputs for "accident notification", "toll notification" and "toll assessments".
+	 * Optional parameter {@code intermediateOutputs} specifies the output of {@link AccidentDetectionSubquery},
+	 * {@link StoppedCarsSubquery}, {@link LatestAverageVelocitySubquery}, {@link AverageSpeedSubquery},
+	 * {@link AverageVehicleSpeedSubquery}, and {@link CountVehicleSubquery}
 	 */
 	@Override
 	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
@@ -55,12 +60,8 @@ public class LinearRoad extends AbstractQuery {
 		if(outputs.length < 3) {
 			throw new IllegalArgumentException("Parameter <outputs> must provide three values.");
 		}
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			System.err.println("WARN: void parameter <intermediateOutputs> specified");
-		}
 		
-		new AccidentQuery().addBolts(builder, new String[] {outputs[0]});
-		new TollQuery().addBolts(builder, new String[] {outputs[1], outputs[2]});
+		new AccidentQuery().addBolts(builder, new String[] {outputs[0]}, null);
+		new TollQuery().addBolts(builder, new String[] {outputs[1], outputs[2]}, intermediateOutputs);
 	}
-	
 }

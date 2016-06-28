@@ -91,7 +91,7 @@ public class TollNotificationBoltTest {
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)5, pos));
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)1, xway, (short)6, d, 50));
+		valueStub = valueStub.thenReturn(new CountTuple((short)59, xway, (short)6, d, 50));
 		
 		// crossing segment same lane
 		time = (short)60;
@@ -115,7 +115,7 @@ public class TollNotificationBoltTest {
 		// test 2: full and slow highway -> toll
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)3, xway, (short)10, d, 51));
+		valueStub = valueStub.thenReturn(new CountTuple((short)179, xway, (short)10, d, 51));
 		
 		// entering highway again
 		time = (short)200;
@@ -129,15 +129,15 @@ public class TollNotificationBoltTest {
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)10, pos));
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)4, xway, (short)11, d, 52));
+		valueStub = valueStub.thenReturn(new CountTuple((short)239, xway, (short)11, d, 52));
 		streamIdsToBeMocked.add(TopologyControl.LAVS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new LavTuple((short)5, xway, (short)11, d, 39));
+		valueStub = valueStub.thenReturn(new LavTuple((short)299, xway, (short)11, d, 39));
 		// accident already passed; no effect
 		streamIdsToBeMocked.add(TopologyControl.ACCIDENTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new AccidentTuple((short)4, xway, (short)10, d));
+		valueStub = valueStub.thenReturn(new AccidentTuple((short)239, xway, (short)10, d));
 		// accident too far downstream; no effect
 		streamIdsToBeMocked.add(TopologyControl.ACCIDENTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new AccidentTuple((short)4, xway, (short)16, d));
+		valueStub = valueStub.thenReturn(new AccidentTuple((short)239, xway, (short)16, d));
 		
 		// crossing segment same lane
 		time = (short)260;
@@ -157,9 +157,9 @@ public class TollNotificationBoltTest {
 		// test 2: full but fast highway -> no toll
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)6, xway, (short)20, d, 51));
+		valueStub = valueStub.thenReturn(new CountTuple((short)359, xway, (short)20, d, 51));
 		streamIdsToBeMocked.add(TopologyControl.LAVS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new LavTuple((short)7, xway, (short)20, d, 40));
+		valueStub = valueStub.thenReturn(new LavTuple((short)419, xway, (short)20, d, 40));
 		
 		// entering highway again
 		time = (short)400;
@@ -172,7 +172,7 @@ public class TollNotificationBoltTest {
 		// test 4: full and slow highway but accident (same segment)
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)8, xway, (short)30, d, 51));
+		valueStub = valueStub.thenReturn(new CountTuple((short)479, xway, (short)30, d, 51));
 		
 		// entering highway again (no accident yet -> toll)
 		time = (short)500;
@@ -186,11 +186,11 @@ public class TollNotificationBoltTest {
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)30, pos));
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)9, xway, (short)31, d, 52));
+		valueStub = valueStub.thenReturn(new CountTuple((short)539, xway, (short)31, d, 52));
 		streamIdsToBeMocked.add(TopologyControl.LAVS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new LavTuple((short)10, xway, (short)31, d, 39));
+		valueStub = valueStub.thenReturn(new LavTuple((short)599, xway, (short)31, d, 39));
 		streamIdsToBeMocked.add(TopologyControl.ACCIDENTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new AccidentTuple((short)9, xway, (short)31, d));
+		valueStub = valueStub.thenReturn(new AccidentTuple((short)539, xway, (short)31, d));
 		
 		// crossing segment same lane (accident same segment -> no toll)
 		time = (short)560;
@@ -209,7 +209,7 @@ public class TollNotificationBoltTest {
 		// test 4: full and slow highway but accident (segment most far down stream)
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)10, xway, (short)30, d, 51));
+		valueStub = valueStub.thenReturn(new CountTuple((short)599, xway, (short)30, d, 51));
 		
 		// entering highway again (no accident yet -> toll)
 		time = (short)600;
@@ -223,11 +223,11 @@ public class TollNotificationBoltTest {
 		valueStub = valueStub.thenReturn(new PositionReport(time, vid, spd, xway, l1, d, (short)30, pos));
 		
 		streamIdsToBeMocked.add(TopologyControl.CAR_COUNTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new CountTuple((short)11, xway, (short)31, d, 52));
+		valueStub = valueStub.thenReturn(new CountTuple((short)659, xway, (short)31, d, 52));
 		streamIdsToBeMocked.add(TopologyControl.LAVS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new LavTuple((short)12, xway, (short)31, d, 39));
+		valueStub = valueStub.thenReturn(new LavTuple((short)719, xway, (short)31, d, 39));
 		streamIdsToBeMocked.add(TopologyControl.ACCIDENTS_STREAM_ID);
-		valueStub = valueStub.thenReturn(new AccidentTuple((short)11, xway, (short)35, d));
+		valueStub = valueStub.thenReturn(new AccidentTuple((short)659, xway, (short)35, d));
 		
 		// crossing segment same lane (accident 4 segments down -> no toll)
 		time = (short)660;

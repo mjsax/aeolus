@@ -134,10 +134,9 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 		assert (latestMinuteNumber.size() <= 5);
 		
 		Integer lav = this.computeLavValue(latestAvgSpeeds);
-		this.collector.emit(
-			TopologyControl.LAVS_STREAM_ID,
-			new LavTuple(new Short((short)(m + 1)), this.segmentIdentifier.getXWay(), this.segmentIdentifier
-				.getSegment(), this.segmentIdentifier.getDirection(), lav));
+		this.collector.emit(TopologyControl.LAVS_STREAM_ID,
+			new LavTuple(new Short((short)(((m + 1) * 60) - 1)), this.segmentIdentifier.getXWay(),
+				this.segmentIdentifier.getSegment(), this.segmentIdentifier.getDirection(), lav));
 		
 		this.collector.ack(input);
 	}
@@ -151,8 +150,8 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 			// open windows; this can happen, if there is not AvgSpeedTuple for a segment in the minute before the
 			// current one; we need to truncate all open windows and compute LAV values for each open segment
 			this.flushBuffer(minute);
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
 			this.currentMinute = minute;
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short((short)((minute * 60) - 1))));
 		}
 	}
 	
@@ -179,9 +178,8 @@ public class LatestAverageVelocityBolt extends BaseRichBolt {
 					
 					if(latestAvgSpeeds.size() > 0) {
 						Integer lav = this.computeLavValue(latestAvgSpeeds);
-						this.collector.emit(TopologyControl.LAVS_STREAM_ID,
-							new LavTuple(new Short(nextMinute), sid.getXWay(), sid.getSegment(), sid.getDirection(),
-								lav));
+						this.collector.emit(TopologyControl.LAVS_STREAM_ID, new LavTuple(new Short(
+							(short)((nextMinute * 60) - 1)), sid.getXWay(), sid.getSegment(), sid.getDirection(), lav));
 					} else {
 						// remove empty window completely
 						it.remove();

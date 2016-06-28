@@ -43,6 +43,7 @@ import de.hub.cs.dbis.lrb.types.internal.LavTuple;
 import de.hub.cs.dbis.lrb.types.util.ISegmentIdentifier;
 import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
 import de.hub.cs.dbis.lrb.util.Constants;
+import de.hub.cs.dbis.lrb.util.Time;
 
 
 
@@ -139,7 +140,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 			if(ts == null) {
 				this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
 			} else {
-				this.checkMinute(((Number)ts).shortValue());
+				this.checkMinute(Time.getMinute(((Number)ts).shortValue()));
 			}
 			this.collector.ack(input);
 			return;
@@ -245,8 +246,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 			this.inputAccidentTuple.addAll(input.getValues());
 			LOGGER.trace(this.inputAccidentTuple.toString());
 			
-			this.checkMinute(this.inputAccidentTuple.getMinuteNumber().shortValue());
-			assert (this.inputAccidentTuple.getMinuteNumber().shortValue() == this.currentMinute);
+			this.checkMinute(this.inputAccidentTuple.getMinuteNumber());
+			assert (this.inputAccidentTuple.getMinuteNumber() == this.currentMinute);
 			
 			this.currentMinuteAccidents.add(new SegmentIdentifier(this.inputAccidentTuple));
 			
@@ -255,8 +256,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 			this.inputCountTuple.addAll(input.getValues());
 			LOGGER.trace(this.inputCountTuple.toString());
 			
-			this.checkMinute(this.inputCountTuple.getMinuteNumber().shortValue());
-			assert (this.inputCountTuple.getMinuteNumber().shortValue() == this.currentMinute);
+			this.checkMinute(this.inputCountTuple.getMinuteNumber());
+			assert (this.inputCountTuple.getMinuteNumber() == this.currentMinute);
 			
 			this.currentMinuteCounts.put(new SegmentIdentifier(this.inputCountTuple), this.inputCountTuple.getCount());
 			
@@ -265,8 +266,8 @@ public class TollNotificationBolt extends BaseRichBolt {
 			this.inputLavTuple.addAll(input.getValues());
 			LOGGER.trace(this.inputLavTuple.toString());
 			
-			this.checkMinute((short)(this.inputLavTuple.getMinuteNumber().shortValue() - 1));
-			assert (this.inputLavTuple.getMinuteNumber().shortValue() - 1 == this.currentMinute);
+			this.checkMinute((short)(this.inputLavTuple.getMinuteNumber() - 1));
+			assert (this.inputLavTuple.getMinuteNumber() - 1 == this.currentMinute);
 			
 			this.currentMinuteLavs.put(new SegmentIdentifier(this.inputLavTuple), this.inputLavTuple.getLav());
 			

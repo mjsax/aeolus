@@ -46,9 +46,14 @@ public class AverageSpeedSubquery extends AbstractQuery {
 		new AverageSpeedSubquery().parseArgumentsAndRun(args, new String[] {"averageSpeedOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Optional parameter {@code intermediateOutputs} specifies the output of {@link AverageVehicleSpeedSubquery}.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new AverageVehicleSpeedSubquery().addBolts(builder, null);
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		new AverageVehicleSpeedSubquery().addBolts(builder, intermediateOutputs);
 		
 		builder
 			.setBolt(TopologyControl.AVERAGE_SPEED_BOLT_NAME,
@@ -57,13 +62,12 @@ public class AverageSpeedSubquery extends AbstractQuery {
 			.fieldsGrouping(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.AVERAGE_VEHICLE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs != null) {
-			if(outputs.length == 1) {
-				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.AVERAGE_SPEED_BOLT_NAME);
-			} else {
-				System.err.println("<outputs>.length != 1 => ignored");
+		if(outputs != null && outputs.length > 0) {
+			if(outputs.length > 1) {
+				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
 			}
+			builder.setBolt("avg-speed-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+				TopologyControl.AVERAGE_SPEED_BOLT_NAME);
 		}
 	}
 	

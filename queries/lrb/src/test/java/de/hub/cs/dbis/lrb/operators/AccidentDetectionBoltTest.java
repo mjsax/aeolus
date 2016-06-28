@@ -100,17 +100,7 @@ public class AccidentDetectionBoltTest {
 			int vid = -1;
 			int minTs = Integer.MAX_VALUE;
 			
-			// System.out.print("[");
-			// for(int j = 0; j < m.length - 1; ++j) {
-			// System.out.print(m[j] + ", ");
-			// }
-			// System.out.println(m[m.length - 1] + "]");
-			
 			for(int i = 0; i < timeAndPositions.length; ++i) {
-				// PositionReport pr = new PositionReport(timeAndPositions[vid - 1][m][1].shortValue(), vid, 0,
-				// timeAndPositions[vid - 1][m][0], (short)0, Constants.EASTBOUND,
-				// (short)(timeAndPositions[vid - 1][m][2].intValue() / 5280), timeAndPositions[vid - 1][m][2]);
-				
 				if(m[i] < timeAndPositions[i].length) {
 					if(timeAndPositions[i][m[i]][1] < minTs) {
 						minTs = timeAndPositions[i][m[i]][1];
@@ -146,21 +136,21 @@ public class AccidentDetectionBoltTest {
 		bolt.execute(flushTuple);
 		
 		List<Values> expectedFlushes = new ArrayList<Values>();
-		expectedFlushes.add(new Values((short)3));
-		expectedFlushes.add(new Values((short)4));
-		expectedFlushes.add(new Values((short)5));
-		expectedFlushes.add(new Values((short)6));
-		expectedFlushes.add(new Values((short)7));
-		expectedFlushes.add(new Values((short)8));
-		expectedFlushes.add(new Values((short)9));
+		expectedFlushes.add(new Values((short)119));
+		expectedFlushes.add(new Values((short)179));
+		expectedFlushes.add(new Values((short)239));
+		expectedFlushes.add(new Values((short)299));
+		expectedFlushes.add(new Values((short)359));
+		expectedFlushes.add(new Values((short)419));
+		expectedFlushes.add(new Values((short)479));
 		expectedFlushes.add(new Values((Object)null));
 		
 		List<Values> expectedResult = new ArrayList<Values>();
-		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
-		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
-		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
-		expectedResult.add(new AccidentTuple((short)8, 0, (short)9, (short)0));
-		expectedResult.add(new AccidentTuple((short)9, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)425, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)430, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)455, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)460, 0, (short)9, (short)0));
+		expectedResult.add(new AccidentTuple((short)481, 0, (short)9, (short)0));
 		
 		Assert.assertEquals(2, collector.output.size());
 		Assert.assertEquals(expectedResult, collector.output.get(TopologyControl.ACCIDENTS_STREAM_ID));
@@ -179,7 +169,7 @@ public class AccidentDetectionBoltTest {
 		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertEquals(TopologyControl.ACCIDENTS_STREAM_ID, declarer.streamIdBuffer.get(0));
-		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+		Assert.assertEquals(new Fields(TopologyControl.TIMESTAMP_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME).toList(), declarer.schemaBuffer
 			.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));

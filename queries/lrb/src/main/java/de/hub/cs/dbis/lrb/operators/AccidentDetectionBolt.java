@@ -118,9 +118,9 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 				stoppedCars.add(vid);
 				
 				if(stoppedCars.size() > 1) {
-					this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID,
-						new AccidentTuple(new Short(this.currentMinute), this.inputStoppedCarTuple.getXWay(),
-							this.inputStoppedCarTuple.getSegment(), this.inputStoppedCarTuple.getDirection()));
+					this.collector.emit(TopologyControl.ACCIDENTS_STREAM_ID, new AccidentTuple(
+						this.inputStoppedCarTuple.getTime(), this.inputStoppedCarTuple.getXWay(),
+						this.inputStoppedCarTuple.getSegment(), this.inputStoppedCarTuple.getDirection()));
 				}
 			}
 		} else {
@@ -139,7 +139,7 @@ public class AccidentDetectionBolt extends BaseRichBolt {
 		if(minute > this.currentMinute) {
 			LOGGER.trace("New minute: {}", new Short(minute));
 			this.currentMinute = minute;
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short((short)((minute * 60) - 61))));
 		}
 	}
 	

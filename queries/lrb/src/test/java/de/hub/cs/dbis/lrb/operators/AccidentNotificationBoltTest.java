@@ -93,7 +93,8 @@ public class AccidentNotificationBoltTest {
 					dummyShort, input[2], dummyInt));
 			} else {
 				assert (input.length == 2);
-				valueStub = valueStub.thenReturn(new AccidentTuple(input[0], dummyInt, input[1], dummyShort));
+				valueStub = valueStub.thenReturn(new AccidentTuple((short)((input[0] * 60) - 1), dummyInt, input[1],
+					dummyShort));
 			}
 		}
 		valueStub.thenReturn(null);

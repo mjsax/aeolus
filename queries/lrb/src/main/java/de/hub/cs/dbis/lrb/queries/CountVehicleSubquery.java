@@ -47,8 +47,17 @@ public class CountVehicleSubquery extends AbstractQuery {
 		new CountVehicleSubquery().parseArgumentsAndRun(args, new String[] {"vehicleCountsOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Does not have any intermediate output. Parameter {@code intermediateOutputs} is void.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
+			System.err.println("WARN: void parameter <intermediateOutputs> specified");
+		}
+		
 		builder
 			.setBolt(TopologyControl.COUNT_VEHICLES_BOLT_NAME,
 				new TimestampMerger(new CountVehiclesBolt(), PositionReport.TIME_IDX),
@@ -57,13 +66,12 @@ public class CountVehicleSubquery extends AbstractQuery {
 				SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs != null) {
-			if(outputs.length == 1) {
-				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.COUNT_VEHICLES_BOLT_NAME, TopologyControl.CAR_COUNTS_STREAM_ID);
-			} else {
-				System.err.println("<outputs>.length != 1 => ignored");
+		if(outputs != null && outputs.length > 0) {
+			if(outputs.length > 1) {
+				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
 			}
+			builder.setBolt("cnt-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+				TopologyControl.COUNT_VEHICLES_BOLT_NAME, TopologyControl.CAR_COUNTS_STREAM_ID);
 		}
 	}
 	

@@ -23,14 +23,13 @@ import de.hub.cs.dbis.aeolus.utils.TimeStampExtractor;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
-import de.hub.cs.dbis.lrb.util.Time;
 
 
 
 
 
 /**
- * {@link MinuteNumberExtractor} extracts the minute number of the input tuples as timestamps for a
+ * {@link AccInputStreamsTsExtractor} extracts the minute number of the input tuples as timestamps for a
  * {@link TimestampMerger}.<br />
  * <br />
  * It expects {@link PositionReport} tuples for input stream {@link TopologyControl#POSITION_REPORTS_STREAM_ID}. Tuples
@@ -38,15 +37,15 @@ import de.hub.cs.dbis.lrb.util.Time;
  * 
  * @author mjsax
  */
-public class MinuteNumberExtractor implements TimeStampExtractor<Tuple> {
+public class AccInputStreamsTsExtractor implements TimeStampExtractor<Tuple> {
 	private static final long serialVersionUID = -8976869891555736418L;
 	
 	@Override
 	public long getTs(Tuple tuple) {
 		if(tuple.getSourceStreamId().equals(TopologyControl.POSITION_REPORTS_STREAM_ID)) {
-			return Time.getMinute(tuple.getShort(PositionReport.TIME_IDX).longValue());
+			return tuple.getShort(PositionReport.TIME_IDX).longValue();
 		} else {
-			return tuple.getShort(AccidentTuple.MINUTE_IDX).longValue();
+			return tuple.getShort(AccidentTuple.TIME_IDX).longValue();
 		}
 	}
 }

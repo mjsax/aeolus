@@ -32,9 +32,9 @@ import de.hub.cs.dbis.lrb.util.Time;
  * {@link LavTuple} represents an intermediate result tuple; the "latest average velocity" (LAV) of a segment within the
  * last 5 minutes (ie, 'minute number'; see {@link Time#getMinute(short)}).<br />
  * <br />
- * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR, LAV
+ * It has the following attributes: TIME, XWAY, SEGMENT, DIR, LAV
  * <ul>
- * <li>MINUTE: the 'minute number' of the LAV value</li>
+ * <li>TIME: the 'minute number' (in LRB seconds) of the LAV value</li>
  * <li>XWAY: the expressway for the LAV value</li>
  * <li>SEGMENT: the segment number for the LAV value</li>
  * <li>DIR: the direction for the LAV value</li>
@@ -47,8 +47,8 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	private static final long serialVersionUID = 1726682629621494657L;
 	
 	// attribute indexes
-	/** The index of the MINUTE attribute. */
-	public final static int MINUTE_IDX = 0;
+	/** The index of the TIME attribute. */
+	public final static int TIME_IDX = 0;
 	
 	/** The index of the XWAY attribute. */
 	public final static int XWAY_IDX = 1;
@@ -69,8 +69,8 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Instantiates a new {@link LavTuple} for the given attributes.
 	 * 
-	 * @param minute
-	 *            the 'minute number' of the speed average
+	 * @param time
+	 *            the 'minute number' (in LRB seconds) of the speed average
 	 * @param xway
 	 *            the expressway the vehicle is on
 	 * @param segment
@@ -80,14 +80,14 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	 * @param lav
 	 *            the latest average velocity of a segment
 	 */
-	public LavTuple(Short minute, Integer xway, Short segment, Short direction, Integer lav) {
-		assert (minute != null);
+	public LavTuple(Short time, Integer xway, Short segment, Short direction, Integer lav) {
+		assert (time != null);
 		assert (xway != null);
 		assert (segment != null);
 		assert (direction != null);
 		assert (lav != null);
 		
-		super.add(MINUTE_IDX, minute);
+		super.add(TIME_IDX, time);
 		super.add(XWAY_IDX, xway);
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, direction);
@@ -99,12 +99,21 @@ public final class LavTuple extends Values implements ISegmentIdentifier {
 	
 	
 	/**
+	 * Returns the timestamp of this {@link LavTuple}.
+	 * 
+	 * @return the timestamp of this tuple
+	 */
+	public final Short getTime() {
+		return (Short)super.get(TIME_IDX);
+	}
+	
+	/**
 	 * Returns the 'minute number' of this {@link LavTuple}.
 	 * 
 	 * @return the 'minute number' of this tuple
 	 */
-	public final Short getMinuteNumber() {
-		return (Short)super.get(MINUTE_IDX);
+	public final short getMinuteNumber() {
+		return Time.getMinute(this.getTime().shortValue());
 	}
 	
 	/**

@@ -19,6 +19,7 @@
 package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
@@ -46,11 +47,58 @@ public class TollQuery extends AbstractQuery {
 		new TollQuery().parseArgumentsAndRun(args, new String[] {"tollNotificationsOutput", "tollAssessmentsOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Requires two specified outputs for "toll notification" and "toll assessments". Optional parameter
+	 * {@code intermediateOutputs} specifies the output of {@link AccidentDetectionSubquery},
+	 * {@link StoppedCarsSubquery}, {@link LatestAverageVelocitySubquery}, {@link AverageSpeedSubquery},
+	 * {@link AverageVehicleSpeedSubquery}, and {@link CountVehicleSubquery}.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new AccidentDetectionSubquery().addBolts(builder, null);
-		new LatestAverageVelocitySubquery().addBolts(builder, null);
-		new CountVehicleSubquery().addBolts(builder, null);
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		if(outputs == null) {
+			throw new IllegalArgumentException("Parameter <outputs> must not be null.");
+		}
+		if(outputs.length < 2) {
+			throw new IllegalArgumentException("Parameter <outputs> must provide two values.");
+		}
+		if(outputs[0] == null) {
+			throw new IllegalArgumentException("Parameter <outputs>[0] must not be null.");
+		}
+		if(outputs[1] == null) {
+			throw new IllegalArgumentException("Parameter <outputs>[1] must not be null.");
+		}
+		
+		String[] subOutputAcc = null;
+		String[] subIntermediateAcc = null;
+		String[] subOutputLav = null;
+		String[] subIntermediateLav = null;
+		String[] subOutputCount = null;
+		if(intermediateOutputs != null) {
+			if(intermediateOutputs.length > 0) {
+				subOutputAcc = new String[] {intermediateOutputs[0]};
+			}
+			if(intermediateOutputs.length > 1) {
+				subIntermediateAcc = new String[] {intermediateOutputs[1]};
+			}
+			if(intermediateOutputs.length > 2) {
+				subOutputLav = new String[] {intermediateOutputs[2]};
+			}
+			if(intermediateOutputs.length > 3) {
+				subIntermediateLav = Arrays.copyOfRange(intermediateOutputs, 3, 5);
+			}
+			if(intermediateOutputs.length > 5) {
+				subOutputCount = new String[] {intermediateOutputs[5]};
+			}
+			if(intermediateOutputs.length > 6) {
+				System.err.println("WARN: <intermediateOutputs>.length > 6 => partly ignored");
+			}
+			
+		}
+		new AccidentDetectionSubquery().addBolts(builder, subOutputAcc, subIntermediateAcc);
+		new LatestAverageVelocitySubquery().addBolts(builder, subOutputLav, subIntermediateLav);
+		new CountVehicleSubquery().addBolts(builder, subOutputCount, null);
 		
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
@@ -65,6 +113,10 @@ public class TollQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.COUNT_VEHICLES_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID)
 			.allGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID)
 			.allGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+		
+		if(outputs.length > 2) {
+			System.err.println("WARN: <outputs>.length > 2 => partly ignored");
+		}
 		
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[0]),

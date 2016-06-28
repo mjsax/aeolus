@@ -46,9 +46,26 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 		new LatestAverageVelocitySubquery().parseArgumentsAndRun(args, new String[] {"lavOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Parameter {@code intermediateOutputs} specifies the output of {@link AverageSpeedSubquery} and
+	 * {@link AverageVehicleSpeedSubquery}.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new AverageSpeedSubquery().addBolts(builder, null);
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		String[] subOutput = null;
+		String[] subIntermediate = null;
+		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
+			subOutput = new String[] {intermediateOutputs[0]};
+			if(intermediateOutputs.length > 1) {
+				subIntermediate = new String[] {intermediateOutputs[1]};
+				if(intermediateOutputs.length > 2) {
+					System.err.println("WARN: <intermediateOutputs>.length > 2 => partly ignored");
+				}
+			}
+		}
+		new AverageSpeedSubquery().addBolts(builder, subOutput, subIntermediate);
 		
 		builder
 			.setBolt(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME,
@@ -57,13 +74,12 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 			.fieldsGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs != null) {
-			if(outputs.length == 1) {
-				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
-			} else {
-				System.err.println("<outputs>.length != 1 => ignored");
+		if(outputs != null && outputs.length > 0) {
+			if(outputs.length > 1) {
+				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
 			}
+			builder.setBolt("lav-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+				TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
 		}
 	}
 }

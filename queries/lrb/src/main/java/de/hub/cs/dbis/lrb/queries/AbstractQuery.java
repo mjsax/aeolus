@@ -55,14 +55,29 @@ abstract class AbstractQuery {
 	 * @param builder
 	 *            The builder that already contains a spout and a dispatcher bolt.
 	 * @param outputs
-	 *            The output information for sinks (eg, file paths)
+	 *            The output information for sinks (ie, file paths)
 	 */
-	abstract void addBolts(TopologyBuilder builder, String[] outputs);
+	final void addBolts(TopologyBuilder builder, String[] outputs) {
+		this.addBolts(builder, outputs, null);
+	}
+	
+	
+	/**
+	 * Adds the actual processing bolts and sinks to the query.
+	 * 
+	 * @param builder
+	 *            The builder that already contains a spout and a dispatcher bolt.
+	 * @param outputs
+	 *            The output information for sinks (ie, file paths)
+	 * @param intermediateOutputs
+	 *            The output information for intermediate results (ie, file paths)
+	 */
+	abstract void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs);
 	
 	/**
 	 * Partial topology set up (adding spout and dispatcher bolt).
 	 */
-	private final StormTopology createTopology(String[] output, boolean realtime) {
+	private final StormTopology createTopology(String[] output, String[] intermediateOutputs, boolean realtime) {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		IRichSpout spout = new FileReaderSpout();
@@ -77,7 +92,7 @@ abstract class AbstractQuery {
 			.localOrShuffleGrouping(TopologyControl.SPOUT_NAME)
 			.allGrouping(TopologyControl.SPOUT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		this.addBolts(builder, output);
+		this.addBolts(builder, output, intermediateOutputs);
 		
 		return builder.createTopology();
 	}
@@ -99,6 +114,28 @@ abstract class AbstractQuery {
 	 */
 	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos) throws IOException,
 		InvalidTopologyException, AlreadyAliveException {
+		this.parseArgumentsAndRun(args, outputInfos, null);
+	}
+	
+	/**
+	 * Parsed command line arguments and executes the query.
+	 * 
+	 * @param args
+	 *            command line arguments
+	 * @param outputInfos
+	 *            expected outputs
+	 * @param intermediateOutputs
+	 *            * optional intermediate outputs
+	 * 
+	 * @throws IOException
+	 *             if the configuration file 'lrb.cfg' could not be processed
+	 * @throws InvalidTopologyException
+	 *             should never happen&mdash;otherwise there is a bug in the code
+	 * @throws AlreadyAliveException
+	 *             if the topology is already deployed
+	 */
+	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos, String[] intermediateOutputs)
+		throws IOException, InvalidTopologyException, AlreadyAliveException {
 		final Config config = new Config();
 		long runtime = -1;
 		boolean realtime = false;
@@ -138,7 +175,7 @@ abstract class AbstractQuery {
 				String line;
 				while((line = configReader.readLine()) != null) {
 					line = line.trim();
-					if(line.startsWith("#")) {
+					if(line.startsWith("#") || line.length() == 0) {
 						continue;
 					}
 					String[] tokens = line.split(":");
@@ -189,7 +226,7 @@ abstract class AbstractQuery {
 			}
 		}
 		
-		StormTopology topology = this.createTopology(outputs, realtime);
+		StormTopology topology = this.createTopology(outputs, intermediateOutputs, realtime);
 		
 		if(runtime != -1) {
 			LocalCluster lc = new LocalCluster();

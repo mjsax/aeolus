@@ -110,8 +110,8 @@ public class CountVehiclesBolt extends BaseRichBolt {
 				this.flushBuffer();
 				this.countsMap.clear();
 			}
-			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short(minute)));
 			this.currentMinute = minute;
+			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values(new Short((short)((minute * 60) - 61))));
 		}
 		
 		Set<Integer> segCnt = this.countsMap.get(this.segment);
@@ -131,8 +131,9 @@ public class CountVehiclesBolt extends BaseRichBolt {
 			SegmentIdentifier segId = entry.getKey();
 			
 			// Minute-Number, X-Way, Segment, Direction, Avg(speed)
-			this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(this.currentMinute),
-				segId.getXWay(), segId.getSegment(), segId.getDirection(), new Integer(entry.getValue().size())));
+			this.collector.emit(TopologyControl.CAR_COUNTS_STREAM_ID, new CountTuple(new Short(
+				(short)((this.currentMinute * 60) - 1)), segId.getXWay(), segId.getSegment(), segId.getDirection(),
+				new Integer(entry.getValue().size())));
 		}
 	}
 	

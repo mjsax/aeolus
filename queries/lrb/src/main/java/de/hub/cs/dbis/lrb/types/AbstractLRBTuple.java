@@ -117,9 +117,9 @@ public abstract class AbstractLRBTuple extends Values {
 	}
 	
 	/**
-	 * Returns the minute number of this {@link AbstractLRBTuple}.
+	 * Returns the 'minute number' of this {@link AbstractLRBTuple}.
 	 * 
-	 * @return the minute number of this {@link AbstractLRBTuple}
+	 * @return the 'minute number' of this {@link AbstractLRBTuple}
 	 */
 	public final short getMinuteNumber() {
 		return Time.getMinute(this.getTime().shortValue());

@@ -45,9 +45,14 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 		new AccidentDetectionSubquery().parseArgumentsAndRun(args, new String[] {"accidentsOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Optional parameter {@code intermediateOutputs} specifies the output of {@link StoppedCarsSubquery}.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
-		new StoppedCarsSubquery().addBolts(builder, null);
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		new StoppedCarsSubquery().addBolts(builder, intermediateOutputs);
 		
 		try {
 			builder
@@ -67,13 +72,15 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 			}
 		}
 		
-		if(outputs != null) {
-			if(outputs.length == 1) {
-				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
-			} else {
-				System.err.println("<outputs>.length != 1 => ignored");
+		if(outputs != null && outputs.length > 0) {
+			if(outputs.length > 1) {
+				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
 			}
+			if(outputs[0] == null) {
+				throw new IllegalArgumentException("Parameter <outputs>[0] must not be null.");
+			}
+			builder.setBolt("acc-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
 		}
 	}
 }

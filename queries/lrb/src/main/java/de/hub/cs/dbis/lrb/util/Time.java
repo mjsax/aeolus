@@ -39,7 +39,6 @@ public class Time {
 	 * @return the 'minute number' if the given timestamp
 	 */
 	public static short getMinute(long timestamp) {
-		assert (timestamp >= 0);
 		return (short)((timestamp / 60) + 1);
 	}
 	

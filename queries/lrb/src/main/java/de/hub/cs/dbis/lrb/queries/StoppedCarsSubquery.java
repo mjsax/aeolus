@@ -45,8 +45,17 @@ public class StoppedCarsSubquery extends AbstractQuery {
 		new StoppedCarsSubquery().parseArgumentsAndRun(args, new String[] {"stoppedOutput"});
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Does not have any intermediate output. Parameter {@code intermediateOutput} is void.
+	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs) {
+	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
+		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
+			System.err.println("WARN: void parameter <intermediateOutputs> specified");
+		}
+		
 		try {
 			builder
 				.setBolt(TopologyControl.STOPPED_CARS_BOLT_NAME,
@@ -65,13 +74,12 @@ public class StoppedCarsSubquery extends AbstractQuery {
 			}
 		}
 		
-		if(outputs != null) {
-			if(outputs.length == 1) {
-				builder.setBolt("sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-					TopologyControl.STOPPED_CARS_BOLT_NAME);
-			} else {
-				System.err.println("<outputs>.length != 1 => ignored");
+		if(outputs != null && outputs.length > 0) {
+			if(outputs.length > 1) {
+				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
 			}
+			builder.setBolt("stopped-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+				TopologyControl.STOPPED_CARS_BOLT_NAME);
 		}
 	}
 }

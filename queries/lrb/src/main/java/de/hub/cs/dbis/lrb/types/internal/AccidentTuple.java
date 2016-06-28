@@ -30,11 +30,11 @@ import de.hub.cs.dbis.lrb.util.Time;
 
 /**
  * {@link AccidentTuple} represents an intermediate result tuple; it reports an accident that occurred in a specific
- * segment and minute (ie, 'minute number'; see {@link Time#getMinute(short)}).<br />
+ * segment and time.<br />
  * <br />
- * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR
+ * It has the following attributes: TIME, XWAY, SEGMENT, DIR
  * <ul>
- * <li>MINUTE: the 'minute number' of the accident</li>
+ * <li>TIME: the timestamp of the accident</li>
  * <li>XWAY: the expressway in which the accident happened</li>
  * <li>SEGMENT: in which the accident happened</li>
  * <li>DIR: the direction in which the accident happened</li>
@@ -46,8 +46,8 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	private static final long serialVersionUID = -7848916337473569028L;
 	
 	// attribute indexes
-	/** The index of the MINUTE attribute. */
-	public final static int MINUTE_IDX = 0;
+	/** The index of the TIME attribute. */
+	public final static int TIME_IDX = 0;
 	
 	/** The index of the XWAY attribute. */
 	public final static int XWAY_IDX = 1;
@@ -65,8 +65,8 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Instantiates a new {@link AccidentTuple} for the given attributes.
 	 * 
-	 * @param minute
-	 *            the 'minute number' of the speed average
+	 * @param time
+	 *            the timestamp of the accident
 	 * @param xway
 	 *            the expressway the vehicle is on
 	 * @param segment
@@ -74,13 +74,13 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	 * @param direction
 	 *            the vehicle's driving direction
 	 */
-	public AccidentTuple(Short minute, Integer xway, Short segment, Short direction) {
-		assert (minute != null);
+	public AccidentTuple(Short time, Integer xway, Short segment, Short direction) {
+		assert (time != null);
 		assert (xway != null);
 		assert (segment != null);
 		assert (direction != null);
 		
-		super.add(MINUTE_IDX, minute);
+		super.add(TIME_IDX, time);
 		super.add(XWAY_IDX, xway);
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, direction);
@@ -91,12 +91,21 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	
 	
 	/**
+	 * Returns the timestamp (in LRB seconds) of this {@link AccidentTuple}.
+	 * 
+	 * @return the timestamp of this tuple
+	 */
+	public final Short getTime() {
+		return (Short)super.get(TIME_IDX);
+	}
+	
+	/**
 	 * Returns the 'minute number' of this {@link AccidentTuple}.
 	 * 
 	 * @return the 'minute number' of this tuple
 	 */
-	public final Short getMinuteNumber() {
-		return (Short)super.get(MINUTE_IDX);
+	public final short getMinuteNumber() {
+		return Time.getMinute(this.getTime().shortValue());
 	}
 	
 	/**
@@ -135,7 +144,7 @@ public final class AccidentTuple extends Values implements ISegmentIdentifier {
 	 * @return the schema of a {@link AccidentTuple}
 	 */
 	public static Fields getSchema() {
-		return new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+		return new Fields(TopologyControl.TIMESTAMP_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME);
 	}
 	

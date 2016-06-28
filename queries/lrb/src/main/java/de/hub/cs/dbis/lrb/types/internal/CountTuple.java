@@ -32,9 +32,9 @@ import de.hub.cs.dbis.lrb.util.Time;
  * {@link CountTuple} represents an intermediate result tuple; the number of vehicles in a segment within a 'minute
  * number' time frame (see {@link Time#getMinute(short)}).<br />
  * <br />
- * It has the following attributes: MINUTE, XWAY, SEGMENT, DIR, CNT
+ * It has the following attributes: TIME, XWAY, SEGMENT, DIR, CNT
  * <ul>
- * <li>MINUTE: the 'minute number' of the speed average</li>
+ * <li>TIME: the 'minute number' (in LRB seconds) of the speed average</li>
  * <li>XWAY: the expressway the vehicle is on</li>
  * <li>SEGMENT: the segment number the vehicle is in</li>
  * <li>DIR: the vehicle's driving direction</li>
@@ -47,8 +47,8 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	private static final long serialVersionUID = 2521804330216975272L;
 	
 	// attribute indexes
-	/** The index of the MINUTE attribute. */
-	public final static int MINUTE_IDX = 0;
+	/** The index of the TIME attribute. */
+	public final static int TIME_IDX = 0;
 	
 	/** The index of the XWAY attribute. */
 	public final static int XWAY_IDX = 1;
@@ -69,8 +69,8 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	/**
 	 * Instantiates a new {@link CountTuple} for the given attributes.
 	 * 
-	 * @param minute
-	 *            the 'minute number' of the speed average
+	 * @param time
+	 *            the 'minute number' (in LRB seconds) of the speed average
 	 * @param xway
 	 *            the expressway the vehicle is on
 	 * @param segment
@@ -80,14 +80,14 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	 * @param count
 	 *            the number the vehicles counted
 	 */
-	public CountTuple(Short minute, Integer xway, Short segment, Short diretion, Integer count) {
-		assert (minute != null);
+	public CountTuple(Short time, Integer xway, Short segment, Short diretion, Integer count) {
+		assert (time != null);
 		assert (xway != null);
 		assert (segment != null);
 		assert (diretion != null);
 		assert (count != null);
 		
-		super.add(MINUTE_IDX, minute);
+		super.add(TIME_IDX, time);
 		super.add(XWAY_IDX, xway);
 		super.add(SEG_IDX, segment);
 		super.add(DIR_IDX, diretion);
@@ -99,12 +99,21 @@ public final class CountTuple extends Values implements ISegmentIdentifier {
 	
 	
 	/**
+	 * Returns the timestamp of this {@link CountTuple}.
+	 * 
+	 * @return the timestamp of this tuple
+	 */
+	public final Short getTime() {
+		return (Short)super.get(TIME_IDX);
+	}
+	
+	/**
 	 * Returns the 'minute number' of this {@link CountTuple}.
 	 * 
 	 * @return the 'minute number' of this tuple
 	 */
-	public final Short getMinuteNumber() {
-		return (Short)super.get(MINUTE_IDX);
+	public final short getMinuteNumber() {
+		return Time.getMinute(this.getTime().shortValue());
 	}
 	
 	/**

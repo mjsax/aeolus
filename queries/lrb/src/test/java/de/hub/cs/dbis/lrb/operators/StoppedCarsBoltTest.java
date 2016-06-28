@@ -211,7 +211,7 @@ public class StoppedCarsBoltTest {
 		Assert.assertEquals(2, declarer.directBuffer.size());
 		
 		Assert.assertEquals(TopologyControl.ACCIDENTS_STREAM_ID, declarer.streamIdBuffer.get(0));
-		Assert.assertEquals(new Fields(TopologyControl.MINUTE_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
+		Assert.assertEquals(new Fields(TopologyControl.TIMESTAMP_FIELD_NAME, TopologyControl.XWAY_FIELD_NAME,
 			TopologyControl.SEGMENT_FIELD_NAME, TopologyControl.DIRECTION_FIELD_NAME).toList(), declarer.schemaBuffer
 			.get(0).toList());
 		Assert.assertEquals(new Boolean(false), declarer.directBuffer.get(0));

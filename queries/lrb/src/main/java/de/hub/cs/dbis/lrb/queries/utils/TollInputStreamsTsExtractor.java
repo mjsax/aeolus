@@ -28,7 +28,6 @@ import de.hub.cs.dbis.lrb.types.PositionReport;
 import de.hub.cs.dbis.lrb.types.internal.AccidentTuple;
 import de.hub.cs.dbis.lrb.types.internal.CountTuple;
 import de.hub.cs.dbis.lrb.types.internal.LavTuple;
-import de.hub.cs.dbis.lrb.util.Time;
 
 
 
@@ -47,13 +46,13 @@ public class TollInputStreamsTsExtractor implements TimeStampExtractor<Tuple> {
 	public long getTs(Tuple tuple) {
 		final String inputStreamId = tuple.getSourceStreamId();
 		if(inputStreamId.equals(TopologyControl.POSITION_REPORTS_STREAM_ID)) {
-			return Time.getMinute(tuple.getShort(PositionReport.TIME_IDX).longValue());
+			return tuple.getShort(PositionReport.TIME_IDX).longValue();
 		} else if(inputStreamId.equals(TopologyControl.ACCIDENTS_STREAM_ID)) {
-			return tuple.getShort(AccidentTuple.MINUTE_IDX).longValue();
+			return tuple.getShort(AccidentTuple.TIME_IDX).longValue();
 		} else if(inputStreamId.equals(TopologyControl.CAR_COUNTS_STREAM_ID)) {
-			return tuple.getShort(CountTuple.MINUTE_IDX).longValue();
+			return tuple.getShort(CountTuple.TIME_IDX).longValue();
 		} else if(inputStreamId.equals(TopologyControl.LAVS_STREAM_ID)) {
-			return tuple.getShort(LavTuple.MINUTE_IDX).longValue() - 1;
+			return tuple.getShort(LavTuple.TIME_IDX).longValue() - 60;
 		} else {
 			LOGGER.error("Unknown input stream: '" + inputStreamId + "' for tuple " + tuple);
 			throw new RuntimeException("Unknown input stream: '" + inputStreamId + "' for tuple " + tuple);

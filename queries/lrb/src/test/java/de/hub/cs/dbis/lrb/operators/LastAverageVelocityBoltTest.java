@@ -158,7 +158,7 @@ public class LastAverageVelocityBoltTest {
 					if(expectedFlushs == null) {
 						expectedFlushs = new LinkedList<Values>();
 					}
-					expectedFlushs.add(new Values(new Short(minute)));
+					expectedFlushs.add(new Values(new Short((short)((minute * 60) - 1))));
 					flushed = true;
 				}
 				
@@ -291,8 +291,8 @@ public class LastAverageVelocityBoltTest {
 		if(cnt == 0) {
 			return;
 		}
-		expectedResult.add(new LavTuple(new Short((short)(minute + 1)), sid.getXWay(), sid.getSegment(), sid
-			.getDirection(), new Integer((int)(sum / cnt))));
+		expectedResult.add(new LavTuple(new Short((short)(((minute + 1) * 60) - 1)), sid.getXWay(), sid.getSegment(),
+			sid.getDirection(), new Integer((int)(sum / cnt))));
 	}
 	
 	@Test

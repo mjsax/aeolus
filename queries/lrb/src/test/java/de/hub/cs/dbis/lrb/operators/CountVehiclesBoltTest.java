@@ -90,7 +90,7 @@ public class CountVehiclesBoltTest {
 		
 		final int startMinute = 1 + this.r.nextInt(5);
 		for(int m = startMinute; m < startMinute + numberOfMinutes; ++m) {
-			expectedFlushs.add(new Values(new Short((short)m)));
+			expectedFlushs.add(new Values(new Short((short)((m * 60) - 61))));
 			
 			final HashMap<SegmentIdentifier, Set<Integer>> counts = new HashMap<SegmentIdentifier, Set<Integer>>();
 			
@@ -118,13 +118,13 @@ public class CountVehiclesBoltTest {
 			}
 			
 			final int dummyIndex = expectedResult.size();
-			expectedResult.add(new Values(new Short((short)(m + 1))));
+			expectedResult.add(new Values(new Short((short)(((m + 1) * 60) - 1))));
 			
 			for(Entry<SegmentIdentifier, Set<Integer>> e : counts.entrySet()) {
 				SegmentIdentifier segId = e.getKey();
 				int count = e.getValue().size();
-				expectedResult.add(new CountTuple(new Short((short)m), segId.getXWay(), segId.getSegment(), segId
-					.getDirection(), new Integer(count)));
+				expectedResult.add(new CountTuple(new Short((short)((m * 60) - 1)), segId.getXWay(),
+					segId.getSegment(), segId.getDirection(), new Integer(count)));
 			}
 			
 			if(counts.size() > 0) {

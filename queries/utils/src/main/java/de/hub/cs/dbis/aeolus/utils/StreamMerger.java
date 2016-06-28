@@ -194,7 +194,7 @@ public class StreamMerger<T> {
 		}
 		
 		if(eachBufferFilled && minTsPartitionNumber != null) {
-			logger.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}", new Long(minTsFound),
+			logger.trace("Extract tuple min timestamp (ts, partition, tuple): {}, {}, {}", new Long(minTsFound),
 				minTsPartitionNumber, this.mergeBuffer.get(minTsPartitionNumber).getFirst());
 			this.latestTs = minTsFound;
 			return this.mergeBuffer.get(minTsPartitionNumber).removeFirst();
