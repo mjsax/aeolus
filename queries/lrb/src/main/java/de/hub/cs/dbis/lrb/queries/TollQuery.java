@@ -19,8 +19,9 @@
 package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
-import java.util.Arrays;
 
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -42,10 +43,26 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  * @author mjsax
  */
 public class TollQuery extends AbstractQuery {
+	private final AccidentDetectionSubquery accDetSubquery;
+	private final LatestAverageVelocitySubquery lavSubquery;
+	private final CountVehicleSubquery cntVehicleSubquery;
+	private final OptionSpec<String> outputNot;
+	private final OptionSpec<String> outputAss;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new TollQuery().parseArgumentsAndRun(args, new String[] {"tollNotificationsOutput", "tollAssessmentsOutput"});
+	
+	
+	public TollQuery() {
+		this.accDetSubquery = new AccidentDetectionSubquery(false);
+		this.lavSubquery = new LatestAverageVelocitySubquery(false);
+		this.cntVehicleSubquery = new CountVehicleSubquery(false);
+		
+		this.outputNot = parser.accepts("toll-output", "Bolt local path to write toll notifications.")
+			.withRequiredArg().describedAs("file").ofType(String.class).required();
+		this.outputAss = parser.accepts("toll-ass-output", "Bolt local path to write toll assessments.")
+			.withRequiredArg().describedAs("file").ofType(String.class).required();
 	}
+	
+	
 	
 	/**
 	 * {@inheritDoc}
@@ -56,49 +73,10 @@ public class TollQuery extends AbstractQuery {
 	 * {@link AverageVehicleSpeedSubquery}, and {@link CountVehicleSubquery}.
 	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(outputs == null) {
-			throw new IllegalArgumentException("Parameter <outputs> must not be null.");
-		}
-		if(outputs.length < 2) {
-			throw new IllegalArgumentException("Parameter <outputs> must provide two values.");
-		}
-		if(outputs[0] == null) {
-			throw new IllegalArgumentException("Parameter <outputs>[0] must not be null.");
-		}
-		if(outputs[1] == null) {
-			throw new IllegalArgumentException("Parameter <outputs>[1] must not be null.");
-		}
-		
-		String[] subOutputAcc = null;
-		String[] subIntermediateAcc = null;
-		String[] subOutputLav = null;
-		String[] subIntermediateLav = null;
-		String[] subOutputCount = null;
-		if(intermediateOutputs != null) {
-			if(intermediateOutputs.length > 0) {
-				subOutputAcc = new String[] {intermediateOutputs[0]};
-			}
-			if(intermediateOutputs.length > 1) {
-				subIntermediateAcc = new String[] {intermediateOutputs[1]};
-			}
-			if(intermediateOutputs.length > 2) {
-				subOutputLav = new String[] {intermediateOutputs[2]};
-			}
-			if(intermediateOutputs.length > 3) {
-				subIntermediateLav = Arrays.copyOfRange(intermediateOutputs, 3, 5);
-			}
-			if(intermediateOutputs.length > 5) {
-				subOutputCount = new String[] {intermediateOutputs[5]};
-			}
-			if(intermediateOutputs.length > 6) {
-				System.err.println("WARN: <intermediateOutputs>.length > 6 => partly ignored");
-			}
-			
-		}
-		new AccidentDetectionSubquery().addBolts(builder, subOutputAcc, subIntermediateAcc);
-		new LatestAverageVelocitySubquery().addBolts(builder, subOutputLav, subIntermediateLav);
-		new CountVehicleSubquery().addBolts(builder, subOutputCount, null);
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.accDetSubquery.addBolts(builder, options);
+		this.lavSubquery.addBolts(builder, options);
+		this.cntVehicleSubquery.addBolts(builder, options);
 		
 		builder
 			.setBolt(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
@@ -114,23 +92,27 @@ public class TollQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID)
 			.allGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs.length > 2) {
-			System.err.println("WARN: <outputs>.length > 2 => partly ignored");
-		}
-		
 		builder
-			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[0]),
+			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME,
+				new TollSink(options.valueOf(this.outputNot)),
 				OperatorParallelism.get(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
 				TopologyControl.TOLL_NOTIFICATIONS_STREAM_ID)
 			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME, new TollSink(outputs[1]),
+			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME,
+				new TollSink(options.valueOf(this.outputAss)),
 				OperatorParallelism.get(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
 				TopologyControl.TOLL_ASSESSMENTS_STREAM_ID)
 			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new TollQuery().parseArgumentsAndRun(args);
 	}
 	
 }

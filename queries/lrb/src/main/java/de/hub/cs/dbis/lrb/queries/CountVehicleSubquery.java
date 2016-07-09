@@ -20,6 +20,9 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -42,22 +45,27 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  * * @author mjsax
  */
 public class CountVehicleSubquery extends AbstractQuery {
+	private OptionSpec<String> output;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new CountVehicleSubquery().parseArgumentsAndRun(args, new String[] {"vehicleCountsOutput"});
+	
+	
+	public CountVehicleSubquery() {
+		this(true);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Does not have any intermediate output. Parameter {@code intermediateOutputs} is void.
-	 */
-	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			System.err.println("WARN: void parameter <intermediateOutputs> specified");
-		}
+	public CountVehicleSubquery(boolean required) {
+		this.output = parser.accepts("cnt-output", "Bolt local path to write car counts.").withRequiredArg()
+			.describedAs("file").ofType(String.class);
 		
+		if(required) {
+			this.output = ((ArgumentAcceptingOptionSpec<String>)this.output).required();
+		}
+	}
+	
+	
+	
+	@Override
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
 		builder
 			.setBolt(TopologyControl.COUNT_VEHICLES_BOLT_NAME,
 				new TimestampMerger(new CountVehiclesBolt(), PositionReport.TIME_IDX),
@@ -66,13 +74,16 @@ public class CountVehicleSubquery extends AbstractQuery {
 				SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.SPLIT_STREAM_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs != null && outputs.length > 0) {
-			if(outputs.length > 1) {
-				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
-			}
-			builder.setBolt("cnt-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+		if(options.has(this.output)) {
+			builder.setBolt("cnt-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
 				TopologyControl.COUNT_VEHICLES_BOLT_NAME, TopologyControl.CAR_COUNTS_STREAM_ID);
 		}
+	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new CountVehicleSubquery().parseArgumentsAndRun(args);
 	}
 	
 }

@@ -20,6 +20,9 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -40,19 +43,30 @@ import de.hub.cs.dbis.lrb.types.util.PositionIdentifier;
  * @author mjsax
  */
 public class AccidentDetectionSubquery extends AbstractQuery {
+	private final StoppedCarsSubquery stoppedCarsSubquery;
+	private OptionSpec<String> output;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new AccidentDetectionSubquery().parseArgumentsAndRun(args, new String[] {"accidentsOutput"});
+	
+	
+	public AccidentDetectionSubquery() {
+		this(true);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Optional parameter {@code intermediateOutputs} specifies the output of {@link StoppedCarsSubquery}.
-	 */
+	public AccidentDetectionSubquery(boolean required) {
+		this.stoppedCarsSubquery = new StoppedCarsSubquery(false);
+		this.output = parser.accepts("accidents-output", "Bolt local path to write detected accidents.")
+			.withRequiredArg().describedAs("file").ofType(String.class);
+		
+		if(required) {
+			this.output = ((ArgumentAcceptingOptionSpec<String>)this.output).required();
+		}
+	}
+	
+	
+	
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		new StoppedCarsSubquery().addBolts(builder, intermediateOutputs);
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.stoppedCarsSubquery.addBolts(builder, options);
 		
 		try {
 			builder
@@ -72,15 +86,16 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 			}
 		}
 		
-		if(outputs != null && outputs.length > 0) {
-			if(outputs.length > 1) {
-				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
-			}
-			if(outputs[0] == null) {
-				throw new IllegalArgumentException("Parameter <outputs>[0] must not be null.");
-			}
-			builder.setBolt("acc-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+		if(options.has(this.output)) {
+			builder.setBolt("acc-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
 				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
 		}
 	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new AccidentDetectionSubquery().parseArgumentsAndRun(args);
+	}
+	
 }

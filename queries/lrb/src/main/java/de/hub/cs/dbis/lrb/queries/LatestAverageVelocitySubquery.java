@@ -20,6 +20,9 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -41,31 +44,30 @@ import de.hub.cs.dbis.lrb.types.util.SegmentIdentifier;
  * * @author mjsax
  */
 public class LatestAverageVelocitySubquery extends AbstractQuery {
+	private final AverageSpeedSubquery avgSpdSubquery;
+	private OptionSpec<String> output;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new LatestAverageVelocitySubquery().parseArgumentsAndRun(args, new String[] {"lavOutput"});
+	
+	
+	public LatestAverageVelocitySubquery() {
+		this(true);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Parameter {@code intermediateOutputs} specifies the output of {@link AverageSpeedSubquery} and
-	 * {@link AverageVehicleSpeedSubquery}.
-	 */
-	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		String[] subOutput = null;
-		String[] subIntermediate = null;
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			subOutput = new String[] {intermediateOutputs[0]};
-			if(intermediateOutputs.length > 1) {
-				subIntermediate = new String[] {intermediateOutputs[1]};
-				if(intermediateOutputs.length > 2) {
-					System.err.println("WARN: <intermediateOutputs>.length > 2 => partly ignored");
-				}
-			}
+	public LatestAverageVelocitySubquery(boolean required) {
+		this.avgSpdSubquery = new AverageSpeedSubquery(false);
+		this.output = parser.accepts("lav-output", "Bolt local path to write latest average velocities.")
+			.withRequiredArg().describedAs("file").ofType(String.class);
+		
+		if(required) {
+			this.output = ((ArgumentAcceptingOptionSpec<String>)this.output).required();
 		}
-		new AverageSpeedSubquery().addBolts(builder, subOutput, subIntermediate);
+	}
+	
+	
+	
+	@Override
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.avgSpdSubquery.addBolts(builder, options);
 		
 		builder
 			.setBolt(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME,
@@ -74,12 +76,16 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 			.fieldsGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, SegmentIdentifier.getSchema())
 			.allGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs != null && outputs.length > 0) {
-			if(outputs.length > 1) {
-				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
-			}
-			builder.setBolt("lav-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
+		if(options.has(this.output)) {
+			builder.setBolt("lav-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
 				TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
 		}
 	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new LatestAverageVelocitySubquery().parseArgumentsAndRun(args);
+	}
+	
 }

@@ -21,7 +21,12 @@ package de.hub.cs.dbis.lrb.queries;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.LinkedList;
 
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
@@ -48,6 +53,9 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  * @author mjsax
  */
 abstract class AbstractQuery {
+	protected static final OptionParser parser = new OptionParser();
+	
+	
 	
 	/**
 	 * Adds the actual processing bolts and sinks to the query.
@@ -57,27 +65,12 @@ abstract class AbstractQuery {
 	 * @param outputs
 	 *            The output information for sinks (ie, file paths)
 	 */
-	final void addBolts(TopologyBuilder builder, String[] outputs) {
-		this.addBolts(builder, outputs, null);
-	}
-	
-	
-	/**
-	 * Adds the actual processing bolts and sinks to the query.
-	 * 
-	 * @param builder
-	 *            The builder that already contains a spout and a dispatcher bolt.
-	 * @param outputs
-	 *            The output information for sinks (ie, file paths)
-	 * @param intermediateOutputs
-	 *            The output information for intermediate results (ie, file paths)
-	 */
-	abstract void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs);
+	abstract void addBolts(TopologyBuilder builder, OptionSet options);
 	
 	/**
 	 * Partial topology set up (adding spout and dispatcher bolt).
 	 */
-	private final StormTopology createTopology(String[] output, String[] intermediateOutputs, boolean realtime) {
+	private final StormTopology createTopology(OptionSet options, boolean realtime) {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		IRichSpout spout = new FileReaderSpout();
@@ -89,10 +82,10 @@ abstract class AbstractQuery {
 		builder
 			.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0),
 				OperatorParallelism.get(TopologyControl.SPLIT_STREAM_BOLT_NAME))
-			.localOrShuffleGrouping(TopologyControl.SPOUT_NAME)
+			.shuffleGrouping(TopologyControl.SPOUT_NAME)
 			.allGrouping(TopologyControl.SPOUT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		this.addBolts(builder, output, intermediateOutputs);
+		this.addBolts(builder, options);
 		
 		return builder.createTopology();
 	}
@@ -102,8 +95,6 @@ abstract class AbstractQuery {
 	 * 
 	 * @param args
 	 *            command line arguments
-	 * @param outputInfos
-	 *            expected outputs
 	 * 
 	 * @throws IOException
 	 *             if the configuration file 'lrb.cfg' could not be processed
@@ -112,62 +103,49 @@ abstract class AbstractQuery {
 	 * @throws AlreadyAliveException
 	 *             if the topology is already deployed
 	 */
-	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos) throws IOException,
-		InvalidTopologyException, AlreadyAliveException {
-		this.parseArgumentsAndRun(args, outputInfos, null);
-	}
-	
-	/**
-	 * Parsed command line arguments and executes the query.
-	 * 
-	 * @param args
-	 *            command line arguments
-	 * @param outputInfos
-	 *            expected outputs
-	 * @param intermediateOutputs
-	 *            * optional intermediate outputs
-	 * 
-	 * @throws IOException
-	 *             if the configuration file 'lrb.cfg' could not be processed
-	 * @throws InvalidTopologyException
-	 *             should never happen&mdash;otherwise there is a bug in the code
-	 * @throws AlreadyAliveException
-	 *             if the topology is already deployed
-	 */
-	protected final void parseArgumentsAndRun(String[] args, String[] outputInfos, String[] intermediateOutputs)
-		throws IOException, InvalidTopologyException, AlreadyAliveException {
+	protected final void parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
+		AlreadyAliveException {
 		final Config config = new Config();
-		long runtime = -1;
-		boolean realtime = false;
-		int index = 0;
 		
-		checkParameters(args, index, outputInfos);
+		OptionSpec<?> realtime = parser.accepts("realtime", "Should data be ingested accoring to event-time."
+			+ " If not specified, data is ingested as fast as possible.");
+		OptionSpec<?> local = parser.accepts("local", "Local execution instead of cluster submission.");
+		OptionSpec<Long> runtime = parser.accepts("runtime", "Requires --local. Runtime until execution is stopped.")
+			.withRequiredArg().describedAs("sec").ofType(Long.class);
+		OptionSpec<String> input = parser.accepts("input", "Spout local path to input file").withRequiredArg()
+			.describedAs("file/path").ofType(String.class).required();
+		OptionSpec<Integer> highways = parser
+			.accepts(
+				"highways",
+				"Number of highways to process (L factor)."
+					+ "If not specified, --input defines a single file; otherwise, --input defines file-prefix.")
+			.withRequiredArg().describedAs("num").ofType(Integer.class);
 		
-		if(args[index].equals("--realtime")) {
-			realtime = true;
-			checkParameters(args, ++index, outputInfos);
+		final OptionSet options;
+		
+		try {
+			options = parser.parse(args);
+		} catch(OptionException e) {
+			parser.printHelpOn(System.err);
+			throw e;
 		}
 		
-		if(args[index].equals("--local")) {
-			checkParameters(args, ++index, outputInfos);
+		config.put(FileReaderSpout.INPUT_FILE_NAME, options.valueOf(input));
+		
+		if(options.has(highways)) {
+			LinkedList<String> highway = new LinkedList<String>();
+			final int lFactor = options.valueOf(highways).intValue();
 			
-			if(args.length < index + 1 + outputInfos.length + 1) {
-				showUsage(outputInfos);
+			for(int i = 0; i < lFactor; ++i) {
+				highway.add(new Integer(i) + ".dat");
 			}
-			runtime = 1000 * Long.parseLong(args[index + 1 + outputInfos.length]);
-			if(runtime < 0) {
-				System.err.println("Parameter <runtime> cannot be negative.");
-				System.exit(-1);
-			}
-		}
-		config.put(FileReaderSpout.INPUT_FILE_NAME, args[index]);
-		
-		String[] outputs = new String[outputInfos.length];
-		for(int i = 0; i < outputs.length; ++i) {
-			outputs[i] = args[index + 1 + i];
+			
+			config.put(FileReaderSpout.INPUT_FILE_SUFFIXES, highway);
 		}
 		
-		if(runtime == -1) {
+		
+		
+		if(!options.has(local)) {
 			BufferedReader configReader = null;
 			try {
 				configReader = new BufferedReader(new FileReader("lrb.cfg"));
@@ -224,15 +202,18 @@ abstract class AbstractQuery {
 					configReader.close();
 				}
 			}
+		} else if(!options.has(runtime)) {
+			System.err.println("Option --local required option --runtime.");
+			System.exit(-1);
 		}
 		
-		StormTopology topology = this.createTopology(outputs, intermediateOutputs, realtime);
+		StormTopology topology = this.createTopology(options, options.has(realtime));
 		
-		if(runtime != -1) {
+		if(options.has(local)) {
 			LocalCluster lc = new LocalCluster();
 			lc.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
 			
-			Utils.sleep(runtime);
+			Utils.sleep(1000 * options.valueOf(runtime).longValue());
 			lc.deactivate(TopologyControl.TOPOLOGY_NAME);
 			
 			Utils.sleep(10000);
@@ -241,22 +222,4 @@ abstract class AbstractQuery {
 			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
 		}
 	}
-	
-	private static void checkParameters(String[] args, int index, String[] outputInfos) {
-		if(args.length < index + 1 + outputInfos.length) {
-			showUsage(outputInfos);
-		}
-	}
-	
-	private static void showUsage(String[] outputInfos) {
-		System.err.println("Missing arguments. Usage:");
-		System.err.print("bin/storm jar jarfile.jar [--realtime] [--local] <input> ");
-		for(String out : outputInfos) {
-			System.err.print("<" + out + "> ");
-		}
-		System.err.println("[<runtime>]");
-		System.err.println("  <runtime> is only valid AND required if '--local' is specified");
-		System.exit(-1);
-	}
-	
 }

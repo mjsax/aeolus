@@ -20,6 +20,7 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.OptionSet;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -35,32 +36,28 @@ import backtype.storm.topology.TopologyBuilder;
  * * @author mjsax
  */
 public class LinearRoad extends AbstractQuery {
+	private final AccidentQuery accQuery;
+	private final TollQuery tollQuery;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new LinearRoad().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput",
-			"tollNotificationsOutput", "tollAssessmentsOutput"});
+	
+	
+	public LinearRoad() {
+		this.accQuery = new AccidentQuery();
+		this.tollQuery = new TollQuery();
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Requires three specified outputs for "accident notification", "toll notification" and "toll assessments". Does
-	 * not have any intermediate output. Parameter {@code intermediateOutput} is void.
-	 */
+	
+	
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(outputs == null) {
-			throw new IllegalArgumentException("Parameter <outputs> must not be null.");
-		}
-		if(outputs.length < 3) {
-			throw new IllegalArgumentException("Parameter <outputs> must provide three values.");
-		}
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			System.err.println("WARN: void parameter <intermediateOutputs> specified");
-		}
-		
-		new AccidentQuery().addBolts(builder, new String[] {outputs[0]});
-		new TollQuery().addBolts(builder, new String[] {outputs[1], outputs[2]});
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.accQuery.addBolts(builder, options);
+		this.tollQuery.addBolts(builder, options);
+	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new LinearRoad().parseArgumentsAndRun(args);
 	}
 	
 }

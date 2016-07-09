@@ -20,6 +20,8 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -41,41 +43,22 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  * @author mjsax
  */
 public class AccidentQuery extends AbstractQuery {
+	private final AccidentDetectionSubquery accDetectionSubquery;
+	private final OptionSpec<String> output;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new AccidentQuery().parseArgumentsAndRun(args, new String[] {"accidentNotificationsOutput"});
+	
+	
+	public AccidentQuery() {
+		this.accDetectionSubquery = new AccidentDetectionSubquery(false);
+		this.output = parser.accepts("acc-output", "Bolt local path to write accident notifications.")
+			.withRequiredArg().describedAs("file").ofType(String.class).required();
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Requires one specified output. Optional parameter {@code intermediateOutputs} specifies the output of
-	 * {@link AccidentDetectionSubquery} and {@link StoppedCarsSubquery}.
-	 */
+	
+	
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(outputs == null) {
-			throw new IllegalArgumentException("Parameter <outputs> must not be null.");
-		}
-		if(outputs.length == 0) {
-			throw new IllegalArgumentException("Parameter <outputs> must not be empty.");
-		}
-		if(outputs[0] == null) {
-			throw new IllegalArgumentException("Parameter <outputs>[0] must not be null.");
-		}
-		
-		String[] subOutput = null;
-		String[] subIntermediate = null;
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			subOutput = new String[] {intermediateOutputs[0]};
-			if(intermediateOutputs.length > 1) {
-				subIntermediate = new String[] {intermediateOutputs[1]};
-				if(intermediateOutputs.length > 2) {
-					System.err.println("WARN: <intermediateOutputs>.length > 2 => partly ignored");
-				}
-			}
-		}
-		new AccidentDetectionSubquery().addBolts(builder, subOutput, subIntermediate);
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.accDetectionSubquery.addBolts(builder, options);
 		
 		builder
 			.setBolt(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME,
@@ -87,15 +70,17 @@ public class AccidentQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID)
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
-		if(outputs.length > 1) {
-			System.err.println("WARN: <outputs>.length > 1 => partly ignored");
-		}
-		
 		builder
-			.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(outputs[0]),
+			.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(options.valueOf(this.output)),
 				OperatorParallelism.get(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME)
 			.allGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
+	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new AccidentQuery().parseArgumentsAndRun(args);
 	}
 	
 }

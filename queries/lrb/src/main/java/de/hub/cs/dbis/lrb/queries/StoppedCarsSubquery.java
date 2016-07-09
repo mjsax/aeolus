@@ -20,6 +20,9 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -40,10 +43,24 @@ import de.hub.cs.dbis.lrb.types.PositionReport;
  * @author mjsax
  */
 public class StoppedCarsSubquery extends AbstractQuery {
+	private OptionSpec<String> output;
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new StoppedCarsSubquery().parseArgumentsAndRun(args, new String[] {"stoppedOutput"});
+	
+	
+	public StoppedCarsSubquery() {
+		this(true);
 	}
+	
+	public StoppedCarsSubquery(boolean required) {
+		this.output = parser.accepts("stopped-output", "Bolt local path to write stopped cars.").withRequiredArg()
+			.describedAs("file").ofType(String.class);
+		
+		if(required) {
+			this.output = ((ArgumentAcceptingOptionSpec<String>)this.output).required();
+		}
+	}
+	
+	
 	
 	/**
 	 * {@inheritDoc}
@@ -51,11 +68,7 @@ public class StoppedCarsSubquery extends AbstractQuery {
 	 * Does not have any intermediate output. Parameter {@code intermediateOutput} is void.
 	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(intermediateOutputs != null && intermediateOutputs.length > 0) {
-			System.err.println("WARN: void parameter <intermediateOutputs> specified");
-		}
-		
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
 		try {
 			builder
 				.setBolt(TopologyControl.STOPPED_CARS_BOLT_NAME,
@@ -74,12 +87,16 @@ public class StoppedCarsSubquery extends AbstractQuery {
 			}
 		}
 		
-		if(outputs != null && outputs.length > 0) {
-			if(outputs.length > 1) {
-				System.err.println("WARN: <outputs>.length > 1 => partly ignored");
-			}
-			builder.setBolt("stopped-sink", new FileFlushSinkBolt(outputs[0])).localOrShuffleGrouping(
-				TopologyControl.STOPPED_CARS_BOLT_NAME);
+		if(options.has(this.output)) {
+			builder.setBolt("stopped-sink", new FileFlushSinkBolt(options.valueOf(this.output)))
+				.localOrShuffleGrouping(TopologyControl.STOPPED_CARS_BOLT_NAME);
 		}
 	}
+	
+	
+	
+	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+		new StoppedCarsSubquery().parseArgumentsAndRun(args);
+	}
+	
 }

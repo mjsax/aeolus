@@ -20,6 +20,7 @@ package de.hub.cs.dbis.lrb.queries;
 
 import java.io.IOException;
 
+import joptsimple.OptionSet;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.TopologyBuilder;
@@ -35,33 +36,48 @@ import backtype.storm.topology.TopologyBuilder;
  * * @author mjsax
  */
 public class LinearRoadWithAllIntermediateResults extends AbstractQuery {
+	private final AccidentQuery accQuery;
+	private final TollQuery tollQuery;
+	
+	
+	
+	public LinearRoadWithAllIntermediateResults() {
+		this.accQuery = new AccidentQuery();
+		this.tollQuery = new TollQuery();
+	}
+	
+	
+	
+	@Override
+	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+		this.accQuery.addBolts(builder, options);
+		this.tollQuery.addBolts(builder, options);
+	}
+	
+	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new LinearRoadWithAllIntermediateResults().parseArgumentsAndRun(args, new String[] {
-			"accidentNotificationsOutput", "tollNotificationsOutput", "tollAssessmentsOutput"}, new String[] {
-			"/data/mjsax/lrb/accidentsOutput.txt", "/data/mjsax/lrb/stoppedOutput.txt",
-			"/data/mjsax/lrb/lavOutput.txt", "/data/mjsax/lrb/avgSpdOutput.txt",
-			"/data/mjsax/lrb/avgVehicleSpdOutput.txt", "/data/mjsax/lrb/cntOutput.txt"});
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Requires three specified outputs for "accident notification", "toll notification" and "toll assessments".
-	 * Optional parameter {@code intermediateOutputs} specifies the output of {@link AccidentDetectionSubquery},
-	 * {@link StoppedCarsSubquery}, {@link LatestAverageVelocitySubquery}, {@link AverageSpeedSubquery},
-	 * {@link AverageVehicleSpeedSubquery}, and {@link CountVehicleSubquery}
-	 */
-	@Override
-	protected void addBolts(TopologyBuilder builder, String[] outputs, String[] intermediateOutputs) {
-		if(outputs == null) {
-			throw new IllegalArgumentException("Parameter <outputs> must not be null.");
-		}
-		if(outputs.length < 3) {
-			throw new IllegalArgumentException("Parameter <outputs> must provide three values.");
+		String[] args2 = new String[args.length + 12];
+		int i;
+		
+		for(i = 0; i < args.length; ++i) {
+			args2[i] = args[i];
 		}
 		
-		new AccidentQuery().addBolts(builder, new String[] {outputs[0]}, null);
-		new TollQuery().addBolts(builder, new String[] {outputs[1], outputs[2]}, intermediateOutputs);
+		args2[i++] = "--accidents-output";
+		args2[i++] = "/data/mjsax/lrb/accidentsOutput.txt";
+		args2[i++] = "--stopped-output";
+		args2[i++] = "/data/mjsax/lrb/stoppedOutput.txt";
+		args2[i++] = "--lav-output";
+		args2[i++] = "/data/mjsax/lrb/lavOutput.txt";
+		args2[i++] = "--avg-spd-output";
+		args2[i++] = "/data/mjsax/lrb/avgSpdOutput.txt";
+		args2[i++] = "--avg-vehicle-spd-output";
+		args2[i++] = "/data/mjsax/lrb/avgVehicleSpdOutput.txt";
+		args2[i++] = "--cnt-output";
+		args2[i++] = "/data/mjsax/lrb/cntOutput.txt";
+		
+		new LinearRoadWithAllIntermediateResults().parseArgumentsAndRun(args2);
 	}
+	
 }
