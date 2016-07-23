@@ -53,7 +53,30 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  * @author mjsax
  */
 abstract class AbstractQuery {
-	protected static final OptionParser parser = new OptionParser();
+	protected final static OptionParser parser = new OptionParser();
+	
+	private final static OptionSpec<Void> realtimeOption, localOption;
+	private final static OptionSpec<Long> runtimeOption;
+	private final static OptionSpec<String> inputOption;
+	private final static OptionSpec<Integer> highwaysOption;
+	
+	
+	
+	static {
+		realtimeOption = parser.accepts("realtime", "Should data be ingested accoring to event-time."
+			+ " If not specified, data is ingested as fast as possible.");
+		localOption = parser.accepts("local", "Local execution instead of cluster submission.");
+		runtimeOption = parser.accepts("runtime", "Requires --local. Runtime until execution is stopped.")
+			.withRequiredArg().describedAs("sec").ofType(Long.class);
+		inputOption = parser.accepts("input", "Spout local path to input file").withRequiredArg()
+			.describedAs("file/path").ofType(String.class).required();
+		highwaysOption = parser
+			.accepts(
+				"highways",
+				"Number of highways to process (L factor). "
+					+ "If not specified, --input defines a single file; otherwise, --input defines file-prefix.")
+			.withRequiredArg().describedAs("num").ofType(Integer.class);
+	}
 	
 	
 	
@@ -77,7 +100,13 @@ abstract class AbstractQuery {
 		if(realtime) {
 			spout = new DataDrivenStreamRateDriverSpout<Long>(spout, 0, TimeUnit.SECONDS);
 		}
-		builder.setSpout(TopologyControl.SPOUT_NAME, spout, OperatorParallelism.get(TopologyControl.SPOUT_NAME));
+		final Integer dop = OperatorParallelism.get(TopologyControl.SPOUT_NAME);
+		if(dop.intValue() > 1 && !options.has(highwaysOption)) {
+			throw new IllegalArgumentException(
+				"You configured a Spout parallelism greater than one, but provide only one input file "
+					+ "(this would lead to data duplication as all Spout instances read the same file).");
+		}
+		builder.setSpout(TopologyControl.SPOUT_NAME, spout, dop);
 		
 		builder
 			.setBolt(TopologyControl.SPLIT_STREAM_BOLT_NAME, new TimestampMerger(new DispatcherBolt(), 0),
@@ -105,24 +134,7 @@ abstract class AbstractQuery {
 	 */
 	protected final void parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
 		AlreadyAliveException {
-		final Config config = new Config();
-		
-		OptionSpec<?> realtime = parser.accepts("realtime", "Should data be ingested accoring to event-time."
-			+ " If not specified, data is ingested as fast as possible.");
-		OptionSpec<?> local = parser.accepts("local", "Local execution instead of cluster submission.");
-		OptionSpec<Long> runtime = parser.accepts("runtime", "Requires --local. Runtime until execution is stopped.")
-			.withRequiredArg().describedAs("sec").ofType(Long.class);
-		OptionSpec<String> input = parser.accepts("input", "Spout local path to input file").withRequiredArg()
-			.describedAs("file/path").ofType(String.class).required();
-		OptionSpec<Integer> highways = parser
-			.accepts(
-				"highways",
-				"Number of highways to process (L factor)."
-					+ "If not specified, --input defines a single file; otherwise, --input defines file-prefix.")
-			.withRequiredArg().describedAs("num").ofType(Integer.class);
-		
 		final OptionSet options;
-		
 		try {
 			options = parser.parse(args);
 		} catch(OptionException e) {
@@ -130,11 +142,14 @@ abstract class AbstractQuery {
 			throw e;
 		}
 		
-		config.put(FileReaderSpout.INPUT_FILE_NAME, options.valueOf(input));
+		final Config config = new Config();
+		config.put(FileReaderSpout.INPUT_FILE_NAME, options.valueOf(inputOption));
 		
-		if(options.has(highways)) {
+		
+		
+		if(options.has(highwaysOption)) {
 			LinkedList<String> highway = new LinkedList<String>();
-			final int lFactor = options.valueOf(highways).intValue();
+			final int lFactor = options.valueOf(highwaysOption).intValue();
 			
 			for(int i = 0; i < lFactor; ++i) {
 				highway.add(new Integer(i) + ".dat");
@@ -145,7 +160,7 @@ abstract class AbstractQuery {
 		
 		
 		
-		if(!options.has(local)) {
+		if(!options.has(localOption)) {
 			BufferedReader configReader = null;
 			try {
 				configReader = new BufferedReader(new FileReader("lrb.cfg"));
@@ -202,18 +217,18 @@ abstract class AbstractQuery {
 					configReader.close();
 				}
 			}
-		} else if(!options.has(runtime)) {
+		} else if(!options.has(runtimeOption)) {
 			System.err.println("Option --local required option --runtime.");
 			System.exit(-1);
 		}
 		
-		StormTopology topology = this.createTopology(options, options.has(realtime));
+		StormTopology topology = this.createTopology(options, options.has(realtimeOption));
 		
-		if(options.has(local)) {
+		if(options.has(localOption)) {
 			LocalCluster lc = new LocalCluster();
 			lc.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
 			
-			Utils.sleep(1000 * options.valueOf(runtime).longValue());
+			Utils.sleep(1000 * options.valueOf(runtimeOption).longValue());
 			lc.deactivate(TopologyControl.TOPOLOGY_NAME);
 			
 			Utils.sleep(10000);

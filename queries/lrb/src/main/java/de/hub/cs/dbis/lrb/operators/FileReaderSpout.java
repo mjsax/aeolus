@@ -19,6 +19,7 @@
 package de.hub.cs.dbis.lrb.operators;
 
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -78,13 +79,14 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	
 	
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
-		if(conf.get(INPUT_FILE_NAME) == null) {
-			conf.put(INPUT_FILE_NAME, this.defaultPrefix);
+		@SuppressWarnings("unchecked")
+		HashMap<Object, Object> newConf = new HashMap<Object, Object>(conf);
+		if(newConf.get(INPUT_FILE_NAME) == null) {
+			newConf.put(INPUT_FILE_NAME, this.defaultPrefix);
 		}
-		super.open(conf, context, collector);
+		super.open(newConf, context, collector);
 		
 		this.collector = collector;
 	}
