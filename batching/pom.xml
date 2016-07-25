@@ -12,6 +12,22 @@
 
   <artifactId>batching</artifactId>
 
+  <dependencies>
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>aeolus-storm-connector</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!--  test dependencies -->
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>testUtils</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -43,20 +59,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>aeolus-storm-connector</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>testUtils</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
 </project>

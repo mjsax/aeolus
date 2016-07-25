@@ -64,6 +64,8 @@
       <artifactId>storm-core</artifactId>
       <version>0.9.3</version>
     </dependency>
+
+    <!--  test dependencies  -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -258,11 +260,12 @@
   <modules>
     <module>build-tools</module>
     <module>testUtils</module>
+    <module>utils</module>
     <module>aeolus-storm-connector</module>
-    <module>queries</module>
     <module>batching</module>
     <module>monitoring</module>
     <module>optimization</module>
+    <module>queries</module>
   </modules>
 
 </project>

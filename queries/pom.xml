@@ -46,7 +46,6 @@
   </build>
 
   <modules>
-    <module>utils</module>
     <module>lrb</module>
     <module>debs</module>
   </modules>

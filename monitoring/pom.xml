@@ -12,6 +12,27 @@
 
   <artifactId>monitoring</artifactId>
 
+  <dependencies>
+      <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>batching</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+      <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>utils</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>testUtils</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -158,24 +179,4 @@
 
   </build>
 
-  <dependencies>
-      <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>batching</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-      <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>utils</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>testUtils</artifactId>
-      <version>${project.version}</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
 </project>

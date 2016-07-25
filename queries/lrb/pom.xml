@@ -15,18 +15,6 @@
   <dependencies>
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>testUtils</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>ch.qos.logback</groupId>
-          <artifactId>logback-classic</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
       <artifactId>utils</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -40,13 +28,11 @@
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
       <version>1.47</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
       <artifactId>commons-collections</artifactId>
       <version>3.2.2</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -57,6 +43,20 @@
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
       <version>5.0.2</version>
+    </dependency>
+
+    <!--  test dependencies  -->
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>testUtils</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

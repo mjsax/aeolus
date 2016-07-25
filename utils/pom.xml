@@ -6,13 +6,14 @@
 
   <parent>
     <groupId>de.hub.cs.dbis.aeolus</groupId>
-    <artifactId>queries</artifactId>
+    <artifactId>aeolus</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>utils</artifactId>
 
   <dependencies>
+    <!-- test dependencies -->
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
       <artifactId>testUtils</artifactId>
@@ -20,5 +21,22 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.googlecode.maven-java-formatter-plugin</groupId>
+        <artifactId>maven-java-formatter-plugin</artifactId>
+        <version>0.4</version>
+        <dependencies>
+          <dependency>
+            <groupId>de.hub.cs.dbis.aeolus</groupId>
+            <artifactId>build-tools</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

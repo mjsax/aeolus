@@ -48,6 +48,7 @@ import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.batching.api.InputDebatcher;
 import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
+import de.hub.cs.dbis.aeolus.bolts.ForwardBolt;
 import de.hub.cs.dbis.aeolus.monitoring.throughput.AbstractThroughputCounter;
 import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterBolt;
 import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterSpout;
@@ -55,7 +56,6 @@ import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
 import de.hub.cs.dbis.aeolus.monitoring.utils.ConfigReader;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
-import de.hub.cs.dbis.aeolus.testUtils.ForwardBolt;
 
 
 

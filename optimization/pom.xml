@@ -12,6 +12,16 @@
 
   <artifactId>optimization</artifactId>
 
+  <dependencies>
+    <!--  test dependencies -->
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>testUtils</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -45,14 +55,5 @@
 
     </plugins>
   </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>de.hub.cs.dbis.aeolus</groupId>
-      <artifactId>testUtils</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
 </project>
