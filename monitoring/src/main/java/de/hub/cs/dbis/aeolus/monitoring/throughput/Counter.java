@@ -23,11 +23,15 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
 /**
  * {@link Counter} is simple long counter.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class Counter {
 	
 	/** The value of the counter. */
 	public long counter = 0;
 	
+	@Override
+	public String toString() {
+		return "" + counter;
+	}
 }

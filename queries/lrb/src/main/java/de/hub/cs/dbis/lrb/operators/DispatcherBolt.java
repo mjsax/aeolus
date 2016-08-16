@@ -75,6 +75,7 @@ public class DispatcherBolt extends BaseRichBolt {
 	public void execute(Tuple input) {
 		if(input.getSourceStreamId().equals(TimestampMerger.FLUSH_STREAM_ID)) {
 			this.collector.emit(TimestampMerger.FLUSH_STREAM_ID, new Values((Object)null));
+			this.collector.ack(input);
 			return;
 		}
 		

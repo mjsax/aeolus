@@ -44,7 +44,7 @@ import backtype.storm.utils.Utils;
  * has value {@code 0}. Additionally, {@link IncSpout} can skip the emit step in regular intervals (by default, skipping
  * is disabled).
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 // TODO add acking/failing support
 public class IncSpout implements IRichSpout {
@@ -157,7 +157,7 @@ public class IncSpout implements IRichSpout {
 	
 	
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
 	}
 	

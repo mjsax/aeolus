@@ -34,7 +34,7 @@ import backtype.storm.tuple.Values;
  * A {@link Batch} is a buffer that stores multiple tuples (ie, {@link Values}). It requires that all tuples have the
  * same number of attributes.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class Batch extends ArrayList<BatchColumn> {
 	private final static long serialVersionUID = 4904732830895959975L;

@@ -15,6 +15,11 @@
   <dependencies>
     <dependency>
       <groupId>de.hub.cs.dbis.aeolus</groupId>
+      <artifactId>monitoring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.hub.cs.dbis.aeolus</groupId>
       <artifactId>utils</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -85,8 +90,16 @@
                 </artifactItem>
                 <artifactItem>
                   <groupId>de.hub.cs.dbis.aeolus</groupId>
+                  <artifactId>monitoring</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>false</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>de.hub.cs.dbis.aeolus</groupId>
                   <artifactId>utils</artifactId>
-                  <version>1.0-SNAPSHOT</version>
+                  <version>${project.version}</version>
                   <type>jar</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
@@ -112,7 +125,7 @@
               <includes>
                 <include>org/apache/commons/lang3/**/*.class</include>
                 <include>de/hub/cs/dbis/lrb/**/*.class</include>
-                <!--  include module "utils" -->
+                <!--  include module "monitoring" and "utils" -->
                 <include>de/hub/cs/dbis/aeolus/**/*.class</include>
               </includes>
             </configuration>

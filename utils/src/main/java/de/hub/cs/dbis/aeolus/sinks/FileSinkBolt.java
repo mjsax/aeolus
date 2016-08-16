@@ -34,7 +34,7 @@ import backtype.storm.tuple.Tuple;
  * {@link FileSinkBolt} writes all received tuples in CSV format to an output file. Each line of the output file consist
  * of a single tuple. If a tuple contains zero attributes, it is represented as {@code NULL} (in capital letters).
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class FileSinkBolt extends AbstractFileOutputBolt {
 	private final static long serialVersionUID = -3429907305973973314L;

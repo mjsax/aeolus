@@ -31,7 +31,7 @@ import backtype.storm.tuple.Values;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchTest {
 	private long seed;

@@ -25,7 +25,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.topology.TopologyBuilder;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.operators.LatestAverageVelocityBolt;
@@ -66,7 +66,7 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 	
 	
 	@Override
-	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+	protected void addBolts(MonitoringTopoloyBuilder builder, OptionSet options) {
 		this.avgSpdSubquery.addBolts(builder, options);
 		
 		builder
@@ -77,7 +77,7 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 			.allGrouping(TopologyControl.AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		if(options.has(this.output)) {
-			builder.setBolt("lav-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
+			builder.setSink("lav-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
 				TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TopologyControl.LAVS_STREAM_ID);
 		}
 	}
@@ -85,7 +85,7 @@ public class LatestAverageVelocitySubquery extends AbstractQuery {
 	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new LatestAverageVelocitySubquery().parseArgumentsAndRun(args);
+		System.exit(new LatestAverageVelocitySubquery().parseArgumentsAndRun(args));
 	}
 	
 }

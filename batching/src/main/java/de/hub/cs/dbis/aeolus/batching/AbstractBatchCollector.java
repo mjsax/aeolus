@@ -49,7 +49,7 @@ import backtype.storm.utils.Utils;
  * {@link AbstractBatchCollector} uses {@code de.hub.cs.dbis.aeolus.batching.StormConnector} which is provided as
  * jar-file. This jar file need to be build manually (see folder aeolus/aeolus-storm-connector).
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public abstract class AbstractBatchCollector {
 	protected final static Logger logger = LoggerFactory.getLogger(AbstractBatchCollector.class);

@@ -29,7 +29,7 @@ import backtype.storm.tuple.Values;
  * {@link SpoutThroughputCounter} reports statistical values to a regular stream in a topology using an
  * {@link SpoutOutputCollector}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class SpoutThroughputCounter extends AbstractThroughputCounter {
 	
@@ -49,9 +49,11 @@ class SpoutThroughputCounter extends AbstractThroughputCounter {
 	 *            The output collector for emitting statistical values.
 	 * @param reportStream
 	 *            The ID of the statistical report stream.
+	 * @param taskId
+	 *            The task ID.
 	 */
-	public SpoutThroughputCounter(SpoutOutputCollector collector, String reportStream) {
-		super(false);
+	public SpoutThroughputCounter(SpoutOutputCollector collector, String reportStream, int taskId) {
+		super(false, taskId);
 		this.collector = collector;
 		this.reportStream = reportStream;
 	}

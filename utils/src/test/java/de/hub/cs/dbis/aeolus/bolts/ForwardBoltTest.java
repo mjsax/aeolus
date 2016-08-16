@@ -44,7 +44,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class ForwardBoltTest {

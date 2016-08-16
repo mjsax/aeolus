@@ -49,9 +49,9 @@ import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.batching.api.InputDebatcher;
 import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 import de.hub.cs.dbis.aeolus.bolts.ForwardBolt;
-import de.hub.cs.dbis.aeolus.monitoring.throughput.AbstractThroughputCounter;
-import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterBolt;
-import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputCounterSpout;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
+import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputBolt;
+import de.hub.cs.dbis.aeolus.monitoring.throughput.ThroughputSpout;
 import de.hub.cs.dbis.aeolus.monitoring.utils.AeolusConfig;
 import de.hub.cs.dbis.aeolus.monitoring.utils.ConfigReader;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
@@ -64,7 +64,7 @@ import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
 /**
  * TODO
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class MeasureOutputDataRate {
 	private final static Logger logger = LoggerFactory.getLogger(MeasureOutputDataRate.class);
@@ -190,7 +190,7 @@ public class MeasureOutputDataRate {
 			TopologyBuilder builder = new TopologyBuilder();
 			
 			// spout
-			IRichSpout spout = new ThroughputCounterSpout(new FixedStreamRateDriverSpout(new SchemaSpout(), dataRate),
+			IRichSpout spout = new ThroughputSpout(new FixedStreamRateDriverSpout(new SchemaSpout(), dataRate),
 				interval);
 			if(batchSize > 0) {
 				HashMap<String, Integer> batchSizes = new HashMap<String, Integer>();
@@ -200,7 +200,7 @@ public class MeasureOutputDataRate {
 			builder.setSpout(spoutId, spout);
 			
 			// sink
-			IRichBolt sink = new ThroughputCounterBolt(new ForwardBolt(), interval, true);
+			IRichBolt sink = new ThroughputBolt(new ForwardBolt(), interval, true);
 			if(batchSize > 0) {
 				sink = new InputDebatcher(sink);
 			}
@@ -208,9 +208,9 @@ public class MeasureOutputDataRate {
 			
 			// statistics
 			builder.setBolt(spoutStatisticsId, new FileFlushSinkBolt(spoutStatsFile)).shuffleGrouping(spoutId,
-				AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+				MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM);
 			builder.setBolt(sinkStatisticsId, new FileFlushSinkBolt(sinkStatsFile)).shuffleGrouping(sinkId,
-				AbstractThroughputCounter.DEFAULT_STATS_STREAM);
+				MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM);
 			
 			stormConfig.setNumWorkers(4);
 			
@@ -267,7 +267,8 @@ public class MeasureOutputDataRate {
 	 * Prints a help dialog to stdout.
 	 */
 	private static void printHelp() {
-		System.out.println("MeassureOutputDateRate support the following flag:");
+		System.out.println("MeassureOutputDateRate start or kill the benchmark topology.");
+		System.out.println("It supports the following flags:");
 		System.out.println(" -h | --help\tshows this help");
 		System.out.println(" -c <filename>\tsets an alternative Aeolus configuration file");
 		System.out

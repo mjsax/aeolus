@@ -26,7 +26,7 @@ import java.util.List;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TimestampComperator implements Comparator<List<Object>> {
 	@Override

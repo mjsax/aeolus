@@ -57,7 +57,7 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(StormConnector.class)

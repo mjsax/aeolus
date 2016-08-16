@@ -85,7 +85,6 @@ public class DailyExpenditureBolt extends BaseRichBolt {
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
-		@SuppressWarnings("unchecked")
 		String tollDataStoreClass = (String)conf.get(Helper.TOLL_DATA_STORE_CONF_KEY);
 		try {
 			this.dataStore = (TollDataStore)Class.forName(tollDataStoreClass).newInstance();

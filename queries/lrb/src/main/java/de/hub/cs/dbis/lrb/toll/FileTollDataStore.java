@@ -89,9 +89,10 @@ public class FileTollDataStore implements TollDataStore {
 	
 	@Override
 	public Integer retrieveToll(int xWay, int day, int vehicleIdentifier) {
+		ObjectInputStream objectInputStream = null;
 		try {
 			FileInputStream is = new FileInputStream(this.histFile);
-			ObjectInputStream objectInputStream = new ObjectInputStream(is);
+			objectInputStream = new ObjectInputStream(is);
 			Object nextObject = objectInputStream.readObject();
 			while(nextObject != null) {
 				TollEntry next = (TollEntry)nextObject;
@@ -105,6 +106,14 @@ public class FileTollDataStore implements TollDataStore {
 			throw new RuntimeException(ex);
 		} catch(ClassNotFoundException ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			if(objectInputStream != null) {
+				try {
+					objectInputStream.close();
+				} catch(IOException e) {
+					LOG.error("Could not close file input stream of " + this.histFile, e);
+				}
+			}
 		}
 		return null;
 	}

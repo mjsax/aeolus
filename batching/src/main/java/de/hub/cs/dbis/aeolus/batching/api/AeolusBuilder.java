@@ -37,7 +37,7 @@ import backtype.storm.topology.TopologyBuilder;
  * {@link AeolusBuilder} allows to specify an output batch size for each Spout/Bolt that is added to the topology. It
  * automatically inserts wrappers that batch the output and debatch the input if required.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class AeolusBuilder extends TopologyBuilder {
 	

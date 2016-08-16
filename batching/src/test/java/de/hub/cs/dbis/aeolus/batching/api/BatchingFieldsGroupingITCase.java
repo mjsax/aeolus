@@ -37,7 +37,7 @@ import de.hub.cs.dbis.aeolus.testUtils.RandomSpout;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchingFieldsGroupingITCase {
 	private long seed;

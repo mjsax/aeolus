@@ -29,7 +29,7 @@ import backtype.storm.tuple.Values;
  * {@link BoltThroughputCounter} reports statistical values to a regular stream in a topology using an
  * {@link OutputCollector}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class BoltThroughputCounter extends AbstractThroughputCounter {
 	
@@ -51,9 +51,11 @@ class BoltThroughputCounter extends AbstractThroughputCounter {
 	 *            The ID of the statistical report stream.
 	 * @param inputOrOutput
 	 *            Indicates if input ({@code true}) or output ({@code false}) streams are monitored.
+	 * @param taskId
+	 *            The task ID.
 	 */
-	public BoltThroughputCounter(OutputCollector collector, String reportStream, boolean inputOrOutput) {
-		super(inputOrOutput);
+	public BoltThroughputCounter(OutputCollector collector, String reportStream, boolean inputOrOutput, int taskId) {
+		super(inputOrOutput, taskId);
 		this.collector = collector;
 		this.reportStream = reportStream;
 	}

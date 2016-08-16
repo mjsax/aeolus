@@ -23,7 +23,7 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
 /**
  * {@link BoltInputReportingThread} reports the statistics, collected by a {@link BoltThroughputCounter}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class BoltInputReportingThread extends AbstractReportingThread {
 	

@@ -44,7 +44,7 @@ import backtype.storm.utils.Utils;
  * attributes can be generated (with names {@code a} to {@code j}). The generated numbers for each attribute are between
  * {@code 1} and {@code maxValue} (both inclusive).
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 // TODO add acking/failing support
 public class RandomSpout implements IRichSpout {
@@ -146,7 +146,7 @@ public class RandomSpout implements IRichSpout {
 	
 	
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
 	}
 	

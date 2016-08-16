@@ -32,7 +32,7 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class TestDeclarerTest {

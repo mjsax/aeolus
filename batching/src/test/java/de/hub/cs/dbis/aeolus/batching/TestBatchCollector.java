@@ -32,7 +32,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestBatchCollector extends AbstractBatchCollector {
 	public final Map<String, List<Integer>> taskBuffer = new HashMap<String, List<Integer>>();

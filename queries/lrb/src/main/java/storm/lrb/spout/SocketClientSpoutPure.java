@@ -84,7 +84,6 @@ public class SocketClientSpoutPure extends BaseRichSpout {
 	 * {@inheritDoc }
 	 */
 	@Override
-	@SuppressWarnings("SleepWhileInLoop")
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
 		

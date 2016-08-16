@@ -31,7 +31,7 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestSpout implements IRichSpout {
 	private static final long serialVersionUID = -1921056443700378222L;

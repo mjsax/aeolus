@@ -33,7 +33,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * {@link FixedStreamRateDriverSpout} wraps a working spout (with high output rate) and assures a stable (lower) output
  * data rate. In order to simulate that the working spout is working, busy wait strategy is used.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class FixedStreamRateDriverSpout implements IRichSpout {
 	private final static long serialVersionUID = 5846769281188227304L;

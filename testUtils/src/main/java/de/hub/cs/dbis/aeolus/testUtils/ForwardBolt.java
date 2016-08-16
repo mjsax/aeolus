@@ -43,7 +43,7 @@ import backtype.storm.utils.Utils;
  * tuples must have the same schema if it is not used as a data sink. {@link ForwardBolt} acknowledges all forwarded
  * tuples.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 // TODO add .emitDirect(...) support
 public class ForwardBolt implements IRichBolt {
@@ -97,7 +97,7 @@ public class ForwardBolt implements IRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 	}
 	

@@ -28,22 +28,23 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 
 
 
 
 
 /**
- * {@link ThroughputCounterBolt} counts the number of received and emitted tuples and reports the count in regular
- * intervals. The counts are grouped by stream ID and and overall count is reported, too.<br />
+ * {@link ThroughputBolt} counts the number of received and emitted tuples and reports the count in regular intervals.
+ * The counts are grouped by stream ID and and overall count is reported, too.<br />
  * <br />
  * Internally, it uses {@link BoltThroughputCounter} for input and output streams.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
-public class ThroughputCounterBolt implements IRichBolt {
+public class ThroughputBolt implements IRichBolt {
 	private final static long serialVersionUID = -2588575856564324599L;
-	private final static Logger logger = LoggerFactory.getLogger(ThroughputCounterBolt.class);
+	private final static Logger logger = LoggerFactory.getLogger(ThroughputBolt.class);
 	
 	/** The original user bolt. */
 	private IRichBolt userBolt;
@@ -69,20 +70,20 @@ public class ThroughputCounterBolt implements IRichBolt {
 	
 	
 	/**
-	 * Instantiates a new {@link ThroughputCounterBolt} that report the throughput of the given (non-sink) bolt to the
-	 * default report stream {@link AbstractThroughputCounter#DEFAULT_STATS_STREAM}.
+	 * Instantiates a new {@link ThroughputBolt} that report the throughput of the given (non-sink) bolt to the default
+	 * report stream {@link MonitoringTopoloyBuilder#DEFAULT_THROUGHPUT_STREAM}.
 	 * 
 	 * @param userBolt
 	 *            The user bolt to be monitored.
 	 * @param interval
 	 *            The reporting interval in milliseconds.
 	 */
-	public ThroughputCounterBolt(IRichBolt userBolt, long interval) {
-		this(userBolt, interval, AbstractThroughputCounter.DEFAULT_STATS_STREAM, false);
+	public ThroughputBolt(IRichBolt userBolt, long interval) {
+		this(userBolt, interval, MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM, false);
 	}
 	
 	/**
-	 * Instantiates a new {@link ThroughputCounterBolt} that report the throughput of the given (non-sink) bolt to the
+	 * Instantiates a new {@link ThroughputBolt} that report the throughput of the given (non-sink) bolt to the
 	 * specified stream.
 	 * 
 	 * @param userBolt
@@ -92,13 +93,13 @@ public class ThroughputCounterBolt implements IRichBolt {
 	 * @param reportStream
 	 *            The name of the report stream.
 	 */
-	public ThroughputCounterBolt(IRichBolt userBolt, long interval, String reportStream) {
+	public ThroughputBolt(IRichBolt userBolt, long interval, String reportStream) {
 		this(userBolt, interval, reportStream, false);
 	}
 	
 	/**
-	 * Instantiates a new {@link ThroughputCounterBolt} that report the throughput of the given bolt to the default
-	 * report stream {@link AbstractThroughputCounter#DEFAULT_STATS_STREAM}. For sinks, output stream reporting is
+	 * Instantiates a new {@link ThroughputBolt} that report the throughput of the given bolt to the default report
+	 * stream {@link MonitoringTopoloyBuilder#DEFAULT_THROUGHPUT_STREAM}. For sinks, output stream reporting is
 	 * disabled.
 	 * 
 	 * @param userBolt
@@ -108,13 +109,13 @@ public class ThroughputCounterBolt implements IRichBolt {
 	 * @param isSink
 	 *            Indicates if monitored bolt is a sink or not.
 	 */
-	public ThroughputCounterBolt(IRichBolt userBolt, long interval, boolean isSink) {
-		this(userBolt, interval, AbstractThroughputCounter.DEFAULT_STATS_STREAM, isSink);
+	public ThroughputBolt(IRichBolt userBolt, long interval, boolean isSink) {
+		this(userBolt, interval, MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM, isSink);
 	}
 	
 	/**
-	 * Instantiates a new {@link ThroughputCounterBolt} that report the throughput of the given bolt to the specified
-	 * stream. For sinks, output stream reporting is disabled.
+	 * Instantiates a new {@link ThroughputBolt} that report the throughput of the given bolt to the specified stream.
+	 * For sinks, output stream reporting is disabled.
 	 * 
 	 * @param userBolt
 	 *            The user bolt to be monitored.
@@ -125,7 +126,7 @@ public class ThroughputCounterBolt implements IRichBolt {
 	 * @param isSink
 	 *            Indicates if monitored bolt is a sink or not.
 	 */
-	public ThroughputCounterBolt(IRichBolt userBolt, long interval, String reportStream, boolean isSink) {
+	public ThroughputBolt(IRichBolt userBolt, long interval, String reportStream, boolean isSink) {
 		this.userBolt = userBolt;
 		this.interval = interval;
 		this.reportStream = reportStream;
@@ -136,12 +137,13 @@ public class ThroughputCounterBolt implements IRichBolt {
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
-		this.inputCounter = new BoltThroughputCounter(collector, this.reportStream, true);
+		final int taskId = context.getThisTaskId();
+		this.inputCounter = new BoltThroughputCounter(collector, this.reportStream, true, taskId);
 		this.inputReporter = new BoltInputReportingThread(this.inputCounter, this.interval);
 		this.inputReporter.start();
 		
 		if(!this.isSink) {
-			ThroughputCounterOutputCollector col = new ThroughputCounterOutputCollector(collector, this.reportStream);
+			ThroughputOutputCollector col = new ThroughputOutputCollector(collector, this.reportStream, taskId);
 			collector = col;
 			
 			this.outputReporter = new BoltOutputReportingThread(col, this.interval);

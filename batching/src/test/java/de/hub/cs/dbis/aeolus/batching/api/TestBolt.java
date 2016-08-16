@@ -31,7 +31,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestBolt implements IRichBolt {
 	private static final long serialVersionUID = 7760258756833691927L;

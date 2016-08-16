@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link ConfigReader} reads an Aeolus configuration from a plain text file.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class ConfigReader {
 	private final static Logger logger = LoggerFactory.getLogger(ConfigReader.class);

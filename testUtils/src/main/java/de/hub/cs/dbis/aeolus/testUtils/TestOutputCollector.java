@@ -31,7 +31,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestOutputCollector implements IOutputCollector {
 	public HashMap<String, List<List<Object>>> output = new HashMap<String, List<List<Object>>>();

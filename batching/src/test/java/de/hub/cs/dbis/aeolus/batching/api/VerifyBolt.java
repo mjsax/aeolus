@@ -40,7 +40,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class VerifyBolt implements IRichBolt {
 	private final static long serialVersionUID = -2047329782139913124L;
@@ -72,7 +72,7 @@ public class VerifyBolt implements IRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 		this.taskId = new Integer(context.getThisTaskId());
 	}

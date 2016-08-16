@@ -39,7 +39,7 @@ import backtype.storm.tuple.Tuple;
  * {@link ResultBolt} accumulates all received tuples and emits no tuples. {@link ResultBolt} acknowledges all received
  * tuples.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class ResultBolt implements IRichBolt {
 	private final static long serialVersionUID = 7985730498618052164L;
@@ -54,7 +54,7 @@ public class ResultBolt implements IRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 	}
 	

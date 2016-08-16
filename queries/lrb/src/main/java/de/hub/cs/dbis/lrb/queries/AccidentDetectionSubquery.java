@@ -25,7 +25,7 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.topology.TopologyBuilder;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.operators.AccidentDetectionBolt;
@@ -65,7 +65,7 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 	
 	
 	@Override
-	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+	protected void addBolts(MonitoringTopoloyBuilder builder, OptionSet options) {
 		this.stoppedCarsSubquery.addBolts(builder, options);
 		
 		try {
@@ -87,7 +87,7 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 		}
 		
 		if(options.has(this.output)) {
-			builder.setBolt("acc-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
+			builder.setSink("acc-sink", new FileFlushSinkBolt(options.valueOf(this.output))).localOrShuffleGrouping(
 				TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TopologyControl.ACCIDENTS_STREAM_ID);
 		}
 	}
@@ -95,7 +95,7 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new AccidentDetectionSubquery().parseArgumentsAndRun(args);
+		System.exit(new AccidentDetectionSubquery().parseArgumentsAndRun(args));
 	}
 	
 }

@@ -26,7 +26,7 @@ import java.util.Map;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class TestOrderedFileInputSpout extends AbstractOrderedFileInputSpout {
 	private final static long serialVersionUID = -5336858069313450395L;

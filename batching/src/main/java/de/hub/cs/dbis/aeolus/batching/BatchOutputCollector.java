@@ -41,7 +41,7 @@ import de.hub.cs.dbis.aeolus.batching.api.BoltOutputBatcher;
  * {@link BatchOutputCollector} is used by {@link BoltOutputBatcher} to capture all calls to the original provided
  * {@link OutputCollector}. It used {@link BoltBatchCollectorImpl} to buffer all emitted tuples in batches.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchOutputCollector extends OutputCollector {
 	final static Logger logger = LoggerFactory.getLogger(BatchOutputCollector.class);

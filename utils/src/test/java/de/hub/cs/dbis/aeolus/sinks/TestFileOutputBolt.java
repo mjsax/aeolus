@@ -25,7 +25,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class TestFileOutputBolt extends AbstractFileOutputBolt {
 	private final static long serialVersionUID = -956984089329568377L;

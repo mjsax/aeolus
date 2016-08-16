@@ -43,7 +43,7 @@ import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
  * <br />
  * <strong>CAUTION:</strong>Tuple acking, failing, and anchoring is currently not supported.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BoltOutputBatcher implements IRichBolt {
 	private final static long serialVersionUID = 6453060658895879104L;

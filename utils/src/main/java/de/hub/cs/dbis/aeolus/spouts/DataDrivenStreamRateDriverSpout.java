@@ -37,7 +37,7 @@ import backtype.storm.topology.OutputFieldsDeclarer;
  * The timestamp attribute is expected to be of type {@link Number}.
  * 
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 // TODO: add support to specify timestamp attribute by name
 public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichSpout {
@@ -63,7 +63,7 @@ public class DataDrivenStreamRateDriverSpout<T extends Number> implements IRichS
 	/**
 	 * The time unit of the used timestamp.
 	 * 
-	 * @author Matthias J. Sax
+	 * @author mjsax
 	 */
 	public enum TimeUnit {
 		SECONDS(1000 * 1000 * 1000), MICROSECONDS(1000 * 1000), MILLISECONDS(1000), NANOSECONDS(1);
