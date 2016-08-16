@@ -37,7 +37,7 @@ import backtype.storm.tuple.Tuple;
  * {@link TimestampOrderChecker} is a wrapper for bolts that checks if incoming tuples are ordered by their timestamp
  * attribute. If an out-of-order tuple is detected, a log error message is generated.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TimestampOrderChecker implements IRichBolt {
 	private final static long serialVersionUID = -6266187713977343965L;

@@ -46,7 +46,7 @@ import de.hub.cs.dbis.aeolus.batching.BatchColumn;
  * <br />
  * <strong>CAUTION:</strong>Tuple acking, failing, and anchoring is currently not supported.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class InputDebatcher implements IRichBolt {
 	private final static long serialVersionUID = 7781347435499103691L;

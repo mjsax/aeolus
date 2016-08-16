@@ -25,8 +25,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.operators.StoppedCarsBolt;
@@ -68,7 +68,7 @@ public class StoppedCarsSubquery extends AbstractQuery {
 	 * Does not have any intermediate output. Parameter {@code intermediateOutput} is void.
 	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+	protected void addBolts(MonitoringTopoloyBuilder builder, OptionSet options) {
 		try {
 			builder
 				.setBolt(TopologyControl.STOPPED_CARS_BOLT_NAME,
@@ -88,7 +88,7 @@ public class StoppedCarsSubquery extends AbstractQuery {
 		}
 		
 		if(options.has(this.output)) {
-			builder.setBolt("stopped-sink", new FileFlushSinkBolt(options.valueOf(this.output)))
+			builder.setSink("stopped-sink", new FileFlushSinkBolt(options.valueOf(this.output)))
 				.localOrShuffleGrouping(TopologyControl.STOPPED_CARS_BOLT_NAME);
 		}
 	}
@@ -96,7 +96,7 @@ public class StoppedCarsSubquery extends AbstractQuery {
 	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new StoppedCarsSubquery().parseArgumentsAndRun(args);
+		System.exit(new StoppedCarsSubquery().parseArgumentsAndRun(args));
 	}
 	
 }

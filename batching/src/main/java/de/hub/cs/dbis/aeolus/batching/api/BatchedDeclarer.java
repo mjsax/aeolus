@@ -39,7 +39,7 @@ import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
  * (except for direct- and custom-grouping) in order to connect to the direct stream that is declares by
  * {@link SpoutOutputBatcher} or {@link BoltOutputBatcher}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class BatchedDeclarer implements BoltDeclarer {
 	/**

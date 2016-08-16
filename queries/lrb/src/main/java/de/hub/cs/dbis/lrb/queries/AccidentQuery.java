@@ -24,8 +24,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.operators.AccidentNotificationBolt;
 import de.hub.cs.dbis.lrb.operators.AccidentSink;
@@ -57,7 +57,7 @@ public class AccidentQuery extends AbstractQuery {
 	
 	
 	@Override
-	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+	protected void addBolts(MonitoringTopoloyBuilder builder, OptionSet options) {
 		this.accDetectionSubquery.addBolts(builder, options);
 		
 		builder
@@ -71,7 +71,7 @@ public class AccidentQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.ACCIDENT_DETECTION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(options.valueOf(this.output)),
+			.setSink(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME, new AccidentSink(options.valueOf(this.output)),
 				OperatorParallelism.get(TopologyControl.ACCIDENT_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME)
 			.allGrouping(TopologyControl.ACCIDENT_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
@@ -80,7 +80,7 @@ public class AccidentQuery extends AbstractQuery {
 	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new AccidentQuery().parseArgumentsAndRun(args);
+		System.exit(new AccidentQuery().parseArgumentsAndRun(args));
 	}
 	
 }

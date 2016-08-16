@@ -32,7 +32,7 @@ import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
  * forwarding, it extract the timestamp attribute value from the currently emitted tuple. The timestamp attribute is
  * expected to be of type {@link Number} and is stored as {@code long}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class DataDrivenStreamRateDriverCollector<T extends Number> extends SpoutOutputCollector {
 	

@@ -43,12 +43,9 @@ import backtype.storm.tuple.Values;
  * <em>respectively. Additionally, the stream IDs</em> {@code in} <em>and</em> {@code out}
  * <em>are used for the counters over all incoming or outgoing streams.</em>
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
-public abstract class AbstractThroughputCounter {
-	
-	/** The default ID of the report stream. */
-	public final static String DEFAULT_STATS_STREAM = "aeolus::throughput";
+abstract class AbstractThroughputCounter {
 	
 	/** The name of the timestamp attribute. */
 	public final static String TS_ATTRIBUTE = "ts";
@@ -56,11 +53,17 @@ public abstract class AbstractThroughputCounter {
 	/** The name of the stream ID attribute. */
 	public final static String STREAM_ID_ATTRIBUTE = "streamId";
 	
+	/** The name of the task ID attribute. */
+	public final static String TASK_ID_ATTRIBUTE = "taskId";
+	
 	/** The name of the overall count attribute. */
 	public final static String COUNT_ATTRIBUTE = "count";
 	
 	/** The name of the delta count attribute. */
 	public final static String DELTA_ATTRIBUTE = "delta";
+	
+	/** The name of the throughput attribute. */
+	public final static String THROUGHPUT_ATTRIBUTE = "throughput";
 	
 	/** The index of the timestamp attribute. */
 	public final static int TS_INDEX = 0;
@@ -82,6 +85,9 @@ public abstract class AbstractThroughputCounter {
 	 */
 	private final boolean inputOrOutput;
 	
+	/** The ID of the task reporting the metric. */
+	private final Integer taskId;
+	
 	/** Holds the overall count per stream. */
 	private final HashMap<String, Counter> counter = new HashMap<String, Counter>();
 	
@@ -98,9 +104,12 @@ public abstract class AbstractThroughputCounter {
 	 * 
 	 * @param inputOrOutput
 	 *            Indicates if input ({@code true}) or output ({@code false}) streams are monitored.
+	 * @param taskId
+	 *            The task ID.
 	 */
-	public AbstractThroughputCounter(boolean inputOrOutput) {
+	public AbstractThroughputCounter(boolean inputOrOutput, int taskId) {
 		this.inputOrOutput = inputOrOutput;
+		this.taskId = taskId;
 	}
 	
 	
@@ -164,7 +173,7 @@ public abstract class AbstractThroughputCounter {
 			}
 			c.counter += delta.counter;
 			overallDelta += delta.counter;
-			this.doEmit(new Values(new Long(ts), streamId, new Long(c.counter),
+			this.doEmit(new Values(new Long(ts), streamId, taskId, new Long(c.counter), new Long(delta.counter),
 				new Long((long)(delta.counter / factor))));
 			
 			count.setValue(new Counter());
@@ -178,7 +187,8 @@ public abstract class AbstractThroughputCounter {
 			id = "out";
 		}
 		
-		this.doEmit(new Values(new Long(ts), id, new Long(this.overallCount), new Long((long)(overallDelta / factor))));
+		this.doEmit(new Values(new Long(ts), id, taskId, new Long(this.overallCount), new Long(overallDelta), new Long(
+			(long)(overallDelta / factor))));
 	}
 	
 	/**
@@ -199,8 +209,8 @@ public abstract class AbstractThroughputCounter {
 	 *            The declarer object the report stream is declared to.
 	 */
 	static void declareStatsStream(String reportStream, OutputFieldsDeclarer declarer) {
-		declarer.declareStream(reportStream, new Fields(TS_ATTRIBUTE, STREAM_ID_ATTRIBUTE, COUNT_ATTRIBUTE,
-			DELTA_ATTRIBUTE));
+		declarer.declareStream(reportStream, new Fields(TS_ATTRIBUTE, STREAM_ID_ATTRIBUTE, TASK_ID_ATTRIBUTE,
+			COUNT_ATTRIBUTE, DELTA_ATTRIBUTE, THROUGHPUT_ATTRIBUTE));
 	}
 	
 }

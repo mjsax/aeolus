@@ -28,12 +28,11 @@ import backtype.storm.utils.Utils;
 
 
 /**
- * {@link ThroughputCounterSpoutOutputCollector} wraps a spout output collector to monitor the output streams of a
- * spout.
+ * {@link ThroughputSpoutOutputCollector} wraps a spout output collector to monitor the output streams of a spout.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
-class ThroughputCounterSpoutOutputCollector extends SpoutOutputCollector {
+class ThroughputSpoutOutputCollector extends SpoutOutputCollector {
 	
 	/** The internally used counter. */
 	private SpoutThroughputCounter counter;
@@ -41,16 +40,18 @@ class ThroughputCounterSpoutOutputCollector extends SpoutOutputCollector {
 	
 	
 	/**
-	 * Instantiates a new {@link ThroughputCounterSpoutOutputCollector}.
+	 * Instantiates a new {@link ThroughputSpoutOutputCollector}.
 	 * 
 	 * @param collector
 	 *            The original output collector.
 	 * @param reportStream
 	 *            The ID of the report stream.
+	 * @param taskId
+	 *            The task ID.
 	 */
-	public ThroughputCounterSpoutOutputCollector(SpoutOutputCollector collector, String reportStream) {
+	public ThroughputSpoutOutputCollector(SpoutOutputCollector collector, String reportStream, int taskId) {
 		super(collector);
-		this.counter = new SpoutThroughputCounter(collector, reportStream);
+		this.counter = new SpoutThroughputCounter(collector, reportStream, taskId);
 	}
 	
 	

@@ -24,8 +24,8 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
 import de.hub.cs.dbis.lrb.operators.TollNotificationBolt;
 import de.hub.cs.dbis.lrb.operators.TollSink;
@@ -73,7 +73,7 @@ public class TollQuery extends AbstractQuery {
 	 * {@link AverageVehicleSpeedSubquery}, and {@link CountVehicleSubquery}.
 	 */
 	@Override
-	protected void addBolts(TopologyBuilder builder, OptionSet options) {
+	protected void addBolts(MonitoringTopoloyBuilder builder, OptionSet options) {
 		this.accDetSubquery.addBolts(builder, options);
 		this.lavSubquery.addBolts(builder, options);
 		this.cntVehicleSubquery.addBolts(builder, options);
@@ -93,7 +93,7 @@ public class TollQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.LATEST_AVERAGE_SPEED_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME,
+			.setSink(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME,
 				new TollSink(options.valueOf(this.outputNot)),
 				OperatorParallelism.get(TopologyControl.TOLL_NOTIFICATIONS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
@@ -101,7 +101,7 @@ public class TollQuery extends AbstractQuery {
 			.allGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME, TimestampMerger.FLUSH_STREAM_ID);
 		
 		builder
-			.setBolt(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME,
+			.setSink(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME,
 				new TollSink(options.valueOf(this.outputAss)),
 				OperatorParallelism.get(TopologyControl.TOLL_ASSESSMENTS_FILE_WRITER_BOLT_NAME))
 			.localOrShuffleGrouping(TopologyControl.TOLL_NOTIFICATION_BOLT_NAME,
@@ -112,7 +112,7 @@ public class TollQuery extends AbstractQuery {
 	
 	
 	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
-		new TollQuery().parseArgumentsAndRun(args);
+		System.exit(new TollQuery().parseArgumentsAndRun(args));
 	}
 	
 }

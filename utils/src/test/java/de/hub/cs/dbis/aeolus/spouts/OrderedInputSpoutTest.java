@@ -50,7 +50,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TimestampComperator;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class OrderedInputSpoutTest {

@@ -43,7 +43,7 @@ import backtype.storm.tuple.Tuple;
  * <br/>
  * {@link AbstractFileOutputBolt} acknowledges each retrieved tuple.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public abstract class AbstractFileOutputBolt implements IRichBolt {
 	private final static long serialVersionUID = 5082995927274164044L;
@@ -70,7 +70,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
 		String fileName = (String)stormConf.get(OUTPUT_FILE_NAME);
 		if(fileName != null) {
 			this.outputFileName = fileName;
@@ -82,6 +82,7 @@ public abstract class AbstractFileOutputBolt implements IRichBolt {
 		}
 		
 		try {
+			new File(this.outputDirName).mkdirs();
 			this.writer = new BufferedWriter(new FileWriter(this.outputDirName + File.separator + this.outputFileName));
 		} catch(IOException e) {
 			logger.error("Could not open output file <{}> for writing.", this.outputDirName + File.separator

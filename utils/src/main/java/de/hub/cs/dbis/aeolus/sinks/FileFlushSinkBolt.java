@@ -29,7 +29,7 @@ import backtype.storm.tuple.Tuple;
  * throughput streams to guarantee, that all tuples are written to disc (the call to {@link #cleanup()} is not
  * guaranteed by Storm.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class FileFlushSinkBolt extends FileSinkBolt {
 	private static final long serialVersionUID = -2896873750026892533L;

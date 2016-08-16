@@ -28,7 +28,7 @@ import backtype.storm.tuple.Fields;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestDeclarer implements OutputFieldsDeclarer {
 	public ArrayList<Fields> schemaBuffer = new ArrayList<Fields>();

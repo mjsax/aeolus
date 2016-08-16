@@ -32,7 +32,7 @@ import java.util.Set;
  * (ie, stream ID) used in {@link #get(Object)}. All other methods may throw an {@link UnsupportedOperationException}.
  * 
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class SingleBatchSizeHashMap extends HashMap<String, Integer> {
 	private static final long serialVersionUID = -1872488162485981597L;

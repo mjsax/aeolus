@@ -27,7 +27,7 @@ import backtype.storm.utils.Utils;
 /**
  * {@link AbstractReportingThread} triggers the reporting of collected statistics periodically.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 abstract class AbstractReportingThread extends Thread {
 	
@@ -35,7 +35,7 @@ abstract class AbstractReportingThread extends Thread {
 	boolean isRunning = true;
 	
 	/** The reporting interval in milliseconds. */
-	private final long interval;
+	private final long reportingIntervalMs;
 	
 	/** The normalization factor to a "per seconds" basis. */
 	private final double factor;
@@ -51,9 +51,9 @@ abstract class AbstractReportingThread extends Thread {
 	 * @param interval
 	 *            The reporting interval in milliseconds.
 	 */
-	public AbstractReportingThread(long interval) {
-		this.interval = interval;
-		this.factor = interval / 1000.0;
+	public AbstractReportingThread(long reportingIntervalMs) {
+		this.reportingIntervalMs = reportingIntervalMs;
+		this.factor = reportingIntervalMs / 1000.0;
 	}
 	
 	
@@ -69,7 +69,7 @@ abstract class AbstractReportingThread extends Thread {
 		while(this.isRunning) {
 			Utils.sleep(this.nextReportTime - System.currentTimeMillis());
 			this.doReport(this.nextReportTime, this.factor);
-			this.nextReportTime += this.interval;
+			this.nextReportTime += this.reportingIntervalMs;
 		}
 	}
 	
@@ -81,6 +81,6 @@ abstract class AbstractReportingThread extends Thread {
 	 * @param factor
 	 *            The normalization factor to get reported values "per second".
 	 */
-	abstract void doReport(long reportTimestamp, @SuppressWarnings("hiding") double factor);
+	abstract void doReport(long reportTimestamp, double factor);
 	
 }

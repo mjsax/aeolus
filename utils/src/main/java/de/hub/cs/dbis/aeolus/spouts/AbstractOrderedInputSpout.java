@@ -57,7 +57,7 @@ import de.hub.cs.dbis.aeolus.utils.StreamMerger;
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
  * @author Roberto Baldoni (Sapienza Università di Roma, Roma, Italy)
  * @author Leonardo Querzoni (Sapienza Università di Roma, Roma, Italy)
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	private final static long serialVersionUID = 6224448887936832190L;
@@ -106,7 +106,7 @@ public abstract class AbstractOrderedInputSpout<T> implements IRichSpout {
 	 * Sets up internal data structures according to the number of used partitions {@link #NUMBER_OF_PARTITIONS}.
 	 */
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		int numberOfPartitons = 1;
 		Integer numPartitions = (Integer)conf.get(NUMBER_OF_PARTITIONS);
 		if(numPartitions != null) {

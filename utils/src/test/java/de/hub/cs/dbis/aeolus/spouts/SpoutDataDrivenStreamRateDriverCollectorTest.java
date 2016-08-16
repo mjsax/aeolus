@@ -36,7 +36,7 @@ import backtype.storm.spout.SpoutOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutDataDrivenStreamRateDriverCollectorTest {

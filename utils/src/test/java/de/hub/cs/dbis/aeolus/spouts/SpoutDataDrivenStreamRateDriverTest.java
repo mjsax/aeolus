@@ -46,7 +46,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutDataDrivenStreamRateDriverTest {
@@ -126,7 +126,6 @@ public class SpoutDataDrivenStreamRateDriverTest {
 		Assert.assertEquals(5, (stop - start) / 1000 / 1000 / 1000, 1);
 	}
 	
-	@SuppressWarnings("null")
 	@Test
 	public void testNextTuple() {
 		TimeUnit units = null;

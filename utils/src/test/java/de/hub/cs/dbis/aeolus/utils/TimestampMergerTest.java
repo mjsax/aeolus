@@ -67,7 +67,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TimestampOrderChecker;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class TimestampMergerTest {

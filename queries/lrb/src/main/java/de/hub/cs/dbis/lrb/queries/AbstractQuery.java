@@ -34,8 +34,8 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.IRichSpout;
-import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
+import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.spouts.DataDrivenStreamRateDriverSpout;
 import de.hub.cs.dbis.aeolus.spouts.DataDrivenStreamRateDriverSpout.TimeUnit;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
@@ -58,7 +58,7 @@ abstract class AbstractQuery {
 	private final static OptionSpec<Void> realtimeOption, localOption;
 	private final static OptionSpec<Long> runtimeOption;
 	private final static OptionSpec<String> inputOption;
-	private final static OptionSpec<Integer> highwaysOption;
+	private final static OptionSpec<Integer> highwaysOption, measureThroughputOption, measureLatencyOption;
 	
 	
 	
@@ -76,6 +76,14 @@ abstract class AbstractQuery {
 				"Number of highways to process (L factor). "
 					+ "If not specified, --input defines a single file; otherwise, --input defines file-prefix.")
 			.withRequiredArg().describedAs("num").ofType(Integer.class);
+		measureThroughputOption = parser
+			.accepts("measureThroughput",
+				"Collect data throughput for each operator and report in specified time intervalls.").withRequiredArg()
+			.describedAs("ms").ofType(Integer.class);
+		measureLatencyOption = parser
+			.accepts("measureLatency",
+				"Collect tuples latencies and report statistics in buckets of specified number of tuples.")
+			.withRequiredArg().describedAs("cnt").ofType(Integer.class);
 	}
 	
 	
@@ -88,13 +96,16 @@ abstract class AbstractQuery {
 	 * @param outputs
 	 *            The output information for sinks (ie, file paths)
 	 */
-	abstract void addBolts(TopologyBuilder builder, OptionSet options);
+	abstract void addBolts(MonitoringTopoloyBuilder builder, OptionSet options);
 	
 	/**
 	 * Partial topology set up (adding spout and dispatcher bolt).
 	 */
 	private final StormTopology createTopology(OptionSet options, boolean realtime) {
-		TopologyBuilder builder = new TopologyBuilder();
+		MonitoringTopoloyBuilder builder = new MonitoringTopoloyBuilder(options.has(measureThroughputOption),
+			options.has(measureThroughputOption) ? options.valueOf(measureThroughputOption) : -1,
+			options.has(measureLatencyOption),
+			options.has(measureLatencyOption) ? options.valueOf(measureLatencyOption) : -1);
 		
 		IRichSpout spout = new FileReaderSpout();
 		if(realtime) {
@@ -132,18 +143,21 @@ abstract class AbstractQuery {
 	 * @throws AlreadyAliveException
 	 *             if the topology is already deployed
 	 */
-	protected final void parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
+	protected final int parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
 		AlreadyAliveException {
 		final OptionSet options;
 		try {
 			options = parser.parse(args);
 		} catch(OptionException e) {
+			System.err.println(e.getMessage());
+			System.err.println();
 			parser.printHelpOn(System.err);
-			throw e;
+			return -1;
 		}
 		
 		final Config config = new Config();
 		config.put(FileReaderSpout.INPUT_FILE_NAME, options.valueOf(inputOption));
+		// config.setDebug(true);
 		
 		
 		
@@ -218,8 +232,10 @@ abstract class AbstractQuery {
 				}
 			}
 		} else if(!options.has(runtimeOption)) {
-			System.err.println("Option --local required option --runtime.");
-			System.exit(-1);
+			System.err.println("Option --local requires option --runtime.");
+			System.err.println();
+			parser.printHelpOn(System.err);
+			return -1;
 		}
 		
 		StormTopology topology = this.createTopology(options, options.has(realtimeOption));
@@ -234,7 +250,13 @@ abstract class AbstractQuery {
 			Utils.sleep(10000);
 			lc.shutdown();
 		} else {
+			if(System.getProperty("storm.jar") == null) {
+				System.setProperty("storm.jar", "target/LinearRoadBenchmark.jar");
+			}
+			
 			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
 		}
+		
+		return 0;
 	}
 }

@@ -45,7 +45,7 @@ import backtype.storm.tuple.Tuple;
  * The internal buffer can be flushed by sending an <strong>ID less</strong> zero-attribute tuple via stream
  * {@link #FLUSH_STREAM_ID}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TimestampMerger implements IRichBolt {
 	private final static long serialVersionUID = -6930627449574381467L;

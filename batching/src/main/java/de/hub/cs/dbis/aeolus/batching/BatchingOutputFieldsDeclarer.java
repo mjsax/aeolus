@@ -32,7 +32,7 @@ import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
  * {@link BatchingOutputFieldsDeclarer} is used by {@link SpoutOutputBatcher} and {@link BoltOutputBatcher} to declare
  * an additional <it>direct</it> output stream for each user declared <it>non</it>-direct output stream.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchingOutputFieldsDeclarer implements OutputFieldsDeclarer {
 	/**

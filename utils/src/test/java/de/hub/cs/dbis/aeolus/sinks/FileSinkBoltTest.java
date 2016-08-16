@@ -40,7 +40,7 @@ import backtype.storm.tuple.Tuple;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(FileSinkBolt.class)

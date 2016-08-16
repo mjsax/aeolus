@@ -37,7 +37,7 @@ import backtype.storm.task.TopologyContext;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutBatchCollectorImplTest {

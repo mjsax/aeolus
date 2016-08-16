@@ -27,7 +27,7 @@ import java.util.HashMap;
 /**
  * {@link AeolusConfig} is a universal configuration object for the whole optimization package.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class AeolusConfig {
 	public final static String NIMBUS_HOST = "nimbus.host";

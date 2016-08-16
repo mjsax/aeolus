@@ -28,7 +28,7 @@ import org.junit.Test;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class SingleBatchSizeHashMapTest {
 	

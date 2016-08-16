@@ -40,7 +40,7 @@ import backtype.storm.tuple.Values;
  * {@link StreamMerger} merges multiple sub-stream in ascending timestamp order. Type {@code T} is expected to be either
  * {@link Tuple} (for usage in bolts) or {@link Values} (for usage in spouts).
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 // TODO: make more efficient (avoid linear scan of all partitions to extract next tuple)
 public class StreamMerger<T> {

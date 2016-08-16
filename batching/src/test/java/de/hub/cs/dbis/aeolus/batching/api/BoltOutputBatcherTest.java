@@ -50,7 +50,7 @@ import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(BoltOutputBatcher.class)

@@ -54,7 +54,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class InputDebatcherTest {
 	private long seed;

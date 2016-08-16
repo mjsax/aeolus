@@ -38,7 +38,7 @@ import backtype.storm.tuple.Tuple;
  * {@link AbstractBatchCollector} contains the actual logic, while {@link SpoutBatchCollectorImpl} and
  * {@link BoltBatchCollectorImpl} are used to redirect the back calls appropriately to a Spout or Bolt, respectively.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class BoltBatchCollectorImpl extends AbstractBatchCollector {
 	/**

@@ -27,7 +27,7 @@ import java.util.ArrayList;
 /**
  * {@link BatchColumn} represent an attribute column of a {@link Batch}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchColumn extends ArrayList<Object> {
 	private final static long serialVersionUID = -2215147192473477343L;

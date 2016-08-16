@@ -38,7 +38,7 @@ import backtype.storm.tuple.Values;
 /**
  * TODO
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class SchemaSpout implements IRichSpout {
 	private final static long serialVersionUID = 7071724037607577082L;
@@ -65,7 +65,7 @@ public class SchemaSpout implements IRichSpout {
 	
 	
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		this.collector = collector;
 	}
 	

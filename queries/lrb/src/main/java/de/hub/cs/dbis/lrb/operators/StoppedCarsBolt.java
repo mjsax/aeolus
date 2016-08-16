@@ -85,7 +85,7 @@ public class StoppedCarsBolt extends BaseRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 	}
 	

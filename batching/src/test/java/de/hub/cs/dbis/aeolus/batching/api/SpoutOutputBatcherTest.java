@@ -57,7 +57,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestSpoutOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SpoutOutputBatcher.class)

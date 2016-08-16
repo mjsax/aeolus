@@ -40,7 +40,7 @@ import de.hub.cs.dbis.aeolus.testUtils.IncSpout;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class SpoutFixedStreamRateDriverTest {

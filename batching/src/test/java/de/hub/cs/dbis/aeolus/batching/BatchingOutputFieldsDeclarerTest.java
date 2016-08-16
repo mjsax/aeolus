@@ -30,7 +30,7 @@ import de.hub.cs.dbis.aeolus.testUtils.TestDeclarer;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchingOutputFieldsDeclarerTest {
 	

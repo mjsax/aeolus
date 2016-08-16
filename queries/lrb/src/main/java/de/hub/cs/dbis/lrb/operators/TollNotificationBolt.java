@@ -127,7 +127,7 @@ public class TollNotificationBolt extends BaseRichBolt {
 	
 	
 	@Override
-	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, @SuppressWarnings("hiding") OutputCollector collector) {
+	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
 		this.collector = collector;
 	}
 	
@@ -231,7 +231,9 @@ public class TollNotificationBolt extends BaseRichBolt {
 			
 			final TollNotification lastNotification;
 			if(toll != 0) {
-				lastNotification = this.lastTollNotification.put(vid, tollNotification);
+				lastNotification = this.lastTollNotification.put(vid, new TollNotification(tollNotification.getTime(),
+					tollNotification.getEmit(), tollNotification.getVid(), tollNotification.getSpeed(),
+					tollNotification.getToll()));
 			} else {
 				lastNotification = this.lastTollNotification.remove(vid);
 			}

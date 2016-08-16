@@ -21,14 +21,14 @@ package de.hub.cs.dbis.aeolus.monitoring.throughput;
 
 
 /**
- * {@link BoltOutputReportingThread} reports the statistics, collected by a {@link ThroughputCounterOutputCollector}.
+ * {@link BoltOutputReportingThread} reports the statistics, collected by a {@link ThroughputOutputCollector}.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 class BoltOutputReportingThread extends AbstractReportingThread {
 	
-	/** The internally used {@link ThroughputCounterOutputCollector}. */
-	private final ThroughputCounterOutputCollector collector;
+	/** The internally used {@link ThroughputOutputCollector}. */
+	private final ThroughputOutputCollector collector;
 	
 	
 	
@@ -36,11 +36,11 @@ class BoltOutputReportingThread extends AbstractReportingThread {
 	 * Instantiates a new {@link BoltOutputReportingThread}.
 	 * 
 	 * @param collector
-	 *            The {@link ThroughputCounterOutputCollector} that collects and reports statistics.
+	 *            The {@link ThroughputOutputCollector} that collects and reports statistics.
 	 * @param interval
 	 *            The reporting interval in milliseconds.
 	 */
-	public BoltOutputReportingThread(ThroughputCounterOutputCollector collector, long interval) {
+	public BoltOutputReportingThread(ThroughputOutputCollector collector, long interval) {
 		super(interval);
 		this.collector = collector;
 	}
@@ -50,7 +50,7 @@ class BoltOutputReportingThread extends AbstractReportingThread {
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Reporting is do via {@link ThroughputCounterOutputCollector#reportCount(long, double)}.
+	 * Reporting is do via {@link ThroughputOutputCollector#reportCount(long, double)}.
 	 */
 	@Override
 	void doReport(long reportTimestamp, double factor) {

@@ -29,7 +29,7 @@ import backtype.storm.spout.ISpoutOutputCollector;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class TestSpoutOutputCollector implements ISpoutOutputCollector {
 	public HashMap<String, LinkedList<List<Object>>> output = new HashMap<String, LinkedList<List<Object>>>();

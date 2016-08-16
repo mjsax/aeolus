@@ -43,7 +43,7 @@ import de.hub.cs.dbis.aeolus.batching.BatchingOutputFieldsDeclarer;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class AeolusBuilderTest {
 	private final String spout1 = "spout1";

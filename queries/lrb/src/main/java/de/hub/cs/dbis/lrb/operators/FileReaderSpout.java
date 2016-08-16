@@ -80,7 +80,7 @@ public class FileReaderSpout extends AbstractOrderedFileInputSpout {
 	
 	
 	@Override
-	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, @SuppressWarnings("hiding") SpoutOutputCollector collector) {
+	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
 		@SuppressWarnings("unchecked")
 		HashMap<Object, Object> newConf = new HashMap<Object, Object>(conf);
 		if(newConf.get(INPUT_FILE_NAME) == null) {

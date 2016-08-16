@@ -38,7 +38,7 @@ import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
  * {@link BatchSpoutOutputCollector} is used by {@link SpoutOutputBatcher} to capture all calls to the original provided
  * {@link SpoutOutputCollector}. It used {@link SpoutBatchCollectorImpl} to buffer all emitted tuples in batches.
  * 
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public class BatchSpoutOutputCollector extends SpoutOutputCollector {
 	private final static Logger logger = LoggerFactory.getLogger(BatchSpoutOutputCollector.class);

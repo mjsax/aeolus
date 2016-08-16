@@ -35,7 +35,7 @@ import backtype.storm.tuple.Values;
 
 
 /**
- * @author Matthias J. Sax
+ * @author mjsax
  */
 @RunWith(PowerMockRunner.class)
 public class TestOutputCollectorTest {

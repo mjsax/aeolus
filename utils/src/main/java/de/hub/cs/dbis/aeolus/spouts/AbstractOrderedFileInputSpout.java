@@ -51,7 +51,7 @@ import backtype.storm.tuple.Values;
  * @author Leonardo Aniello (Sapienza Università di Roma, Roma, Italy)
  * @author Roberto Baldoni (Sapienza Università di Roma, Roma, Italy)
  * @author Leonardo Querzoni (Sapienza Università di Roma, Roma, Italy)
- * @author Matthias J. Sax
+ * @author mjsax
  */
 public abstract class AbstractOrderedFileInputSpout extends AbstractOrderedInputSpout<String> {
 	private final static long serialVersionUID = -4690963122364704481L;
