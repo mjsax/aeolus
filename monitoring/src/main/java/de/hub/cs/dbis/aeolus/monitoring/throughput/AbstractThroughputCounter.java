@@ -86,7 +86,7 @@ abstract class AbstractThroughputCounter {
 	private final boolean inputOrOutput;
 	
 	/** The ID of the task reporting the metric. */
-	private final Integer taskId;
+	protected final Integer taskId;
 	
 	/** Holds the overall count per stream. */
 	private final HashMap<String, Counter> counter = new HashMap<String, Counter>();
@@ -107,7 +107,7 @@ abstract class AbstractThroughputCounter {
 	 * @param taskId
 	 *            The task ID.
 	 */
-	public AbstractThroughputCounter(boolean inputOrOutput, int taskId) {
+	public AbstractThroughputCounter(boolean inputOrOutput, Integer taskId) {
 		this.inputOrOutput = inputOrOutput;
 		this.taskId = taskId;
 	}

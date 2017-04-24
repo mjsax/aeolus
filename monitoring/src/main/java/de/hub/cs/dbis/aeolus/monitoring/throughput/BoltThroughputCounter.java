@@ -54,7 +54,7 @@ class BoltThroughputCounter extends AbstractThroughputCounter {
 	 * @param taskId
 	 *            The task ID.
 	 */
-	public BoltThroughputCounter(OutputCollector collector, String reportStream, boolean inputOrOutput, int taskId) {
+	public BoltThroughputCounter(OutputCollector collector, String reportStream, boolean inputOrOutput, Integer taskId) {
 		super(inputOrOutput, taskId);
 		this.collector = collector;
 		this.reportStream = reportStream;
@@ -69,7 +69,9 @@ class BoltThroughputCounter extends AbstractThroughputCounter {
 	 */
 	@Override
 	void doEmit(Values statsTuple) {
-		this.collector.emit(this.reportStream, statsTuple);
+		synchronized(taskId) {
+			this.collector.emit(this.reportStream, statsTuple);
+		}
 	}
 	
 }

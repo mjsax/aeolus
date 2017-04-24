@@ -32,8 +32,10 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
+import backtype.storm.generated.Nimbus.Client;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.IRichSpout;
+import backtype.storm.utils.NimbusClient;
 import backtype.storm.utils.Utils;
 import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.spouts.DataDrivenStreamRateDriverSpout;
@@ -145,21 +147,30 @@ abstract class AbstractQuery {
 	 */
 	protected final int parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
 		AlreadyAliveException {
-		final OptionSet options;
+		final Config config = new Config();
+		
+		final OptionParser stopOptionParser = new OptionParser();
+		final OptionSpec<String> stopOption = stopOptionParser
+			.accepts("stop", "Deactivates and kills a running topology.").withRequiredArg().describedAs("topology-ID")
+			.ofType(String.class);
+		
+		OptionSet options;
 		try {
-			options = parser.parse(args);
+			options = stopOptionParser.parse(args);
 		} catch(OptionException e) {
-			System.err.println(e.getMessage());
-			System.err.println();
-			parser.printHelpOn(System.err);
-			return -1;
+			try {
+				options = parser.parse(args);
+			} catch(OptionException f) {
+				System.err.println(e.getMessage());
+				System.err.println();
+				parser.printHelpOn(System.err);
+				return -1;
+			}
 		}
 		
-		final Config config = new Config();
+		
 		config.put(FileReaderSpout.INPUT_FILE_NAME, options.valueOf(inputOption));
 		// config.setDebug(true);
-		
-		
 		
 		if(options.has(highwaysOption)) {
 			LinkedList<String> highway = new LinkedList<String>();
@@ -173,7 +184,7 @@ abstract class AbstractQuery {
 		}
 		
 		
-		
+		String jarFile = "target/LinearRoadBenchmark.jar";
 		if(!options.has(localOption)) {
 			BufferedReader configReader = null;
 			try {
@@ -192,7 +203,9 @@ abstract class AbstractQuery {
 						continue;
 					}
 					
-					if(tokens[0].equals("NIMBUS_HOST")) {
+					if(tokens[0].equals("JAR")) {
+						jarFile = tokens[1];
+					} else if(tokens[0].equals("NIMBUS_HOST")) {
 						config.put(Config.NIMBUS_HOST, tokens[1]);
 					} else if(tokens[0].equals("TOPOLOGY_WORKERS")) {
 						try {
@@ -238,23 +251,43 @@ abstract class AbstractQuery {
 			return -1;
 		}
 		
-		StormTopology topology = this.createTopology(options, options.has(realtimeOption));
-		
-		if(options.has(localOption)) {
-			LocalCluster lc = new LocalCluster();
-			lc.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
+		if(options.has(stopOption)) {
+			final String topologyId = options.valueOf(stopOption);
 			
-			Utils.sleep(1000 * options.valueOf(runtimeOption).longValue());
-			lc.deactivate(TopologyControl.TOPOLOGY_NAME);
+			// required default configs
+			config.put(Config.NIMBUS_THRIFT_PORT, 6627);
+			config.put(Config.STORM_THRIFT_TRANSPORT_PLUGIN, "backtype.storm.security.auth.SimpleTransportPlugin");
 			
-			Utils.sleep(10000);
-			lc.shutdown();
-		} else {
-			if(System.getProperty("storm.jar") == null) {
-				System.setProperty("storm.jar", "target/LinearRoadBenchmark.jar");
+			Client client = NimbusClient.getConfiguredClient(config).getClient();
+			try {
+				client.deactivate(topologyId);
+				
+				Thread.sleep(30 * 1000);
+				
+				client.killTopology(topologyId);
+			} catch(Throwable e) {
+				e.printStackTrace();
+				return -1;
 			}
+		} else {
+			StormTopology topology = this.createTopology(options, options.has(realtimeOption));
 			
-			StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
+			if(options.has(localOption)) {
+				LocalCluster lc = new LocalCluster();
+				lc.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
+				
+				Utils.sleep(1000 * options.valueOf(runtimeOption).longValue());
+				lc.deactivate(TopologyControl.TOPOLOGY_NAME);
+				
+				Utils.sleep(10000);
+				lc.shutdown();
+			} else {
+				if(System.getProperty("storm.jar") == null) {
+					System.setProperty("storm.jar", jarFile);
+				}
+				
+				StormSubmitter.submitTopology(TopologyControl.TOPOLOGY_NAME, config, topology);
+			}
 		}
 		
 		return 0;

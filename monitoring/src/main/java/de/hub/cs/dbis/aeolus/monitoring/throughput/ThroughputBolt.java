@@ -137,7 +137,7 @@ public class ThroughputBolt implements IRichBolt {
 	
 	@Override
 	public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context, OutputCollector collector) {
-		final int taskId = context.getThisTaskId();
+		final Integer taskId = context.getThisTaskId();
 		this.inputCounter = new BoltThroughputCounter(collector, this.reportStream, true, taskId);
 		this.inputReporter = new BoltInputReportingThread(this.inputCounter, this.interval);
 		this.inputReporter.start();
