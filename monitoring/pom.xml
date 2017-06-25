@@ -23,6 +23,11 @@
       <artifactId>utils</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.jopt-simple</groupId>
+      <artifactId>jopt-simple</artifactId>
+      <version>5.0.2</version>
+    </dependency>
 
     <!-- test dependencies -->
     <dependency>
@@ -64,7 +69,6 @@
         </dependencies>
       </plugin>
 
-      <!-- get default data from flink-java-examples package -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -85,10 +89,8 @@
                   <type>jar</type>
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                  <includes>de/hub/cs/dbis/aeolus/sinks/*.class,
-                            de/hub/cs/dbis/aeolus/spouts/FixedStreamRateDriverSpout.class</includes>
                 </artifactItem>
-                <artifactItem>
+                <!--artifactItem>
                   <groupId>de.hub.cs.dbis.aeolus</groupId>
                   <artifactId>testUtils</artifactId>
                   <version>${project.version}</version>
@@ -96,7 +98,7 @@
                   <overWrite>false</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <includes>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</includes>
-                </artifactItem>
+                </artifactItem-->
                 <artifactItem>
                   <groupId>de.hub.cs.dbis.aeolus</groupId>
                   <artifactId>batching</artifactId>
@@ -128,18 +130,17 @@
               <goal>jar</goal>
             </goals>
             <configuration>
-              <classifier>microbenchmarks</classifier>
+              <finalName>Microbenchmarks</finalName>
 
               <includes>
-                <include>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/MeasureOutputDataRate.class</include>
-                <include>de/hub/cs/dbis/aeolus/monitoring/microbenchmarks/SchemaSpout.class</include>
-                <include>de/hub/cs/dbis/aeolus/monitoring/throughput/*.class</include>
-                <include>de/hub/cs/dbis/aeolus/monitoring/utils/*.class</include>
-                <include>de/hub/cs/dbis/aeolus/spouts/FixedStreamRateDriverSpout.class</include>
+                <include>de/hub/cs/dbis/aeolus/monitoring/**/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/batching/**/*.class</include>
+                <!-- from utils -->
+                <include>de/hub/cs/dbis/aeolus/bolts/*.class</include>
                 <include>de/hub/cs/dbis/aeolus/sinks/*.class</include>
-                <include>de/hub/cs/dbis/aeolus/testUtils/ForwardBolt.class</include>
-                <include>de/hub/cs/dbis/aeolus/batching/*.class</include>
-                <include>de/hub/cs/dbis/aeolus/batching/api/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/spouts/*.class</include>
+                <include>de/hub/cs/dbis/aeolus/utils/*.class</include>
+                <!-- end utils -->
               </includes>
             </configuration>
           </execution>

@@ -19,12 +19,16 @@
 package de.hub.cs.dbis.aeolus.monitoring;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import backtype.storm.topology.BoltDeclarer;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.SpoutDeclarer;
 import backtype.storm.topology.TopologyBuilder;
+import de.hub.cs.dbis.aeolus.batching.api.InputDebatcher;
+import de.hub.cs.dbis.aeolus.batching.api.SpoutOutputBatcher;
 import de.hub.cs.dbis.aeolus.monitoring.latency.LatencyBolt;
 import de.hub.cs.dbis.aeolus.monitoring.latency.LatencyCollectorBolt;
 import de.hub.cs.dbis.aeolus.monitoring.latency.LatencySpout;
@@ -46,7 +50,7 @@ public class MonitoringTopoloyBuilder extends TopologyBuilder {
 	/** The default ID of the throughput report stream. */
 	public final static String DEFAULT_THROUGHPUT_STREAM = "aeolus::throughput";
 	/** The default ID of the latency report stream. */
-	public final static String DEFAULT_LATANCY_STREAM = "aeolus::latency";
+	public final static String DEFAULT_LATENCY_STREAM = "aeolus::latency";
 	/** The default directory to write monitoring statistics. */
 	public final static String DEFAULT_STATS_DIR = "/tmp/aeolus-stats";
 	
@@ -90,6 +94,39 @@ public class MonitoringTopoloyBuilder extends TopologyBuilder {
 		return declarer;
 	}
 	
+	public SpoutDeclarer setBatchingSpout(String id, IRichSpout spout, int batchSize) {
+		return setBatchingSpout(id, spout, batchSize, 1);
+	}
+	
+	public SpoutDeclarer setBatchingSpout(String id, IRichSpout spout, int batchSize, Number parallelismHint) {
+		MonitoringDeclarer outputFieldsDeclarer = new MonitoringDeclarer();
+		spout.declareOutputFields(outputFieldsDeclarer);
+		
+		Map<String, Integer> batchSizePerStream = new HashMap<String, Integer>();
+		for(String streamId : outputFieldsDeclarer.declaredStreams) {
+			batchSizePerStream.put(streamId, batchSize);
+		}
+		
+		if(this.meassureThroughput) {
+			spout = new ThroughputSpout(spout, this.reportingInterval);
+		}
+		if(this.meassureLatency) {
+			spout = new LatencySpout(spout);
+		}
+		spout = new SpoutOutputBatcher(spout, batchSizePerStream);
+		
+		SpoutDeclarer declarer = super.setSpout(id, spout, parallelismHint);
+		
+		if(this.meassureThroughput) {
+			this.callSuper = true;
+			setBolt(id + "Stats", new FileFlushSinkBolt(DEFAULT_STATS_DIR + File.separator + id + ".throughput"))
+				.shuffleGrouping(id, MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM);
+			this.callSuper = false;
+		}
+		
+		return declarer;
+	}
+	
 	@Override
 	public BoltDeclarer setBolt(String id, IRichBolt bolt, Number parallelismHint) {
 		if(callSuper) {
@@ -102,6 +139,7 @@ public class MonitoringTopoloyBuilder extends TopologyBuilder {
 		if(this.meassureLatency) {
 			bolt = new LatencyBolt(bolt);
 		}
+		bolt = new InputDebatcher(bolt);
 		
 		BoltDeclarer declarer = super.setBolt(id, bolt, parallelismHint);
 		
@@ -126,13 +164,21 @@ public class MonitoringTopoloyBuilder extends TopologyBuilder {
 		if(this.meassureLatency) {
 			bolt = new LatencyCollectorBolt(bolt, this.statsBucketSize);
 		}
+		bolt = new InputDebatcher(bolt);
 		
 		final BoltDeclarer declarer = super.setBolt(id, bolt, parallelismHint);
+		
+		if(this.meassureThroughput) {
+			this.callSuper = true;
+			setBolt(id + "Stats", new FileFlushSinkBolt(DEFAULT_STATS_DIR + File.separator + id + ".throughput"))
+				.shuffleGrouping(id, MonitoringTopoloyBuilder.DEFAULT_THROUGHPUT_STREAM);
+			this.callSuper = false;
+		}
 		
 		if(this.meassureLatency) {
 			this.callSuper = true;
 			setBolt(id + "LatencyStats", new FileFlushSinkBolt(DEFAULT_STATS_DIR + File.separator + id + ".latencies"))
-				.shuffleGrouping(id, MonitoringTopoloyBuilder.DEFAULT_LATANCY_STREAM);
+				.shuffleGrouping(id, MonitoringTopoloyBuilder.DEFAULT_LATENCY_STREAM);
 			this.callSuper = false;
 		}
 		

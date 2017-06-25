@@ -66,7 +66,7 @@ public class LatencyCollectorBolt implements IRichBolt {
 	
 	/**
 	 * Instantiate a new {@link LatencyCollectorBolt} that report latency statistics to the default report stream
-	 * {@link MonitoringTopoloyBuilder#DEFAULT_LATANCY_STREAM}.
+	 * {@link MonitoringTopoloyBuilder#DEFAULT_LATENCY_STREAM}.
 	 * 
 	 * @param userBolt
 	 *            The user bolt to be monitored.
@@ -74,7 +74,7 @@ public class LatencyCollectorBolt implements IRichBolt {
 	 *            The number of tuples of a statistic bucket.
 	 */
 	public LatencyCollectorBolt(IRichBolt userBolt, int statsBucketSize) {
-		this(userBolt, statsBucketSize, MonitoringTopoloyBuilder.DEFAULT_LATANCY_STREAM);
+		this(userBolt, statsBucketSize, MonitoringTopoloyBuilder.DEFAULT_LATENCY_STREAM);
 	}
 	
 	/**

@@ -18,11 +18,7 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
-import java.io.IOException;
-
 import joptsimple.OptionSet;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
 import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 
 
@@ -56,7 +52,7 @@ public class LinearRoad extends AbstractQuery {
 	
 	
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+	public static void main(String[] args) throws Exception {
 		System.exit(new LinearRoad().parseArgumentsAndRun(args));
 	}
 	

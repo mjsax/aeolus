@@ -1,14 +1,25 @@
 #!/bin/sh
 
+workerConfig=`grep "TOPOLOGY_WORKERS" micro.cfg | cut -d':' -f 2 | tr -d ' '`
+if [ ! $workerConfig -eq 1 ]
+then
+  echo "Invalid config for TOPOLOGY_WORKERS in micro.cfg. Must be 1. Canceling benchmark."
+  exit -1
+fi
+
+batchsize=$1
+recordsize=$2
+
 currentDir=`pwd`
 clusternodes=clusternodes
-dataDir="$HOME/repos/git/mjs/diss/eval/lrb"
+dataDir="$HOME/repos/git/mjs/diss/eval/micro/singleSpoutBoltInMemory/"
+mkdir -p $dataDir
 
 master=`cat $clusternodes | grep -v -e "^#" | head -n 1`
 
 
 # clean old data
-echo "Cleaning up old remote LRB stats"
+echo "Cleaning up old remote micro stats"
 ssh $master "bash -l -c 'cleanLrbStats.sh'"
 
 
@@ -23,8 +34,8 @@ done
 
 
 # run benchmark
-echo "Starting Topology"
-classpath="queries/lrb/target/LinearRoadBenchmark.jar"
+echo "Starting micro benchmark"
+classpath="monitoring/target/Microbenchmarks.jar"
 classpath="$classpath:$HOME/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.2/jopt-simple-5.0.2.jar"
 classpath="$classpath:$HOME/.m2/repository/org/apache/storm/storm-core/0.9.3/storm-core-0.9.3.jar"
 classpath="$classpath:$HOME/.m2/repository/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar"
@@ -32,25 +43,18 @@ classpath="$classpath:$HOME/.m2/repository/commons-lang/commons-lang/2.5/commons
 classpath="$classpath:$HOME/.m2/repository/org/yaml/snakeyaml/1.11/snakeyaml-1.11.jar"
 classpath="$classpath:$HOME/.m2/repository/com/googlecode/json-simple/json-simple/1.1/json-simple-1.1.jar"
 
-#  --input /data/mjsax/LR3hours.txt \
-#
-#  --input /data/mjsax/lrb \
-#  --highways 20 \
 java \
   -cp $classpath \
-  de.hub.cs.dbis.lrb.queries.LinearRoad \
-  --input /data/mjsax/LR3hours.txt \
-  --acc-output /data/mjsax/lrb-result/acc.out \
-  --toll-output /data/mjsax/lrb-result/toll.out \
-  --toll-ass-output /data/mjsax/lrb-result/tollass.out \
+  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.SpoutBenchmark \
+  --batchSize $batchsize \
+  --recordSize $recordsize \
   --measureThroughput 1000 \
-  --measureLatency 100 \
-  --realtime \
+  --measureLatency 10000 \
 
 
-runtime=11400 # 3h 10min
-#runtime=120
-echo "Benchmark started at `date`. Sleeping for runtime of $runtime seconds."
+
+runtime=120
+echo "Microbenchmark started at `date`. Sleeping for runtime of $runtime seconds."
 sleep $runtime
 
 
@@ -58,8 +62,8 @@ sleep $runtime
 echo "Stopping Topology"
 java \
   -cp $classpath \
-  de.hub.cs.dbis.lrb.queries.LinearRoad \
-  --stop Linear-Road-Benchmark
+  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.SpoutBenchmark \
+  --stop SpoutMicroBenchmark
 
 
 # stop monitoring
@@ -84,8 +88,13 @@ do
 done
 
 echo "LRB stats:"
-echo "Copy all LRB stats to $master"
+echo "Copy all micro stats to $master"
 ssh $master "bash -l -c 'collectLrbStats.sh'"
 cd $dataDir
 ./collectStats.sh $master
+
+for file in `ls *.cpu *.netIO *.throughput *.latencies`
+do
+  mv $file $file.$batchsize-$recordsize
+done
 

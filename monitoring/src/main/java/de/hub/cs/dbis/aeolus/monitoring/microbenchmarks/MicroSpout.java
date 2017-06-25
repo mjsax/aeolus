@@ -21,9 +21,6 @@ package de.hub.cs.dbis.aeolus.monitoring.microbenchmarks;
 import java.util.Map;
 import java.util.Random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
@@ -35,86 +32,57 @@ import backtype.storm.tuple.Values;
 
 
 
-/**
- * TODO
- * 
- * @author mjsax
- */
-public class SchemaSpout implements IRichSpout {
-	private final static long serialVersionUID = 7071724037607577082L;
-	private final static Logger logger = LoggerFactory.getLogger(SchemaSpout.class);
+public class MicroSpout implements IRichSpout {
+	private static final long serialVersionUID = -5423879264958995343L;
 	
-	/** TODO */
-	private final Random r;
+	final int recordSize;
+	final byte[][] records = new byte[500][];
 	
-	/** TODO */
-	private SpoutOutputCollector collector;
+	Random r;
+	SpoutOutputCollector collector;
 	
-	
-	
-	/**
-	 * TODO
-	 */
-	public SchemaSpout() {
-		long seed = System.currentTimeMillis();
-		this.r = new Random(seed);
-		
-		logger.debug("seed: {}", new Long(seed));
+	public MicroSpout(final int recordSize) {
+		this.recordSize = recordSize;
 	}
-	
-	
 	
 	@Override
 	public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context, SpoutOutputCollector collector) {
+		r = new Random(System.currentTimeMillis());
+		for(int i = 0; i < records.length; ++i) {
+			records[i] = new byte[recordSize];
+			r.nextBytes(records[i]);
+		}
+		
 		this.collector = collector;
 	}
 	
 	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void close() {}
 	
 	@Override
-	public void activate() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void activate() {}
 	
 	@Override
-	public void deactivate() {
-		// TODO Auto-generated method stub
-		
-	}
+	public void deactivate() {}
 	
 	@Override
 	public void nextTuple() {
-		// byte[] b = new byte[100];
-		// this.r.nextBytes(b);
-		// this.collector.emit(new Values(b));
-		this.collector.emit(new Values(new Integer(this.r.nextInt())));
+		this.collector.emit(new Values(this.records[r.nextInt(records.length)]));
 	}
 	
 	@Override
-	public void ack(Object msgId) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void ack(Object msgId) {}
 	
 	@Override
-	public void fail(Object msgId) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void fail(Object msgId) {}
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("dummy"));
+		declarer.declare(new Fields("data"));
 	}
 	
 	@Override
 	public Map<String, Object> getComponentConfiguration() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

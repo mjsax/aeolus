@@ -18,13 +18,9 @@
  */
 package de.hub.cs.dbis.lrb.queries;
 
-import java.io.IOException;
-
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
 import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
 import de.hub.cs.dbis.aeolus.sinks.FileFlushSinkBolt;
 import de.hub.cs.dbis.aeolus.utils.TimestampMerger;
@@ -94,7 +90,7 @@ public class AccidentDetectionSubquery extends AbstractQuery {
 	
 	
 	
-	public static void main(String[] args) throws IOException, InvalidTopologyException, AlreadyAliveException {
+	public static void main(String[] args) throws Exception {
 		System.exit(new AccidentDetectionSubquery().parseArgumentsAndRun(args));
 	}
 	

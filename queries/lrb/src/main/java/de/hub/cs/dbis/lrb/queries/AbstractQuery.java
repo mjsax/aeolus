@@ -54,7 +54,7 @@ import de.hub.cs.dbis.lrb.queries.utils.TopologyControl;
  * 
  * @author mjsax
  */
-abstract class AbstractQuery {
+public abstract class AbstractQuery {
 	protected final static OptionParser parser = new OptionParser();
 	
 	private final static OptionSpec<Void> realtimeOption, localOption;
@@ -98,7 +98,7 @@ abstract class AbstractQuery {
 	 * @param outputs
 	 *            The output information for sinks (ie, file paths)
 	 */
-	abstract void addBolts(MonitoringTopoloyBuilder builder, OptionSet options);
+	protected abstract void addBolts(MonitoringTopoloyBuilder builder, OptionSet options);
 	
 	/**
 	 * Partial topology set up (adding spout and dispatcher bolt).
@@ -145,14 +145,13 @@ abstract class AbstractQuery {
 	 * @throws AlreadyAliveException
 	 *             if the topology is already deployed
 	 */
-	protected final int parseArgumentsAndRun(String[] args) throws IOException, InvalidTopologyException,
-		AlreadyAliveException {
+	protected final int parseArgumentsAndRun(String[] args) throws Exception {
 		final Config config = new Config();
 		
 		final OptionParser stopOptionParser = new OptionParser();
 		final OptionSpec<String> stopOption = stopOptionParser
 			.accepts("stop", "Deactivates and kills a running topology.").withRequiredArg().describedAs("topology-ID")
-			.ofType(String.class);
+			.ofType(String.class).required();
 		
 		OptionSet options;
 		try {
@@ -161,9 +160,10 @@ abstract class AbstractQuery {
 			try {
 				options = parser.parse(args);
 			} catch(OptionException f) {
-				System.err.println(e.getMessage());
+				System.err.println(f.getMessage());
 				System.err.println();
 				parser.printHelpOn(System.err);
+				stopOptionParser.printHelpOn(System.err);
 				return -1;
 			}
 		}
