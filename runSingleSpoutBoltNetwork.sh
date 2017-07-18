@@ -1,9 +1,9 @@
 #!/bin/sh
 
 workerConfig=`grep "TOPOLOGY_WORKERS" micro.cfg | cut -d':' -f 2 | tr -d ' '`
-if [ ! $workerConfig -eq 1 ]
+if [ $workerConfig -eq 1 ]
 then
-  echo "Invalid config for TOPOLOGY_WORKERS in micro.cfg. Must be 1. Canceling benchmark."
+  echo "Invalid config for TOPOLOGY_WORKERS in micro.cfg. Must not be 1. Canceling benchmark."
   exit -1
 fi
 
@@ -12,7 +12,7 @@ recordsize=$2
 
 currentDir=`pwd`
 clusternodes=clusternodes
-dataDir="$HOME/repos/git/mjs/diss/eval/micro/singleSpoutBoltInMemory/"
+dataDir="$HOME/repos/git/mjs/diss/eval/micro/singleSpoutBoltNetwork"
 mkdir -p $dataDir
 
 master=`cat $clusternodes | grep -v -e "^#" | head -n 1`
@@ -49,7 +49,7 @@ java \
   --batchSize $batchsize \
   --recordSize $recordsize \
   --measureThroughput 1000 \
-  --measureLatency 10000 \
+  --measureLatency 100 \
 
 
 
@@ -91,7 +91,7 @@ echo "LRB stats:"
 echo "Copy all micro stats to $master"
 ssh $master "bash -l -c 'collectLrbStats.sh'"
 cd $dataDir
-./collectStats.sh $master
+./../../collectStats.sh $master
 
 for file in `ls *.cpu *.netIO *.throughput *.latencies`
 do

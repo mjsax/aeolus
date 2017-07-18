@@ -28,6 +28,7 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.generated.Nimbus.Client;
 import backtype.storm.utils.NimbusClient;
 import de.hub.cs.dbis.aeolus.monitoring.MonitoringTopoloyBuilder;
+import de.hub.cs.dbis.aeolus.spouts.FixedStreamRateDriverSpout;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -40,14 +41,17 @@ import joptsimple.OptionSpec;
 public class SpoutBenchmark {
 	protected final static OptionParser parser = new OptionParser();
 	
-	private final static OptionSpec<Integer> batchSizeOption, recordSizeOption, measureThroughputOption,
-		measureLatencyOption;
+	private final static OptionSpec<Integer> batchSizeOption, recordSizeOption, ingestionRateOption,
+		measureThroughputOption, measureLatencyOption;
 	
 	static {
 		batchSizeOption = parser.accepts("batchSize", "The output batch size used by the spout.").withRequiredArg()
 			.describedAs("number of tuples").ofType(Integer.class).required();
 		recordSizeOption = parser.accepts("recordSize", "The size of the spout output records.").withRequiredArg()
 			.describedAs("bytes").ofType(Integer.class).required();
+		ingestionRateOption = parser
+			.accepts("ingestionRate", "The number of output record per second the spout should emit.")
+			.withRequiredArg().describedAs("tps").ofType(Integer.class);
 		measureThroughputOption = parser
 			.accepts("measureThroughput",
 				"Collect data throughput for each operator and report in specified time intervalls.").withRequiredArg()
@@ -145,11 +149,16 @@ public class SpoutBenchmark {
 				options.has(measureLatencyOption),
 				options.has(measureLatencyOption) ? options.valueOf(measureLatencyOption) : -1);
 			
+			
 			IRichSpout spout = new MicroSpout(options.valueOf(recordSizeOption));
+			if(options.has(ingestionRateOption)) {
+				spout = new FixedStreamRateDriverSpout(spout, options.valueOf(ingestionRateOption));
+			}
 			String spoutId = "Spout";
 			builder.setBatchingSpout(spoutId, spout, options.valueOf(batchSizeOption));
 			String boltId = "Bolt";
-			builder.setSink(boltId, new DummySinkBolt()).localOrShuffleGrouping(spoutId);
+			// builder.setSink(boltId, new DummySinkBolt()).localOrShuffleGrouping(spoutId);
+			builder.setSink(boltId, new DummySinkBolt()).shuffleGrouping(spoutId);
 			
 			StormTopology topology = builder.createTopology();
 			
