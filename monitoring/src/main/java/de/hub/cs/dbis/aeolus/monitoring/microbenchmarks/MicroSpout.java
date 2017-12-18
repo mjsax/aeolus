@@ -36,7 +36,7 @@ public class MicroSpout implements IRichSpout {
 	private static final long serialVersionUID = -5423879264958995343L;
 	
 	final int recordSize;
-	final byte[][] records = new byte[500][];
+	final byte[][] records = new byte[100000][];
 	
 	Random r;
 	SpoutOutputCollector collector;

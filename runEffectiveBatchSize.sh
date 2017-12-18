@@ -1,23 +1,50 @@
 #!/bin/sh
 
-workerConfig=`grep "TOPOLOGY_WORKERS" micro.cfg | cut -d':' -f 2 | tr -d ' '`
-if [ $workerConfig -eq 1 ]
+# comma separated lists
+batchsizes=$1
+recordsizes=$2
+ingestionrates=$3
+
+batchSizeCnt=0
+recordSizeCnt=0
+ingestionRateCnt=0
+for batchsize in `echo $batchsizes | sed "s/,/ /g"`
+do
+  batchSizeArguments="$batchSizeArguments --batchSize $batchsize"
+  batchSizeCnt=$((batchSizeCnt + 1))
+done
+for recordsize in `echo $recordsizes| sed "s/,/ /g"`
+do
+  recordSizeArguments="$recordSizeArguments --recordSize $recordsize"
+  recordSizeCnt=$((recordSizeCnt + 1))
+done
+for ingestionrate in `echo $ingestionrates | sed "s/,/ /g"`
+do
+  ingestionRateArguments="$ingestionRateArguments --ingestionRate $ingestionrate"
+  ingestionRateCnt=$((ingestionRateCnt + 1))
+done
+
+if [ $batchSizeCnt -ne $recordSizeCnt ]
 then
-  echo "Invalid config for TOPOLOGY_WORKERS in micro.cfg. Must not be 1. Canceling benchmark."
+  echo "Invalid Arguments: Number of batch sizes must be equal to number of record sizes."
+  exit -1
+fi
+if [ $ingestionRateCnt -ne 0 ] && [ $ingestionRateCnt -ne $batchSizeCnt ]
+then
+  echo "Invalid Arguments: Number of ingestion rates must be zero or equal to number of batch and record sizes."
   exit -1
 fi
 
-batchsize=$1
-recordsize=$2
-ingestionrate=$3
-if [ $ingestionrate != "inf" ]
+workerConfig=`grep "TOPOLOGY_WORKERS" micro.cfg | cut -d':' -f 2 | tr -d ' '`
+if [ $workerConfig -lt $((batchSizeCnt + 1)) ]
 then
-  ingestionrateparameter="--ingestionRate $ingestionrate"
+  echo "Invalid config for TOPOLOGY_WORKERS in micro.cfg. Must be at least $((batchSizeCnt + 1)). Canceling benchmark."
+  exit -1
 fi
 
 currentDir=`pwd`
 clusternodes=clusternodes
-dataDir="$HOME/repos/git/mjs/diss/eval/micro/singleSpoutBoltRate"
+dataDir="$HOME/repos/git/mjs/diss/eval/micro/effectiveBatchSize"
 mkdir -p $dataDir
 
 master=`cat $clusternodes | grep -v -e "^#" | head -n 1`
@@ -50,10 +77,10 @@ classpath="$classpath:$HOME/.m2/repository/com/googlecode/json-simple/json-simpl
 
 java \
   -cp $classpath \
-  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.SpoutBenchmark \
-  --batchSize $batchsize \
-  --recordSize $recordsize \
-  $ingestionrateparameter \
+  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.EffectiveBatchSizeBenchmark \
+  $batchSizeArguments \
+  $recordSizeArguments \
+  $ingestionRateArguments \
   --measureThroughput 1000 \
   --measureLatency 100 \
 
@@ -68,7 +95,7 @@ sleep $runtime
 echo "Stopping Topology"
 java \
   -cp $classpath \
-  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.SpoutBenchmark \
+  de.hub.cs.dbis.aeolus.monitoring.microbenchmarks.EffectiveBatchSizeBenchmark \
   --stop SpoutMicroBenchmark
 
 
@@ -101,6 +128,6 @@ cd $dataDir
 
 for file in `ls *.cpu *.netIO *.throughput *.latencies`
 do
-  mv $file $file.$batchsize-$recordsize-$ingestionrate 
+  mv $file $file.$batchsizes-$recordsizes-$ingestionrates
 done
 
